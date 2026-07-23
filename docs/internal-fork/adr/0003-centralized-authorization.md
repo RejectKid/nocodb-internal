@@ -40,3 +40,12 @@ tokens, and unsupported scope versions deny.
 
 Community membership adapters need regression review when upstream role or
 membership behavior changes; internal policy contracts remain stable.
+
+## Implementation evidence
+
+Stage 1 provides a typed, versioned authorization matrix runner and deterministic
+identity/token fixtures under
+`modules/internal-extensions/testing/authorization`. The shared JSON matrix
+covers authentication, permission, token scope/lifecycle, tenant boundary, and
+disabled-owner cases. Feature suites must supply a real route or centralized
+policy executor; the reference executor is limited to harness self-tests.

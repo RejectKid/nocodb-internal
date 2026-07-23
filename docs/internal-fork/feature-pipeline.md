@@ -31,7 +31,7 @@ changing entitlements. Any intentional difference must be documented.
 - Tests required: Import enabled/disabled and application-module compilation.
 - Documentation required: ADR 0001, manifest, environment variables.
 - Estimated complexity: M
-- Status: Testing
+- Status: Security Review
 - Acceptance criteria: Boundary is distinct; commercial entitlement code is
   untouched; `NC_INTERNAL_EXTENSIONS_ENABLED` disables it; the app still starts.
 - Known risks: One top-level registration hook may conflict during upstream
@@ -54,7 +54,7 @@ changing entitlements. Any intentional difference must be documented.
   unknown/invalid values.
 - Documentation required: ADR 0002 and endpoint/environment docs.
 - Estimated complexity: M
-- Status: Testing
+- Status: Security Review
 - Acceptance criteria: Registry is independent, per-feature configurable,
   read-only at `GET /api/internal/v1/capabilities`, and unit-tested.
 - Known risks: Frontend/backend key drift; prevented with response-shape tests.
@@ -74,7 +74,7 @@ changing entitlements. Any intentional difference must be documented.
 - Tests required: Harness self-tests and one unchanged Community endpoint.
 - Documentation required: Usage guide and fixture lifecycle.
 - Estimated complexity: L
-- Status: Proposed
+- Status: Security Review
 - Acceptance criteria: All named cases are reusable; Community behavior is
   unchanged; error classes remain distinguishable.
 - Known risks: Brittle full-app fixtures and test runtime.
