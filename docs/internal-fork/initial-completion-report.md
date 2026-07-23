@@ -74,6 +74,8 @@ artifacts are grouped below.
 - Backend module boundary, registry, guard, controller, migration source,
   internal token skeleton, and their specs under
   `packages/nocodb/src/modules/internal-extensions`.
+- Stable isolated-module test configuration:
+  `packages/nocodb/jest.internal-extensions.config.js`.
 - Frontend capability composable, page, and contract test under
   `packages/nc-gui/composables/internalExtensions`,
   `packages/nc-gui/pages/internal`, and
@@ -141,24 +143,24 @@ Commands were derived from repository scripts/configuration rather than
 guessed. pnpm 10.28.0 was used because the repository tooling expects pnpm 10;
 the machine-wide pnpm 11.9.0 is incompatible with this checkout.
 
-| Purpose                   | Command                                                                                             |
-| ------------------------- | --------------------------------------------------------------------------------------------------- |
-| Dependency bootstrap      | `CI=true npx -y pnpm@10.28.0 run bootstrap`                                                         |
-| SDK compile fallback      | `npx -y pnpm@10.28.0 --filter nocodb-sdk run build:main`                                            |
-| Integration packages      | repository `integrations:build` and `registerIntegrations` scripts                                  |
-| Backend formatting        | repo Prettier over custom backend files and `src/app.module.ts`                                     |
-| Frontend formatting       | repo Prettier over custom frontend files                                                            |
-| Backend targeted tests    | `npx -y pnpm@10.28.0 exec jest --runInBand --testRegex "modules/internal-extensions/.*\.spec\.ts$"` |
-| Backend default tests     | `npx -y pnpm@10.28.0 test`                                                                          |
-| Backend E2E               | `npx -y pnpm@10.28.0 exec jest --config ./test/jest-e2e.json --runInBand`                           |
-| Frontend targeted tests   | `npx -y pnpm@10.28.0 exec vitest run test/internal-capabilities.test.ts`                            |
-| Frontend broader tests    | `npx -y pnpm@10.28.0 exec vitest run`                                                               |
-| Backend lint              | repository ESLint against the targeted custom files                                                 |
-| Backend type check        | `npx -y pnpm@10.28.0 exec tsc --noEmit -p tsconfig.json`                                            |
-| Frontend type check       | repository Nuxt/Nuxi type-check entry point                                                         |
-| Backend production build  | `npx -y pnpm@10.28.0 exec rspack --config rspack.config.js`                                         |
-| Frontend production build | `npx -y pnpm@10.28.0 exec nuxi build`                                                               |
-| Migration validation      | focused Jest SQLite up/down migration spec                                                          |
+| Purpose                   | Command                                                                                 |
+| ------------------------- | --------------------------------------------------------------------------------------- |
+| Dependency bootstrap      | `CI=true npx -y pnpm@10.28.0 run bootstrap`                                             |
+| SDK compile fallback      | `npx -y pnpm@10.28.0 --filter nocodb-sdk run build:main`                                |
+| Integration packages      | repository `integrations:build` and `registerIntegrations` scripts                      |
+| Backend formatting        | repo Prettier over custom backend files and `src/app.module.ts`                         |
+| Frontend formatting       | repo Prettier over custom frontend files                                                |
+| Backend targeted tests    | `npx -y pnpm@10.28.0 exec jest --config jest.internal-extensions.config.js --runInBand` |
+| Backend default tests     | `npx -y pnpm@10.28.0 test`                                                              |
+| Backend E2E               | `npx -y pnpm@10.28.0 exec jest --config ./test/jest-e2e.json --runInBand`               |
+| Frontend targeted tests   | `npx -y pnpm@10.28.0 exec vitest run test/internal-capabilities.test.ts`                |
+| Frontend broader tests    | `npx -y pnpm@10.28.0 exec vitest run`                                                   |
+| Backend lint              | repository ESLint against the targeted custom files                                     |
+| Backend type check        | `npx -y pnpm@10.28.0 exec tsc --noEmit -p tsconfig.json`                                |
+| Frontend type check       | repository Nuxt/Nuxi type-check entry point                                             |
+| Backend production build  | `npx -y pnpm@10.28.0 exec rspack --config rspack.config.js`                             |
+| Frontend production build | `npx -y pnpm@10.28.0 exec nuxi build`                                                   |
+| Migration validation      | focused Jest SQLite up/down migration spec                                              |
 
 Generated files touched by bootstrap, integration registration, or Nuxt build
 were restored and are not part of the change.
@@ -172,7 +174,7 @@ were restored and are not part of the change.
 | Integration build/registration | Passed; generated registration output was restored                                                                                             |
 | Backend formatting             | Passed                                                                                                                                         |
 | Frontend formatting            | Passed                                                                                                                                         |
-| Backend targeted tests         | Passed: 8 suites, 22 tests                                                                                                                     |
+| Backend targeted tests         | Passed: 8 suites, 22 tests; final cache-independent run used isolated-module transpilation                                                     |
 | Frontend targeted tests        | Passed: 1 file, 2 tests                                                                                                                        |
 | Backend default tests          | Failed before tests ran in `ts-jest`/TypeScript document registry; reproduced after clearing cache                                             |
 | Backend E2E                    | Failed before tests ran with the same `ts-jest`/TypeScript document-registry error                                                             |
