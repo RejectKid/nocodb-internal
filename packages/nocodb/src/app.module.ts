@@ -21,6 +21,9 @@ import { JsonBodyMiddleware } from '~/middlewares/json-body.middleware';
 
 import { UrlEncodeMiddleware } from '~/middlewares/url-encode.middleware';
 import { OAuthModule } from '~/modules/oauth/oauth.module';
+// Internal modification notice: registers independently implemented
+// organizational extensions without using commercial entitlement state.
+import { getInternalExtensionModuleImports } from '~/modules/internal-extensions';
 import { backendRouteExcludePatterns } from '~/utils/backend-route-prefixes';
 
 export const ceModuleConfig = {
@@ -28,6 +31,7 @@ export const ceModuleConfig = {
     AuthModule,
     OAuthModule,
     NocoModule,
+    ...getInternalExtensionModuleImports(process.env),
     EventEmitterModule,
     JobsModule,
     NestJsEventEmitter.forRoot(),
