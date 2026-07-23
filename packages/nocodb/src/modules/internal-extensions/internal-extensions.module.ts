@@ -9,6 +9,9 @@ import { MetaApiLimiterGuard } from '~/guards/meta-api-limiter.guard';
 import { InternalCapabilitiesController } from './feature-registry/internal-capabilities.controller';
 import { InternalAuthenticatedGuard } from './authorization/internal-authenticated.guard';
 import { InternalFeatureRegistryService } from './feature-registry/internal-feature-registry.service';
+import { InternalExtensionsMigrationService } from './migrations/internal-extensions-migration.service';
+import { InternalTokenHashingService } from './api-tokens/internal-token-hashing.service';
+import { ScryptInternalTokenHashingService } from './api-tokens/scrypt-internal-token-hashing.service';
 
 @Module({
   imports: [NocoModule],
@@ -18,7 +21,12 @@ import { InternalFeatureRegistryService } from './feature-registry/internal-feat
     MetaApiLimiterGuard,
     InternalAuthenticatedGuard,
     InternalFeatureRegistryService,
+    InternalExtensionsMigrationService,
+    {
+      provide: InternalTokenHashingService,
+      useClass: ScryptInternalTokenHashingService,
+    },
   ],
-  exports: [InternalFeatureRegistryService],
+  exports: [InternalFeatureRegistryService, InternalTokenHashingService],
 })
 export class InternalExtensionsModule {}
