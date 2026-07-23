@@ -16,7 +16,9 @@ Create `modules/internal-extensions` as the backend root, with one conditional
 top-level registration hook. Use `/api/internal/v1`, `NC_INTERNAL_*`,
 `nc_internal_*`, a separate migration source/history table, and corresponding
 frontend `internal` namespaces. The master switch is
-`NC_INTERNAL_EXTENSIONS_ENABLED`.
+`NC_INTERNAL_EXTENSIONS_ENABLED`. Within that boundary, target near-identical
+documented/observable behavior and ergonomics where possible, implemented from
+independent contracts and tests.
 
 ## Alternatives considered
 
@@ -29,6 +31,8 @@ frontend `internal` namespaces. The master switch is
 
 Most changes are additive. Some Community adapters may later need small hooks.
 Custom API/types are not automatically included in the upstream generated SDK.
+Behavioral compatibility gaps must be recorded rather than filled by importing
+or exposing gated code.
 
 ## Security implications
 

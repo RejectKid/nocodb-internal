@@ -6,6 +6,12 @@ Review, Documentation, Ready, Released, Blocked.
 Complexity uses S, M, L, and XL. No item is production-ready until its security
 review, documentation, migrations, rollback notes, and required tests pass.
 
+For features corresponding to NocoDB paid capabilities, acceptance review also
+includes a behavioral-compatibility matrix based on public documentation and
+observable product behavior. The target is near-identical workflow and API
+ergonomics without copying gated source, using gated runtime modules, or
+changing entitlements. Any intentional difference must be documented.
+
 ## Pipeline 1: Foundation
 
 ### FND-001 — Custom module boundary
@@ -25,7 +31,7 @@ review, documentation, migrations, rollback notes, and required tests pass.
 - Tests required: Import enabled/disabled and application-module compilation.
 - Documentation required: ADR 0001, manifest, environment variables.
 - Estimated complexity: M
-- Status: Architecture
+- Status: Testing
 - Acceptance criteria: Boundary is distinct; commercial entitlement code is
   untouched; `NC_INTERNAL_EXTENSIONS_ENABLED` disables it; the app still starts.
 - Known risks: One top-level registration hook may conflict during upstream
@@ -48,7 +54,7 @@ review, documentation, migrations, rollback notes, and required tests pass.
   unknown/invalid values.
 - Documentation required: ADR 0002 and endpoint/environment docs.
 - Estimated complexity: M
-- Status: Architecture
+- Status: Testing
 - Acceptance criteria: Registry is independent, per-feature configurable,
   read-only at `GET /api/internal/v1/capabilities`, and unit-tested.
 - Known risks: Frontend/backend key drift; prevented with response-shape tests.
@@ -93,7 +99,7 @@ review, documentation, migrations, rollback notes, and required tests pass.
   prefix format, migration up/down.
 - Documentation required: Token design and ADR 0004.
 - Estimated complexity: L
-- Status: Architecture
+- Status: Backend
 - Acceptance criteria: Migration exists; only hash is stored; prefix identifies
   tokens; expiration and revocation are representable/enforceable.
 - Known risks: Hash cost and database portability.
@@ -103,7 +109,9 @@ review, documentation, migrations, rollback notes, and required tests pass.
 - Business purpose: Bound token actions and tenant reach.
 - Scope: Typed scopes, centralized policy service, workspace/base allowlists,
   route decorator/guard, and policy decisions.
-- Non-goals: Compatibility with NocoDB paid API behavior.
+- Non-goals: Reusing NocoDB paid token contracts or guaranteeing undocumented
+  wire-level compatibility. Documented and observable workflows remain a
+  compatibility target.
 - Dependencies: TOK-001, PERM-001, FND-003.
 - Data-model changes: Normalized scope and boundary tables or a versioned JSON
   representation, selected during architecture review.
@@ -115,7 +123,7 @@ review, documentation, migrations, rollback notes, and required tests pass.
   revoked, disabled user, direct route, and scope-version mismatch.
 - Documentation required: Scope catalog and policy algorithm.
 - Estimated complexity: XL
-- Status: Proposed
+- Status: Architecture
 - Acceptance criteria: Typed centralized scopes; boundaries enforced; route
   tests cover success and denial.
 - Known risks: Scope explosion and inconsistent resource extraction.

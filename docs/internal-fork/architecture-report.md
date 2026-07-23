@@ -11,6 +11,13 @@ implemented internal capabilities. The implementation must not alter or depend
 on NocoDB commercial entitlement decisions. Existing Business, Scale,
 Enterprise, cloud, and EE-aware implementations are architectural context only.
 
+Behavioral compatibility is a design goal: internal features should match the
+documented and observable workflows, terminology, ergonomics, and response
+behavior of the corresponding NocoDB capabilities as closely as independent
+implementation permits. Public documentation and black-box behavior may inform
+requirements. Gated source code, private implementation details, and commercial
+activation paths may not inform or supply the implementation.
+
 ## Repository structure
 
 The repository is a pnpm monorepo. `pnpm-workspace.yaml` includes:
