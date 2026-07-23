@@ -1,0 +1,350 @@
+{
+  "schemaVersion": 1,
+  "cases": [
+    {
+      "id": "anonymous-denied",
+      "description": "Anonymous users cannot call protected APIs",
+      "actor": {
+        "state": "anonymous",
+        "role": "guest",
+        "permissions": []
+      },
+      "target": {
+        "workspaceId": "workspace-a",
+        "baseId": "base-a",
+        "resourceType": "record"
+      },
+      "operation": "records:read",
+      "requiredPermission": "records:read",
+      "frontendVisible": false,
+      "expected": {
+        "status": 401,
+        "failureClass": "authentication"
+      }
+    },
+    {
+      "id": "authenticated-unauthorized-denied",
+      "description": "Authenticated users without permission receive authorization denial",
+      "actor": {
+        "state": "active",
+        "role": "viewer",
+        "permissions": ["records:read"]
+      },
+      "target": {
+        "workspaceId": "workspace-a",
+        "baseId": "base-a",
+        "resourceType": "base"
+      },
+      "operation": "base:manage_tokens",
+      "requiredPermission": "base:manage_tokens",
+      "frontendVisible": false,
+      "expected": {
+        "status": 403,
+        "failureClass": "authorization"
+      }
+    },
+    {
+      "id": "authorized-user-succeeds",
+      "description": "An active user with permission succeeds",
+      "actor": {
+        "state": "active",
+        "role": "owner",
+        "permissions": ["base:manage_tokens"]
+      },
+      "target": {
+        "workspaceId": "workspace-a",
+        "baseId": "base-a",
+        "resourceType": "base"
+      },
+      "operation": "base:manage_tokens",
+      "requiredPermission": "base:manage_tokens",
+      "frontendVisible": true,
+      "expected": {
+        "status": 200,
+        "failureClass": "success"
+      }
+    },
+    {
+      "id": "frontend-hidden-direct-api-denied",
+      "description": "A frontend-hidden mutation remains denied when called directly",
+      "actor": {
+        "state": "active",
+        "role": "viewer",
+        "permissions": ["records:read"]
+      },
+      "target": {
+        "workspaceId": "workspace-a",
+        "baseId": "base-a",
+        "resourceType": "record"
+      },
+      "operation": "records:delete",
+      "requiredPermission": "records:delete",
+      "frontendVisible": false,
+      "expected": {
+        "status": 403,
+        "failureClass": "authorization"
+      }
+    },
+    {
+      "id": "api-token-scope-allowed",
+      "description": "An active API token with scope and tenant boundaries succeeds",
+      "actor": {
+        "state": "active",
+        "role": "owner",
+        "permissions": ["records:read"]
+      },
+      "token": {
+        "state": "active",
+        "ownerState": "active",
+        "scopes": ["data:read"],
+        "allowedWorkspaceIds": ["workspace-a"],
+        "allowedBaseIds": ["base-a"]
+      },
+      "target": {
+        "workspaceId": "workspace-a",
+        "baseId": "base-a",
+        "resourceType": "record"
+      },
+      "operation": "records:read",
+      "requiredPermission": "records:read",
+      "requiredScope": "data:read",
+      "frontendVisible": true,
+      "expected": {
+        "status": 200,
+        "failureClass": "success"
+      }
+    },
+    {
+      "id": "api-token-scope-denied",
+      "description": "An API token without the required scope is denied",
+      "actor": {
+        "state": "active",
+        "role": "owner",
+        "permissions": ["records:update"]
+      },
+      "token": {
+        "state": "active",
+        "ownerState": "active",
+        "scopes": ["data:read"],
+        "allowedWorkspaceIds": ["workspace-a"],
+        "allowedBaseIds": ["base-a"]
+      },
+      "target": {
+        "workspaceId": "workspace-a",
+        "baseId": "base-a",
+        "resourceType": "record"
+      },
+      "operation": "records:update",
+      "requiredPermission": "records:update",
+      "requiredScope": "data:update",
+      "frontendVisible": false,
+      "expected": {
+        "status": 403,
+        "failureClass": "authorization"
+      }
+    },
+    {
+      "id": "expired-api-token-denied",
+      "description": "An expired API token fails authentication",
+      "actor": {
+        "state": "active",
+        "role": "owner",
+        "permissions": ["records:read"]
+      },
+      "token": {
+        "state": "expired",
+        "ownerState": "active",
+        "scopes": ["data:read"],
+        "allowedWorkspaceIds": ["workspace-a"],
+        "allowedBaseIds": ["base-a"]
+      },
+      "target": {
+        "workspaceId": "workspace-a",
+        "baseId": "base-a",
+        "resourceType": "record"
+      },
+      "operation": "records:read",
+      "requiredScope": "data:read",
+      "frontendVisible": false,
+      "expected": {
+        "status": 401,
+        "failureClass": "authentication"
+      }
+    },
+    {
+      "id": "revoked-api-token-denied",
+      "description": "A revoked API token fails authentication",
+      "actor": {
+        "state": "active",
+        "role": "owner",
+        "permissions": ["records:read"]
+      },
+      "token": {
+        "state": "revoked",
+        "ownerState": "active",
+        "scopes": ["data:read"],
+        "allowedWorkspaceIds": ["workspace-a"],
+        "allowedBaseIds": ["base-a"]
+      },
+      "target": {
+        "workspaceId": "workspace-a",
+        "baseId": "base-a",
+        "resourceType": "record"
+      },
+      "operation": "records:read",
+      "requiredScope": "data:read",
+      "frontendVisible": false,
+      "expected": {
+        "status": 401,
+        "failureClass": "authentication"
+      }
+    },
+    {
+      "id": "cross-base-api-token-denied",
+      "description": "An API token cannot cross its base allowlist",
+      "actor": {
+        "state": "active",
+        "role": "owner",
+        "permissions": ["records:read"]
+      },
+      "token": {
+        "state": "active",
+        "ownerState": "active",
+        "scopes": ["data:read"],
+        "allowedWorkspaceIds": ["workspace-a"],
+        "allowedBaseIds": ["base-a"]
+      },
+      "target": {
+        "workspaceId": "workspace-a",
+        "baseId": "base-b",
+        "resourceType": "record"
+      },
+      "operation": "records:read",
+      "requiredScope": "data:read",
+      "frontendVisible": false,
+      "expected": {
+        "status": 403,
+        "failureClass": "authorization"
+      }
+    },
+    {
+      "id": "cross-workspace-api-token-denied",
+      "description": "An API token cannot cross its workspace allowlist",
+      "actor": {
+        "state": "active",
+        "role": "owner",
+        "permissions": ["records:read"]
+      },
+      "token": {
+        "state": "active",
+        "ownerState": "active",
+        "scopes": ["data:read"],
+        "allowedWorkspaceIds": ["workspace-a"],
+        "allowedBaseIds": ["base-a"]
+      },
+      "target": {
+        "workspaceId": "workspace-b",
+        "baseId": "base-a",
+        "resourceType": "record"
+      },
+      "operation": "records:read",
+      "requiredScope": "data:read",
+      "frontendVisible": false,
+      "expected": {
+        "status": 403,
+        "failureClass": "authorization"
+      }
+    },
+    {
+      "id": "blocked-user-denied",
+      "description": "A blocked user fails authentication",
+      "actor": {
+        "state": "blocked",
+        "role": "owner",
+        "permissions": ["records:read"]
+      },
+      "target": {
+        "workspaceId": "workspace-a",
+        "baseId": "base-a",
+        "resourceType": "record"
+      },
+      "operation": "records:read",
+      "requiredPermission": "records:read",
+      "frontendVisible": false,
+      "expected": {
+        "status": 401,
+        "failureClass": "authentication"
+      }
+    },
+    {
+      "id": "deleted-user-denied",
+      "description": "A deleted user fails authentication",
+      "actor": {
+        "state": "deleted",
+        "role": "owner",
+        "permissions": ["records:read"]
+      },
+      "target": {
+        "workspaceId": "workspace-a",
+        "baseId": "base-a",
+        "resourceType": "record"
+      },
+      "operation": "records:read",
+      "requiredPermission": "records:read",
+      "frontendVisible": false,
+      "expected": {
+        "status": 401,
+        "failureClass": "authentication"
+      }
+    },
+    {
+      "id": "disabled-user-denied",
+      "description": "A disabled user fails authentication",
+      "actor": {
+        "state": "disabled",
+        "role": "owner",
+        "permissions": ["records:read"]
+      },
+      "target": {
+        "workspaceId": "workspace-a",
+        "baseId": "base-a",
+        "resourceType": "record"
+      },
+      "operation": "records:read",
+      "requiredPermission": "records:read",
+      "frontendVisible": false,
+      "expected": {
+        "status": 401,
+        "failureClass": "authentication"
+      }
+    },
+    {
+      "id": "disabled-token-owner-denied",
+      "description": "A token owned by a disabled user fails authentication",
+      "actor": {
+        "state": "active",
+        "role": "owner",
+        "permissions": ["records:read"]
+      },
+      "token": {
+        "state": "active",
+        "ownerState": "disabled",
+        "scopes": ["data:read"],
+        "allowedWorkspaceIds": ["workspace-a"],
+        "allowedBaseIds": ["base-a"]
+      },
+      "target": {
+        "workspaceId": "workspace-a",
+        "baseId": "base-a",
+        "resourceType": "record"
+      },
+      "operation": "records:read",
+      "requiredScope": "data:read",
+      "frontendVisible": false,
+      "expected": {
+        "status": 401,
+        "failureClass": "authentication"
+      }
+    }
+  ]
+}
