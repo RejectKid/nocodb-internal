@@ -148,3 +148,17 @@ or permission implementation is touched.
 | `packages/nocodb/src/modules/internal-extensions/permissions/internal-base-permissions.controller.ts` | Authenticated internal v1 HTTP routes | Existing Community guards | Medium | PERM-002 |
 | `packages/nocodb/src/modules/internal-extensions/permissions/internal-base-permission-admin.service.spec.ts` | Authorization, audit, isolation, and concurrency tests | None | Low | PERM-002, FND-003, SEC-001 |
 | `packages/nocodb/src/modules/internal-extensions/permissions/internal-base-permissions.controller.Integration.spec.ts` | Direct HTTP authentication and route-contract tests | None | Low | PERM-002, FND-003 |
+
+## Stage 7 base-permission editor files
+
+Owner for every file below: Internal Platform Team. No commercial entitlement
+or permission component is touched.
+
+| Path | Purpose | Upstream files touched | Merge risk | Feature IDs |
+| --- | --- | --- | --- | --- |
+| `docs/internal-fork/internal-base-permission-editor.md` | Administrator workflow and security behavior | None | Low | PERM-002 |
+| `docs/internal-fork/stage-7-base-permission-editor-report.md` | Delivery and validation record | None | Low | PERM-002 |
+| `packages/nc-gui/composables/internalExtensions/useInternalBasePermissions.ts` | Typed API contract, revision writes, and effective-source explanation | Existing Axios instance only | Low | PERM-002 |
+| `packages/nc-gui/components/internalExtensions/basePermissions/Editor.vue` | Isolated capability-gated permission matrix | Community base-member store | Medium | PERM-002 |
+| `packages/nc-gui/test/internal-base-permissions.test.ts` | API, concurrency, and authorization helper tests | None | Low | PERM-002, FND-003 |
+| `packages/nc-gui/components/dashboard/settings/base/index.vue` | Small General-settings registration hook | Community base-settings shell | Medium | PERM-002 |

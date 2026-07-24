@@ -196,11 +196,13 @@ route-family enforcement and the visual editor remain pending.
   denial, and audit generation.
 - Documentation required: Administrator guide.
 - Estimated complexity: L
-- Status: Backend
+- Status: Testing
 - Progress: Authenticated state, configuration, and subject-assignment
   endpoints are implemented with server-side authorization, owner recovery,
-  atomic SEC-001 events, tenant isolation, and optimistic concurrency. The
-  base-settings permission matrix remains the next frontend slice.
+  atomic SEC-001 events, tenant isolation, and optimistic concurrency. An
+  isolated General base-settings editor now distinguishes direct users from
+  inherited roles, explains effective sources, and reloads stale writes. A
+  browser-level security regression remains before Security Review.
 - Acceptance criteria: Effective sources are visible; changes validate and
   audit; only authorized administrators can save.
 - Known risks: Matrix usability and inherited-role ambiguity.

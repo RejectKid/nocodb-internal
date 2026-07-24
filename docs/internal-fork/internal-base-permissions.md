@@ -75,6 +75,20 @@ the SEC-001 event in the same metadata transaction.
 New configurations still default to disabled, so installing the migration
 cannot change Community behavior.
 
+## Base-settings editor
+
+When the independent `basePermissions` capability is enabled, General base
+settings contains an isolated internal permission editor. It groups existing
+assignments into inherited Community base roles and direct users, shows the
+effective assignment source for the selected subject, and offers allow, deny,
+or unset for every typed catalog entry.
+
+The editor sends the configuration timestamp or subject revision returned by
+the administration API. A 409 response reloads current state and requires the
+administrator to review before saving again. Mutation controls are absent
+unless the API reports that the current actor has `base:manage_members`.
+Frontend visibility is explanatory only; the backend remains authoritative.
+
 Before route enforcement is added, each protected route must supply:
 
 - current actor and membership facts;

@@ -51,10 +51,10 @@ identity, or base identity in the request body.
 The current API returns assignment identifiers only where already present in
 the persistence model. It never exposes secrets or commercial feature state.
 
-## Frontend handoff
+## Frontend integration
 
-The next slice should build the base-settings matrix against this API. It must
-show direct user and inherited role sources separately, submit the returned
-revision on save, reload after a 409, and hide write controls when the effective
-permission response denies `base:manage_members`. Backend checks remain
-authoritative.
+The General base-settings matrix consumes this API through an isolated
+composable and component. It shows direct user and inherited role sources
+separately, submits the returned revision on save, reloads after a 409, and
+hides write controls when the effective response denies
+`base:manage_members`. Backend checks remain authoritative.
