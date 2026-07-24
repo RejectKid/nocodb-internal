@@ -22,6 +22,7 @@
   "scripts": {
     "dev": "nuxt dev",
     "lint": "eslint --ext \".js,.jsx,.ts,.tsx,.vue\" --fix --ignore-path .gitignore .",
+    "test:internal-browser": "playwright test --config test/internal-extensions-browser/playwright.config.ts",
     "preinstall": "npx only-allow pnpm",
     "postinstall": "nuxt prepare"
   },
@@ -191,6 +192,7 @@
     "@intlify/unplugin-vue-i18n": "^6.0.8",
     "@nuxt/image": "^1.10.0",
     "@nuxt/kit": "3.17.4",
+    "@playwright/test": "1.52.0",
     "@sentry/vite-plugin": "^2.23.0",
     "@types/d3-scale": "^4.0.9",
     "@types/dagre": "^0.7.52",

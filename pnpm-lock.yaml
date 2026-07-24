@@ -591,6 +591,9 @@ importers:
       '@nuxt/kit':
         specifier: 3.17.4
         version: 3.17.4(magicast@0.5.3)
+      '@playwright/test':
+        specifier: 1.52.0
+        version: 1.52.0
       '@sentry/vite-plugin':
         specifier: ^2.23.0
         version: 2.23.1(encoding@0.1.13)

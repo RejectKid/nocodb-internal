@@ -162,3 +162,22 @@ or permission component is touched.
 | `packages/nc-gui/components/internalExtensions/basePermissions/Editor.vue` | Isolated capability-gated permission matrix | Community base-member store | Medium | PERM-002 |
 | `packages/nc-gui/test/internal-base-permissions.test.ts` | API, concurrency, and authorization helper tests | None | Low | PERM-002, FND-003 |
 | `packages/nc-gui/components/dashboard/settings/base/index.vue` | Small General-settings registration hook | Community base-settings shell | Medium | PERM-002 |
+
+## Stage 8 base-permission browser security files
+
+Owner for every file below: Internal Platform Team. No commercial entitlement
+or permission component is touched.
+
+| Path | Purpose | Upstream files touched | Merge risk | Feature IDs |
+| --- | --- | --- | --- | --- |
+| `.github/workflows/internal-extension-browser-security.yml` | Path-filtered Playwright security regression workflow | None | Low | PERM-002 |
+| `.gitignore` | Excludes Playwright reports and result artifacts | Root ignore list | Low | PERM-002 |
+| `packages/nc-gui/package.json` | Adds the isolated browser-test command and pinned Playwright dependency | GUI workspace manifest | Low | PERM-002 |
+| `pnpm-lock.yaml` | Records the direct GUI Playwright development dependency | Root lockfile | Low | PERM-002 |
+| `packages/nc-gui/test/internal-extensions-browser/playwright.config.ts` | Isolated browser runner and local Chrome selection | None | Low | PERM-002 |
+| `packages/nc-gui/test/internal-extensions-browser/vite.config.ts` | Vue harness, HTTP scenarios, and test-only style transform | None | Low | PERM-002 |
+| `packages/nc-gui/test/internal-extensions-browser/harness/index.html` | Browser harness document | None | Low | PERM-002 |
+| `packages/nc-gui/test/internal-extensions-browser/harness/main.ts` | Community-compatible adapters and real component mounts | None | Low | PERM-002 |
+| `packages/nc-gui/test/internal-extensions-browser/harness/nocodb-sdk.ts` | Minimal SDK values required by the isolated mounts | None | Low | PERM-002 |
+| `packages/nc-gui/test/internal-extensions-browser/internal-base-permissions.spec.ts` | Browser authorization and concurrency regressions | None | Low | PERM-002, FND-003 |
+| `docs/internal-fork/stage-8-base-permission-browser-security-report.md` | Delivery, test-boundary, and residual-risk record | None | Low | PERM-002 |

@@ -26,7 +26,5 @@ when caused by the repository toolchain.
 
 ## Remaining PERM-002 work
 
-Add a browser-level regression proving unauthorized users see no mutation
-controls and remain denied through direct API requests. Then complete the
-security review for base-permission administration before enforcing the model
-on Community route families.
+Complete formal security-review sign-off for base-permission administration.
+Enforcement on Community route families remains separate PERM-001 work.
