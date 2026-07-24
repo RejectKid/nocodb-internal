@@ -48,6 +48,27 @@ Low unless an upstream conflict or security-sensitive integration is expected.
 | `packages/nc-gui/pages/internal/settings/capabilities.vue`                                                              | Authenticated capability settings page                                                | Nuxt file routing/global auth middleware | Low        | Internal Platform Team | FND-002                    |
 | `packages/nc-gui/test/internal-capabilities.test.ts`                                                                    | Frontend endpoint/response-contract tests                                             | None                                     | Low        | Internal Platform Team | FND-002                    |
 
+## Stage 1 authorization harness files
+
+Owner for every file below: Internal Platform Team. Upstream files touched:
+None, except the Community endpoint regression imports `CachesController`
+without modifying it.
+
+| Path | Purpose | Merge risk | Feature IDs |
+| --- | --- | --- | --- |
+| `docs/internal-fork/authorization-test-harness.md` | Usage, cases, and cleanup rules | Low | FND-003 |
+| `docs/internal-fork/stage-1-foundation-report.md` | Stage 1 validation and acceptance record | Low | FND-001, FND-002, FND-003 |
+| `packages/nocodb/src/modules/internal-extensions/testing/authorization/index.ts` | Public test exports | Low | FND-003 |
+| `packages/nocodb/src/modules/internal-extensions/testing/authorization/internal-authorization-harness.types.ts` | Typed matrix contracts | Low | FND-003 |
+| `packages/nocodb/src/modules/internal-extensions/testing/authorization/internal-authorization-matrix.runner.ts` | Matrix validation and execution | Low | FND-003, SEC-002 |
+| `packages/nocodb/src/modules/internal-extensions/testing/authorization/internal-authorization-fixtures.ts` | Identity and token fixtures | Low | FND-003 |
+| `packages/nocodb/src/modules/internal-extensions/testing/authorization/internal-authorization-reference.executor.ts` | Self-test executor | Low | FND-003 |
+| `packages/nocodb/src/modules/internal-extensions/testing/authorization/authorization-regression.matrix.json` | Machine-readable denial matrix | Low | FND-003, SEC-002 |
+| `packages/nocodb/src/modules/internal-extensions/testing/authorization/authorization-regression-matrix.loader.ts` | Versioned matrix loader | Low | FND-003, SEC-002 |
+| `packages/nocodb/src/modules/internal-extensions/testing/authorization/internal-authorization-matrix.runner.spec.ts` | Harness self-tests | Low | FND-003 |
+| `packages/nocodb/src/modules/internal-extensions/testing/authorization/internal-authorization-fixtures.spec.ts` | Fixture and redaction tests | Low | FND-003 |
+| `packages/nocodb/src/modules/internal-extensions/testing/authorization/community-cache-authorization.Integration.spec.ts` | Unchanged Community route regression | Low | FND-003 |
+
 ## Explicitly untouched commercial surfaces
 
 No license controller/service, entitlement loader, paid feature flag, EE

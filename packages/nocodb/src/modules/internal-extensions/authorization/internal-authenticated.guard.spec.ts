@@ -17,6 +17,10 @@ describe('InternalAuthenticatedGuard', () => {
     ['anonymous', undefined],
     ['guest', { id: 'user-1', isAuthorized: false }],
     ['blocked', { id: 'user-1', isAuthorized: true, blocked: true }],
+    [
+      'disabled',
+      { id: 'user-1', isAuthorized: true, blocked: true, disabled: true },
+    ],
     ['deleted', { id: 'user-1', isAuthorized: true, is_deleted: true }],
   ])('denies %s requests as authentication failures', (_label, user) => {
     expect(() => guard.canActivate(contextFor(user))).toThrow(

@@ -106,3 +106,19 @@ requires a reason.
 - Migration rehearsal:
 - Dependency scan:
 - Exceptions with owner and expiry:
+
+## Stage 1 evidence
+
+- [x] Shared matrix distinguishes `401` authentication from `403`
+      authorization failures.
+- [x] Anonymous, unauthorized, authorized, blocked, deleted, and disabled
+      identities are deterministic fixtures.
+- [x] Token fixtures cover scopes, expiration, revocation, workspace/base
+      boundaries, and disabled owners without plaintext secrets.
+- [x] A frontend-hidden direct mutation is represented and fails if an
+      executor accidentally returns success.
+- [x] The unchanged Community cache-delete route is exercised through the
+      harness for anonymous, viewer, API-token, and super-administrator cases.
+- [x] Fixture lifecycle and future database cleanup rules are documented.
+- [ ] PostgreSQL-backed cross-tenant fixtures are required before token route
+      integration is released.
