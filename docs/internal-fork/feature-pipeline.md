@@ -178,8 +178,9 @@ changing entitlements. Any intentional difference must be documented.
 
 Backend progress: The independent tables, typed catalog, validated repository,
 deterministic resolver, owner emergency access, and effective-permission read
-model are implemented. Production Community-membership adapters, route
-enforcement, audited mutations, and UI remain pending.
+model and production Community-membership adapter are implemented. The
+administration API supplies audited configuration and assignment mutations;
+route-family enforcement and the visual editor remain pending.
 
 ### PERM-002 — Base permission UI
 
@@ -195,7 +196,11 @@ enforcement, audited mutations, and UI remain pending.
   denial, and audit generation.
 - Documentation required: Administrator guide.
 - Estimated complexity: L
-- Status: Proposed
+- Status: Backend
+- Progress: Authenticated state, configuration, and subject-assignment
+  endpoints are implemented with server-side authorization, owner recovery,
+  atomic SEC-001 events, tenant isolation, and optimistic concurrency. The
+  base-settings permission matrix remains the next frontend slice.
 - Acceptance criteria: Effective sources are visible; changes validate and
   audit; only authorized administrators can save.
 - Known risks: Matrix usability and inherited-role ambiguity.
