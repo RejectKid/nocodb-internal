@@ -18,6 +18,12 @@ import { KnexInternalApiTokenRepository } from './api-tokens/knex-internal-api-t
 import { InternalApiTokenIssuanceService } from './api-tokens/internal-api-token-issuance.service';
 import { InternalTokenAuthorizationPolicy } from './api-tokens/internal-token-authorization.policy';
 import { DefaultInternalTokenAuthorizationPolicy } from './api-tokens/default-internal-token-authorization.policy';
+import { InternalBasePermissionRepository } from './permissions/internal-base-permission.repository';
+import { KnexInternalBasePermissionRepository } from './permissions/knex-internal-base-permission.repository';
+import { InternalBasePermissionPolicy } from './permissions/internal-base-permission.policy';
+import { DefaultInternalBasePermissionPolicy } from './permissions/default-internal-base-permission.policy';
+import { InternalBasePermissionService } from './permissions/internal-base-permission.service';
+import { CommunityBaseMembershipAdapter } from './permissions/community-base-membership.adapter';
 
 @Module({
   imports: [NocoModule],
@@ -43,6 +49,18 @@ import { DefaultInternalTokenAuthorizationPolicy } from './api-tokens/default-in
       provide: InternalTokenAuthorizationPolicy,
       useClass: DefaultInternalTokenAuthorizationPolicy,
     },
+    {
+      provide: InternalBasePermissionRepository,
+      inject: [MetaService],
+      useFactory: (metaService: MetaService) =>
+        new KnexInternalBasePermissionRepository(metaService),
+    },
+    {
+      provide: InternalBasePermissionPolicy,
+      useClass: DefaultInternalBasePermissionPolicy,
+    },
+    InternalBasePermissionService,
+    CommunityBaseMembershipAdapter,
   ],
   exports: [
     InternalFeatureRegistryService,
@@ -50,6 +68,10 @@ import { DefaultInternalTokenAuthorizationPolicy } from './api-tokens/default-in
     InternalApiTokenRepository,
     InternalApiTokenIssuanceService,
     InternalTokenAuthorizationPolicy,
+    InternalBasePermissionRepository,
+    InternalBasePermissionPolicy,
+    InternalBasePermissionService,
+    CommunityBaseMembershipAdapter,
   ],
 })
 export class InternalExtensionsModule {}

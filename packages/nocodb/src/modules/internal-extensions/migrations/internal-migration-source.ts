@@ -1,8 +1,10 @@
 import type { Knex } from 'knex';
 import * as nc_internal_001_api_tokens from './nc_internal_001_api_tokens';
+import * as nc_internal_002_base_permissions from './nc_internal_002_base_permissions';
 
 const migrations = {
   nc_internal_001_api_tokens,
+  nc_internal_002_base_permissions,
 };
 
 export class InternalMigrationSource implements Knex.MigrationSource<string> {
