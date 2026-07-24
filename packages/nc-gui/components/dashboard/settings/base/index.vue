@@ -1,6 +1,10 @@
 <script setup lang="ts">
 import { BaseVersion } from 'nocodb-sdk'
 
+const props = defineProps<{
+  baseId: string
+}>()
+
 const { isUIAllowed } = useRoles()
 
 const { isFeatureEnabled } = useBetaFeatureToggle()
@@ -22,7 +26,16 @@ const hasPermissionForMigrateToV3 = computed(
 
 const router = useRouter()
 
-const allTabs = ['baseType', 'snapshots', 'visibility', 'migrateToV3', 'migrate']
+const { capabilities, refresh: refreshInternalCapabilities } = useInternalCapabilities()
+const internalBasePermissionsAvailable = computed(() => Boolean(capabilities.value?.features.basePermissions))
+const allTabs = computed(() => [
+  'baseType',
+  'snapshots',
+  'visibility',
+  'migrateToV3',
+  'migrate',
+  ...(internalBasePermissionsAvailable.value ? ['internalPermissions'] : []),
+])
 
 const getDefaultTab = () => {
   if (hasPermissionForBaseAccess.value) return 'baseType'
@@ -62,11 +75,12 @@ const selectMenu = (option: string, updateQuery = true) => {
   activeMenu.value = option
 }
 
-onMounted(() => {
+onMounted(async () => {
+  await refreshInternalCapabilities().catch(() => undefined)
   const query = router.currentRoute.value.query
   const defaultTab = getDefaultTab()
 
-  if (query && query.tab && allTabs.includes(query.tab as string)) {
+  if (query && query.tab && allTabs.value.includes(query.tab as string)) {
     selectMenu(query.tab as string)
   } else {
     selectMenu(defaultTab, true)
@@ -76,7 +90,7 @@ onMounted(() => {
 watch(
   () => router.currentRoute.value.query.tab,
   (tab) => {
-    if (tab && allTabs.includes(tab as string) && tab !== activeMenu.value) {
+    if (tab && allTabs.value.includes(tab as string) && tab !== activeMenu.value) {
       selectMenu(tab as string, false)
     }
   },
@@ -119,6 +133,18 @@ watch(
           </span>
         </div>
         <div
+          v-if="internalBasePermissionsAvailable"
+          :class="{
+            'active-menu': activeMenu === 'internalPermissions',
+          }"
+          class="gap-3 hover:bg-nc-bg-gray-light transition-all text-nc-content-gray flex rounded-lg items-center cursor-pointer py-1.5 px-3"
+          data-testid="internal-base-permissions-tab"
+          @click="selectMenu('internalPermissions')"
+        >
+          <GeneralIcon icon="ncLock" />
+          <span>Permissions</span>
+        </div>
+        <div
           v-if="hasPermissionForMigrateToV3"
           :class="{
             'active-menu': activeMenu === 'migrateToV3',
@@ -151,6 +177,7 @@ watch(
     <div class="flex flex-col flex-1 max-w-[760px]">
       <DashboardSettingsBaseAccess v-if="activeMenu === 'baseType'" />
       <DashboardSettingsBaseVisibility v-if="activeMenu === 'visibility'" />
+      <InternalExtensionsBasePermissionsEditor v-if="activeMenu === 'internalPermissions'" :base-id="props.baseId" />
       <DashboardSettingsBaseMigrateToV3 v-if="activeMenu === 'migrateToV3'" />
       <DashboardSettingsBaseMigrate v-if="activeMenu === 'migrate'" />
     </div>
