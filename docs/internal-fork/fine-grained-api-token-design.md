@@ -1,7 +1,7 @@
 # Fine-grained internal API token design
 
-Status: Design and storage skeleton; not yet exposed or accepted for route
-authentication.
+Status: TOK-001 persistence and issuance complete; not exposed or accepted for
+route authentication.
 
 ## Boundary
 
@@ -22,10 +22,11 @@ The hashing service creates:
 nci_<12-character-public-id>_<43-character-random-secret>
 ```
 
-The `nci_...` prefix is stored and displayed for identification. The full value
-is returned exactly once by a future create endpoint. It must never be written
-to logs, telemetry, audit events, browser storage, job payloads, or database
-columns.
+The `nci_...` prefix is stored and displayed for identification.
+`InternalApiTokenIssuanceService` returns the full value once to its caller.
+The future create endpoint may project that one-time result but must not provide
+any retrieval path. The full value must never be written to logs, telemetry,
+audit events, browser storage, job payloads, or database columns.
 
 The skeleton uses Node's cryptographic random generator and versioned scrypt
 hashes with a unique 16-byte salt, N=16384, r=8, p=1, and a 32-byte derived key.
@@ -47,12 +48,30 @@ deployment benchmarks.
 - non-secret extension data: `metadata`
 
 Allowlists, scopes, and metadata use JSON text in the initial schema for
-database portability and a small skeleton. Repository code must parse and
-validate them against typed schemas. Normalization is preferred later if query
-or referential-integrity requirements justify it.
+database portability. `KnexInternalApiTokenRepository` serializes writes and
+validates every read against bounded typed schemas. Malformed scope, boundary,
+metadata, or timestamp data fails closed. Normalization is preferred later if
+query or referential-integrity requirements justify it.
 
 No plaintext token column exists. The migration intentionally does not reuse or
 alter upstream token tables.
+
+## Issuance flow
+
+`InternalApiTokenIssuanceService` validates and normalizes identity, display
+name, expiry, boundary, scope, and metadata input before generating a secret.
+It then:
+
+1. generates an `nci_` token and public prefix;
+2. checks the bounded prefix lookup;
+3. hashes the complete token with the versioned hashing service;
+4. inserts only the hash, prefix, and non-secret token record;
+5. retries up to five times if the unique prefix constraint reports a
+   collision;
+6. returns a public summary without hash material plus the plaintext value.
+
+The repository has no plaintext argument or retrieval method. Token summaries
+omit both `token_hash` and the internal hash-version field.
 
 ## Hash lookup and verification
 
@@ -101,25 +120,27 @@ token-auth traffic, back up the metadata database, and then run the reviewed
 down migration. Rolling application code back while issued internal tokens
 remain active is not supported.
 
-## Interfaces delivered
+## Components delivered
 
 - `InternalTokenHashingService`: generate, hash, verify
 - `InternalTokenAuthorizationPolicy`: centralized decision contract
 - `InternalApiTokenScope`: typed scope enum
-- `InternalApiToken`: expiration/revocation model
+- `InternalApiToken`: expiration/revocation model and hash-free summary
+- `InternalApiTokenRepository`: persistence and lifecycle contract
+- `KnexInternalApiTokenRepository`: portable storage codec, prefix lookup,
+  listing, and idempotent revocation
+- `InternalApiTokenIssuanceService`: validated one-time issuance and bounded
+  prefix-collision retry
 
 No controller, create/list/revoke API, frontend administration UI, or global
-authentication strategy is delivered in this skeleton.
+authentication strategy is delivered in TOK-001.
 
 ## Required next tests
 
 - PostgreSQL and MySQL migration up/down in CI
-- one-time create response and database non-disclosure
-- prefix collision retry
 - verification rate limiting
 - malformed token and malformed stored-hash fuzz tests
 - current-user disabled/deleted denial
-- immediate revocation and expiration boundary
 - scope/boundary allow-deny route matrix
 - log, error, audit, telemetry, and browser-storage redaction
 - concurrent `last_used_at` throttling

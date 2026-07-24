@@ -90,8 +90,8 @@ changing entitlements. Any intentional difference must be documented.
 - Dependencies: FND-001, FND-003.
 - Data-model changes: `nc_internal_api_tokens` plus indexes and foreign-key
   strategy documented in ADR 0004.
-- Backend work: Model/repository skeleton, hashing interface, expiration helper,
-  and migration.
+- Backend work: Model, Knex repository, one-time issuance service, hashing
+  interface, expiration/revocation helpers, and migration.
 - Frontend work: None in this item.
 - Security considerations: Plaintext exists only in the create response; use a
   versioned password-hash/KDF strategy; constant-time verification.
@@ -99,9 +99,10 @@ changing entitlements. Any intentional difference must be documented.
   prefix format, migration up/down.
 - Documentation required: Token design and ADR 0004.
 - Estimated complexity: L
-- Status: Backend
+- Status: Security Review
 - Acceptance criteria: Migration exists; only hash is stored; prefix identifies
-  tokens; expiration and revocation are representable/enforceable.
+  tokens; issuance retries prefix collisions; persisted JSON is validated;
+  expiration and revocation are representable/enforceable.
 - Known risks: Hash cost and database portability.
 
 ### TOK-002 — Token scopes

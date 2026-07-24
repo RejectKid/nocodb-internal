@@ -45,4 +45,17 @@ describe('InternalApiToken', () => {
       false,
     );
   });
+
+  it('produces a public summary without secret-verification material', () => {
+    const token = new InternalApiToken(record);
+
+    expect(token.toSummary()).toEqual(
+      expect.objectContaining({
+        id: record.id,
+        token_prefix: record.token_prefix,
+      }),
+    );
+    expect(token.toSummary()).not.toHaveProperty('token_hash');
+    expect(token.toSummary()).not.toHaveProperty('hash_version');
+  });
 });
