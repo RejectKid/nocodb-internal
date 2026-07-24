@@ -1,14 +1,14 @@
 # Internal base permissions
 
-Status: Backend model implemented (PERM-001)
+Status: Backend model and administration API implemented (PERM-001, PERM-002)
 
 ## Boundary
 
 This subsystem is independently implemented under
 `modules/internal-extensions/permissions`. It does not import, modify, or
 activate NocoDB commercial permission, entitlement, license, or paid-feature
-code. Existing Community membership and role data will be consumed through a
-future read-only adapter.
+code. Existing Community membership and role data is consumed through a
+read-only adapter backed by the authoritative server-side membership lookup.
 
 The subsystem owns two metadata tables:
 
@@ -57,12 +57,23 @@ integration must supply a current authoritative lookup and must not trust a
 client-supplied role. Owner access is evaluated only after active-user and
 tenant-context checks.
 
-## Mutation and rollout safety
+## Administration API and rollout safety
 
-No HTTP mutation endpoint is included in PERM-001. Configuration and grant
-writes remain repository-only until SEC-001 supplies audit events and atomic
-administration APIs are reviewed. New configurations default to disabled, so
-installing the migration cannot change Community behavior.
+Authenticated administration routes are isolated under
+`/api/internal/v1/workspaces/:workspaceId/bases/:baseId/permissions`.
+Community owners and creators can inspect and bootstrap an unconfigured base.
+After opt-in, the centralized policy requires `base:manage_members`; owner
+emergency access remains available. Cross-workspace and unknown-base requests
+return not found without disclosing resource existence.
+
+Configuration writes include `expectedUpdatedAt`. Subject replacement writes
+include `expectedRevision`, using the revision returned by the state endpoint.
+Stale values fail with HTTP 409 and perform neither the domain mutation nor its
+audit append. Successful writes replace one subject's assignment set and append
+the SEC-001 event in the same metadata transaction.
+
+New configurations still default to disabled, so installing the migration
+cannot change Community behavior.
 
 Before route enforcement is added, each protected route must supply:
 

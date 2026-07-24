@@ -131,3 +131,20 @@ is touched.
 | `packages/nocodb/src/modules/internal-extensions/permissions/internal-base-permission.service.ts` | Effective-permission read model | None | Low | PERM-001 |
 | `packages/nocodb/src/modules/internal-extensions/migrations/nc_internal_002_base_permissions.ts` | Independent permission tables | None | Medium | PERM-001 |
 | `packages/nocodb/src/modules/internal-extensions/migrations/nc_internal_002_base_permissions.spec.ts` | Migration and uniqueness tests | None | Low | PERM-001 |
+
+## Stage 6 base-permission administration API files
+
+Owner for every file below: Internal Platform Team. No commercial entitlement
+or permission implementation is touched.
+
+| Path | Purpose | Upstream files touched | Merge risk | Feature IDs |
+| --- | --- | --- | --- | --- |
+| `docs/internal-fork/internal-base-permission-administration-api.md` | Administration contract, authorization, and concurrency guide | None | Low | PERM-002, SEC-001 |
+| `docs/internal-fork/stage-6-base-permission-admin-api-report.md` | Delivery and validation record | None | Low | PERM-002 |
+| `packages/nocodb/src/modules/internal-extensions/permissions/internal-base-permission-identity.provider.ts` | Authoritative identity-provider contract | None | Low | PERM-002 |
+| `packages/nocodb/src/modules/internal-extensions/permissions/community-base-permission-identity.provider.ts` | Community base and membership lookup adapter | Community `Base` and `User` models | Medium | PERM-002 |
+| `packages/nocodb/src/modules/internal-extensions/permissions/internal-base-permission-admin.types.ts` | Read and optimistic-write API contracts | None | Low | PERM-002 |
+| `packages/nocodb/src/modules/internal-extensions/permissions/internal-base-permission-admin.service.ts` | Central administration authorization and audited mutations | SEC-001 service | Medium | PERM-002, SEC-001 |
+| `packages/nocodb/src/modules/internal-extensions/permissions/internal-base-permissions.controller.ts` | Authenticated internal v1 HTTP routes | Existing Community guards | Medium | PERM-002 |
+| `packages/nocodb/src/modules/internal-extensions/permissions/internal-base-permission-admin.service.spec.ts` | Authorization, audit, isolation, and concurrency tests | None | Low | PERM-002, FND-003, SEC-001 |
+| `packages/nocodb/src/modules/internal-extensions/permissions/internal-base-permissions.controller.Integration.spec.ts` | Direct HTTP authentication and route-contract tests | None | Low | PERM-002, FND-003 |
