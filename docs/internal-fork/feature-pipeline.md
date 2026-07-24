@@ -116,7 +116,8 @@ changing entitlements. Any intentional difference must be documented.
 - Dependencies: TOK-001, PERM-001, FND-003.
 - Data-model changes: Normalized scope and boundary tables or a versioned JSON
   representation, selected during architecture review.
-- Backend work: Token strategy, policy service, scope decorators, audit hooks.
+- Backend work: Central policy and scope catalog complete; token strategy,
+  production owner-permission adapter, scope decorators, and audit hooks remain.
 - Frontend work: Shared labels for administration UI.
 - Security considerations: Default deny; intersection of actor permissions,
   token scopes, and tenant allowlists.
@@ -124,10 +125,12 @@ changing entitlements. Any intentional difference must be documented.
   revoked, disabled user, direct route, and scope-version mismatch.
 - Documentation required: Scope catalog and policy algorithm.
 - Estimated complexity: XL
-- Status: Architecture
+- Status: Backend
 - Acceptance criteria: Typed centralized scopes; boundaries enforced; route
   tests cover success and denial.
-- Known risks: Scope explosion and inconsistent resource extraction.
+- Known risks: Scope explosion, stale owner-permission facts, and inconsistent
+  resource extraction. HTTP integration remains blocked on PERM-001, rate
+  limiting, and PostgreSQL migration coverage.
 
 ### TOK-003 — Token administration UI
 

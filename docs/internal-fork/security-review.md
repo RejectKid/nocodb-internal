@@ -122,3 +122,18 @@ requires a reason.
 - [x] Fixture lifecycle and future database cleanup rules are documented.
 - [ ] PostgreSQL-backed cross-tenant fixtures are required before token route
       integration is released.
+
+## Stage 3 token-policy evidence
+
+- [x] Every typed token scope is covered through the production centralized
+      policy and a duplicate-free catalog.
+- [x] Policy decisions distinguish authentication failures from authorization
+      failures without exposing secrets.
+- [x] Revoked, expired, unsupported-version, malformed-scope, missing,
+      mismatched, blocked, deleted, and disabled owners fail closed.
+- [x] Current owner permission and token scope must both authorize the action.
+- [x] Workspace/base targets require complete context and explicit allowlist
+      membership; empty allowlists are not wildcards.
+- [x] All seven shared API-token matrix cases execute through production policy.
+- [ ] Production owner-permission lookup, route resource extraction, token
+      verification rate limiting, and HTTP denial tests remain release blockers.

@@ -1,7 +1,7 @@
 # Fine-grained internal API token design
 
-Status: TOK-001 persistence and issuance complete; not exposed or accepted for
-route authentication.
+Status: TOK-001 persistence/issuance and the TOK-002 centralized policy slice
+complete; not exposed or accepted for route authentication.
 
 ## Boundary
 
@@ -92,10 +92,12 @@ the token ID/prefix but never the supplied value.
 
 ## Scope model
 
-The skeleton defines typed scope values for data, schema, views, members,
-documents, tokens, webhooks, and administration. Controllers will use typed
-decorators or policy requests. They must not contain raw scope-string
-comparisons.
+The internal scope enum and catalog define data, schema, views, members,
+documents, tokens, webhooks, and administration capabilities.
+`DefaultInternalTokenAuthorizationPolicy` is the only production component that
+compares required scope, current owner permission, and tenant boundaries.
+Controllers will use future typed decorators and resource adapters; they must
+not contain raw scope-string comparisons.
 
 Effective authorization is the intersection of:
 
@@ -107,6 +109,15 @@ Effective authorization is the intersection of:
 - resource state.
 
 Missing context or an unknown operation denies.
+
+The policy target is a discriminated instance, workspace, or base context.
+Workspace targets require an explicit workspace ID present in the token
+allowlist. Base targets require explicit workspace and base IDs present in both
+allowlists. Empty allowlists never mean unrestricted access. Instance targets
+do not reinterpret empty tenant lists as global tenant access.
+
+Policy lifecycle, owner, failure classification, and evaluation order are
+documented in `internal-api-token-authorization.md`.
 
 ## Migration and rollback
 
@@ -124,7 +135,11 @@ remain active is not supported.
 
 - `InternalTokenHashingService`: generate, hash, verify
 - `InternalTokenAuthorizationPolicy`: centralized decision contract
+- `DefaultInternalTokenAuthorizationPolicy`: default-deny scope, owner, and
+  tenant-boundary implementation
 - `InternalApiTokenScope`: typed scope enum
+- `INTERNAL_API_TOKEN_SCOPE_CATALOG`: complete labels/families for future API
+  and UI projection
 - `InternalApiToken`: expiration/revocation model and hash-free summary
 - `InternalApiTokenRepository`: persistence and lifecycle contract
 - `KnexInternalApiTokenRepository`: portable storage codec, prefix lookup,
@@ -140,7 +155,7 @@ authentication strategy is delivered in TOK-001.
 - PostgreSQL and MySQL migration up/down in CI
 - verification rate limiting
 - malformed token and malformed stored-hash fuzz tests
-- current-user disabled/deleted denial
-- scope/boundary allow-deny route matrix
+- authentication strategy and current-user lookup
+- route metadata, resource extraction, and route-level allow/deny matrix
 - log, error, audit, telemetry, and browser-storage redaction
 - concurrent `last_used_at` throttling

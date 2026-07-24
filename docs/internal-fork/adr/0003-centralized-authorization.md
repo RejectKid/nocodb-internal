@@ -49,3 +49,9 @@ identity/token fixtures under
 covers authentication, permission, token scope/lifecycle, tenant boundary, and
 disabled-owner cases. Feature suites must supply a real route or centralized
 policy executor; the reference executor is limited to harness self-tests.
+
+Stage 3 supplies `DefaultInternalTokenAuthorizationPolicy` and executes all
+shared token cases through that production policy. The request contract makes
+owner state, current permissions, required scope, required owner permission,
+and instance/workspace/base target context explicit. HTTP adapters remain
+pending and must not weaken this contract.

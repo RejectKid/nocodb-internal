@@ -16,6 +16,8 @@ import { ScryptInternalTokenHashingService } from './api-tokens/scrypt-internal-
 import { InternalApiTokenRepository } from './api-tokens/internal-api-token.repository';
 import { KnexInternalApiTokenRepository } from './api-tokens/knex-internal-api-token.repository';
 import { InternalApiTokenIssuanceService } from './api-tokens/internal-api-token-issuance.service';
+import { InternalTokenAuthorizationPolicy } from './api-tokens/internal-token-authorization.policy';
+import { DefaultInternalTokenAuthorizationPolicy } from './api-tokens/default-internal-token-authorization.policy';
 
 @Module({
   imports: [NocoModule],
@@ -37,12 +39,17 @@ import { InternalApiTokenIssuanceService } from './api-tokens/internal-api-token
         new KnexInternalApiTokenRepository(metaService),
     },
     InternalApiTokenIssuanceService,
+    {
+      provide: InternalTokenAuthorizationPolicy,
+      useClass: DefaultInternalTokenAuthorizationPolicy,
+    },
   ],
   exports: [
     InternalFeatureRegistryService,
     InternalTokenHashingService,
     InternalApiTokenRepository,
     InternalApiTokenIssuanceService,
+    InternalTokenAuthorizationPolicy,
   ],
 })
 export class InternalExtensionsModule {}
