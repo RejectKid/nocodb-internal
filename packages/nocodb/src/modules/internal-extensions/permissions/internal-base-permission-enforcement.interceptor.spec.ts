@@ -24,6 +24,7 @@ import {
   NestInterceptor,
   Patch,
   Post,
+  SetMetadata,
   UseInterceptors,
 } from '@nestjs/common';
 import { APP_INTERCEPTOR, Reflector } from '@nestjs/core';
@@ -35,12 +36,14 @@ import { InternalBasePermission } from './internal-base-permission';
 import {
   INTERNAL_BASE_PERMISSION_METADATA,
   RequireInternalBasePermission,
+  RequireInternalBasePermissionFromRequest,
 } from './internal-base-permission-enforcement.decorator';
 import { InternalBasePermissionEnforcementInterceptor } from './internal-base-permission-enforcement.interceptor';
 import { InternalBasePermissionIdentityProvider } from './internal-base-permission-identity.provider';
 import { InternalBasePermissionRepository } from './internal-base-permission.repository';
 import { InternalBasePermissionService } from './internal-base-permission.service';
 import type { CallHandler, ExecutionContext } from '@nestjs/common';
+import { InternalPermissionRequestKind } from './internal-request-permission-resolver';
 
 @Injectable()
 class CommunityDenyInterceptor implements NestInterceptor {
@@ -88,6 +91,21 @@ class PermissionFixtureController {
   @RequireInternalBasePermission(InternalBasePermission.RECORDS_READ)
   @UseInterceptors(CommunityDenyInterceptor)
   communityDenied() {
+    return { allowed: true };
+  }
+
+  @Get('/community-acl-read')
+  @SetMetadata('scope', 'base')
+  @SetMetadata('permission', 'dataList')
+  communityAclRead() {
+    return { allowed: true };
+  }
+
+  @Post('/internal-operation')
+  @RequireInternalBasePermissionFromRequest(
+    InternalPermissionRequestKind.INTERNAL_API,
+  )
+  internalOperation() {
     return { allowed: true };
   }
 }
@@ -169,6 +187,10 @@ describe('InternalBasePermissionEnforcementInterceptor', () => {
       }
       if (req.headers['x-test-user'] === 'active') {
         req.user = { id: 'user-1' };
+      }
+      if (req.headers['x-test-public'] === 'true') {
+        req.context.is_public = true;
+        req.user = { isPublicBase: true };
       }
       next();
     });
@@ -302,6 +324,46 @@ describe('InternalBasePermissionEnforcementInterceptor', () => {
       .set('x-test-user', 'active')
       .expect(403);
     expect(permissionService.resolveMany).toHaveBeenCalled();
+  });
+
+  it('derives base-scoped permission requirements from Community ACL metadata', async () => {
+    await request(app.getHttpServer())
+      .get(
+        '/permission-fixture/workspaces/workspace-1/bases/base-1/community-acl-read',
+      )
+      .set('x-test-user', 'active')
+      .expect(200);
+
+    expect(permissionService.resolveMany).toHaveBeenCalledWith(
+      expect.anything(),
+      [InternalBasePermission.RECORDS_READ],
+    );
+  });
+
+  it('derives internal API operation permissions from the request', async () => {
+    await request(app.getHttpServer())
+      .post(
+        '/permission-fixture/workspaces/workspace-1/bases/base-1/internal-operation?operation=dataInsert',
+      )
+      .set('x-test-user', 'active')
+      .expect(201);
+
+    expect(permissionService.resolveMany).toHaveBeenCalledWith(
+      expect.anything(),
+      [InternalBasePermission.RECORDS_CREATE],
+    );
+  });
+
+  it('leaves public shared-base authorization to the Community share flow', async () => {
+    await request(app.getHttpServer())
+      .get(
+        '/permission-fixture/workspaces/workspace-1/bases/base-1/community-acl-read',
+      )
+      .set('x-test-public', 'true')
+      .expect(200);
+
+    expect(repository.getConfiguration).not.toHaveBeenCalled();
+    expect(permissionService.resolveMany).not.toHaveBeenCalled();
   });
 
   it('distinguishes missing authentication from authorization denial', async () => {
