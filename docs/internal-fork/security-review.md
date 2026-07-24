@@ -203,5 +203,21 @@ requires a reason.
 - [x] No commercial permission, entitlement, feature-flag, or license
       implementation is imported or modified.
 - [ ] File-specific controls remain required for attachment handling.
-- [ ] V1/alias, MCP, import/export, background-job, and realtime record paths
-      require equivalent enforcement before PERM-001 is Ready.
+- [x] V1, old-data, alias, bulk, calendar, relation, and nested record routes
+      are covered by the centralized Community ACL adapter.
+- [x] Internal API operations and batches derive typed permissions from the
+      operation contract before dispatch.
+- [x] MCP authentication resolves the actor before policy interception and MCP
+      record tools map to read/create/update/delete permissions.
+- [x] Import triggers require `base:import`; export enqueue requires
+      `base:export` and `records:read`.
+- [x] Base-scoped schema, view, member, base-token, and base operations map to
+      the corresponding typed permission families.
+- [x] Public share sessions remain governed by Community share authorization.
+- [x] Community realtime exposes broadcasts but no independent record mutation
+      entry point.
+- [ ] Raw attachment routes without authoritative record context require the
+      signed-delivery design in MODE-002.
+- [ ] Job workers should recheck authorization before final delivery so a
+      permission revoked after enqueue cannot release an export (SEC-002).
+- [ ] A reviewer must record formal sign-off before PERM-001 is marked Ready.

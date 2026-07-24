@@ -125,7 +125,7 @@ changing entitlements. Any intentional difference must be documented.
   revoked, disabled user, direct route, and scope-version mismatch.
 - Documentation required: Scope catalog and policy algorithm.
 - Estimated complexity: XL
-- Status: Backend
+- Status: Security Review
 - Acceptance criteria: Typed centralized scopes; boundaries enforced; route
   tests cover success and denial.
 - Known risks: Scope explosion, stale owner-permission facts, and inconsistent
@@ -176,16 +176,20 @@ changing entitlements. Any intentional difference must be documented.
   remains unchanged until base opt-in; resolution is deterministic.
 - Known risks: Conflicts with upstream role evolution.
 
-Backend progress: The independent tables, typed catalog, validated repository,
+Progress: The independent tables, typed catalog, validated repository,
 deterministic resolver, owner emergency access, and effective-permission read
 model and production Community-membership adapter are implemented. The
 administration API supplies audited configuration and assignment mutations;
-the complete Community V2 `DataTableController` family now enforces typed
-record read/create/update/delete permissions through an independently
-registered interceptor. The full Community V3 `Datav3Controller` family uses
-the same boundary, including conjunctive create-and-update authorization for
-upsert. V1/alias, MCP, background-job, remaining attachment, import/export, and
-realtime enforcement remain pending.
+the Community V1, alias, bulk, nested, V2, and V3 record families now enforce
+typed record permissions through an independently registered interceptor.
+The same centralized adapter covers base, schema, view, member, base-token,
+import, export, internal-operation, and MCP entry points. Upsert requires
+conjunctive create-and-update authorization, exports require both export and
+record-read permission, public-share behavior remains owned by Community
+authorization, and queued jobs are authorized before enqueue. Realtime record
+traffic is broadcast-only and exposes no separate mutation entry point.
+File-specific delivery controls and the reserved document permission family
+remain owned by MODE-002 and DOC-001 respectively.
 
 ### PERM-002 — Base permission UI
 

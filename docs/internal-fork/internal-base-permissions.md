@@ -1,7 +1,7 @@
 # Internal base permissions
 
-Status: Backend model, administration API, and V2/V3 record enforcement
-implemented (PERM-001, PERM-002)
+Status: Full base-permission HTTP/MCP enforcement implemented; security review
+pending (PERM-001, PERM-002)
 
 ## Boundary
 
@@ -150,5 +150,53 @@ Attachment upload is covered as a record update in this slice. Later attachment
 and file-preview work must add file-specific authorization, validation, and
 delivery controls without weakening this record permission.
 
-V1/alias APIs, MCP, imports/exports, other attachment paths, jobs, and realtime
-paths remain outside the completed V2/V3 slices.
+## Full Community-route enforcement
+
+The interceptor also adapts existing base-scoped Community ACL operation
+metadata through one independent, typed mapping table. This completes coverage
+without copying or changing Community or commercial policy implementations:
+
+- V1, old-data, alias, bulk-alias, calendar, relation, and nested record reads
+  and mutations map to the four `records:*` permissions;
+- table and column reads require `base:view`, while supported schema mutations
+  require `base:manage_schema`;
+- view, filter, sort, visibility, and view-column reads require `base:view`,
+  while their mutations require `base:manage_views`;
+- base membership and base-token operations require
+  `base:manage_members` and `base:manage_tokens`;
+- base reads and supported base mutations require `base:view` and `base:edit`;
+- import triggers require `base:import`;
+- export enqueue requires both `base:export` and `records:read`;
+- authenticated attachment download routes carrying authoritative record
+  context require `records:read`.
+
+Unknown Community ACL names intentionally remain governed only by the upstream
+ACL. The adapter considers only ACLs explicitly marked as base-scoped, so org
+and workspace operations cannot accidentally inherit a base policy.
+
+The generic internal API derives requirements from its operation name. A batch
+request evaluates the union of every mapped sub-operation before dispatch,
+which makes internal permission denial atomic for the batch. Community ACL
+continues to run for each sub-operation.
+
+MCP tool calls derive requirements from the tool name. MCP authentication runs
+in a guard before the permission interceptor, so the interceptor evaluates the
+same current user and base membership used by Community authorization.
+
+Public shared-base sessions remain under the existing Community share policy.
+Internal permission grants are user assignments and are deliberately not
+consulted for public identities.
+
+## Remaining adjacent security boundaries
+
+These items are intentionally assigned to later feature pipelines and do not
+weaken the base-scoped application routes above:
+
+- raw or temporary attachment delivery routes that lack authoritative
+  base/model/record context need signed file-delivery controls in MODE-002;
+- document permissions are reserved in the catalog but become enforceable with
+  the independent document model and adapters in DOC-001;
+- queued exports/imports are authorized at request/enqueue time; rechecking a
+  revoked permission at worker delivery time is a hardening item for SEC-002;
+- realtime sockets broadcast changes produced by authorized HTTP/service
+  operations and expose no separate record mutation command in Community.
