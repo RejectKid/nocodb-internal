@@ -180,7 +180,10 @@ Backend progress: The independent tables, typed catalog, validated repository,
 deterministic resolver, owner emergency access, and effective-permission read
 model and production Community-membership adapter are implemented. The
 administration API supplies audited configuration and assignment mutations;
-route-family enforcement remains pending.
+the complete Community V2 `DataTableController` family now enforces typed
+record read/create/update/delete permissions through an independently
+registered interceptor. V1/alias, V3, MCP, background-job, attachment,
+import/export, and realtime enforcement remain pending.
 
 ### PERM-002 — Base permission UI
 
