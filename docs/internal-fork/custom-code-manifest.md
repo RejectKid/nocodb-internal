@@ -181,3 +181,17 @@ or permission component is touched.
 | `packages/nc-gui/test/internal-extensions-browser/harness/nocodb-sdk.ts` | Minimal SDK values required by the isolated mounts | None | Low | PERM-002 |
 | `packages/nc-gui/test/internal-extensions-browser/internal-base-permissions.spec.ts` | Browser authorization and concurrency regressions | None | Low | PERM-002, FND-003 |
 | `docs/internal-fork/stage-8-base-permission-browser-security-report.md` | Delivery, test-boundary, and residual-risk record | None | Low | PERM-002 |
+
+## Stage 9 V2 record-permission enforcement files
+
+Owner for every file below: Internal Platform Team. No commercial entitlement
+or permission implementation is touched.
+
+| Path | Purpose | Upstream files touched | Merge risk | Feature IDs |
+| --- | --- | --- | --- | --- |
+| `docs/internal-fork/stage-9-v2-record-permission-enforcement-report.md` | Delivery, request-flow, validation, and residual-risk record | None | Low | PERM-001 |
+| `packages/nocodb/src/modules/internal-extensions/permissions/internal-base-permission-enforcement.decorator.ts` | Inert typed Community-route metadata | None | Low | PERM-001 |
+| `packages/nocodb/src/modules/internal-extensions/permissions/internal-base-permission-enforcement.interceptor.ts` | Capability-gated centralized route enforcement | Community request context and ACL ordering | Medium | PERM-001, FND-003 |
+| `packages/nocodb/src/modules/internal-extensions/permissions/internal-base-permission-enforcement.interceptor.spec.ts` | HTTP authorization and production metadata matrix | Community `DataTableController` import only | Low | PERM-001, FND-003 |
+| `packages/nocodb/src/modules/internal-extensions/internal-extensions.module.ts` | Conditional global-interceptor registration | Existing internal composition root | Low | PERM-001 |
+| `packages/nocodb/src/controllers/data-table.controller.ts` | Small typed metadata hooks for the full V2 record family | Self | Medium | PERM-001 |

@@ -1,6 +1,7 @@
 # Internal base permissions
 
-Status: Backend model and administration API implemented (PERM-001, PERM-002)
+Status: Backend model, administration API, and V2 record enforcement implemented
+(PERM-001, PERM-002)
 
 ## Boundary
 
@@ -89,7 +90,36 @@ administrator to review before saving again. Mutation controls are absent
 unless the API reports that the current actor has `base:manage_members`.
 Frontend visibility is explanatory only; the backend remains authoritative.
 
-Before route enforcement is added, each protected route must supply:
+## V2 record-route enforcement
+
+The Community `DataTableController` carries inert typed metadata for its full
+V2 route family. An interceptor registered only by `InternalExtensionsModule`
+maps operations as follows:
+
+- list, read, count, aggregate, bulk list, and nested list require
+  `records:read`;
+- insert requires `records:create`;
+- update, move, nested link/unlink, and nested copy/paste require
+  `records:update`;
+- delete requires `records:delete`.
+
+The nested copy/paste endpoint receives `records:update` for every operation
+because its shared contract can mutate links. This is intentionally more
+restrictive than trying to infer authorization from an untrusted request body.
+
+Community guards run before the internal interceptor, and the existing
+method-level Community ACL remains downstream. Therefore an internal allow
+cannot grant around a Community denial. When the independent capability is
+disabled, the metadata is inert. When a base has no enabled internal
+configuration, the centralized policy falls back and the Community ACL remains
+authoritative.
+
+Workspace and base identifiers come only from the authoritative request context
+populated by Community extraction middleware. URL parameters and request bodies
+are not used as tenant facts. Missing context, missing authentication, missing
+base membership, and internal denials fail closed before controller logic.
+
+Each additional route family must likewise supply:
 
 - current actor and membership facts;
 - the existing Community allow/deny decision;
@@ -97,4 +127,5 @@ Before route enforcement is added, each protected route must supply:
 - the one typed internal permission required by the operation.
 
 Direct API denial, cross-tenant, disabled-user, and owner recovery tests are
-required for each route family.
+required for each route family. V1/alias APIs, V3 APIs, MCP, imports/exports,
+attachments, jobs, and realtime paths remain outside this completed V2 slice.

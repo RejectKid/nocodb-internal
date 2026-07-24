@@ -162,3 +162,26 @@ requires a reason.
       component is changed by the browser-security slice.
 - [ ] A reviewer must record formal sign-off in Release evidence before
       PERM-002 is marked Ready.
+
+## PERM-001 V2 record-route enforcement evidence
+
+- [x] Every route in Community `DataTableController` has an explicit typed
+      read, create, update, or delete permission mapping.
+- [x] The enforcement interceptor is registered only by the independently
+      enabled internal module; disabled capability mode performs no identity or
+      policy lookup.
+- [x] A missing or disabled base configuration bypasses internal identity and
+      policy lookup so Community behavior remains unchanged until base opt-in.
+- [x] Existing Community guards and method-level ACL remain authoritative, and
+      an internal allow cannot grant around a Community denial.
+- [x] Tenant facts come from extracted request context rather than URL
+      parameters or request bodies.
+- [x] Missing authentication returns 401; missing membership, missing tenant
+      context, and policy denial return 403.
+- [x] HTTP tests cover all four record permission families, authoritative
+      tenant context, disabled capability fallback, direct denial, and
+      downstream Community denial.
+- [x] No commercial permission, feature flag, entitlement, or license
+      implementation is imported or modified.
+- [ ] V1/alias, V3, MCP, attachment, import/export, background-job, and realtime
+      record paths require equivalent enforcement before PERM-001 is Ready.

@@ -3,6 +3,7 @@
  * This module does not consume or modify commercial entitlement state.
  */
 import { Module } from '@nestjs/common';
+import { APP_INTERCEPTOR } from '@nestjs/core';
 import { NocoModule } from '~/modules/noco.module';
 import { GlobalGuard } from '~/guards/global/global.guard';
 import { MetaApiLimiterGuard } from '~/guards/meta-api-limiter.guard';
@@ -33,6 +34,7 @@ import { InternalBasePermissionIdentityProvider } from './permissions/internal-b
 import { CommunityBasePermissionIdentityProvider } from './permissions/community-base-permission-identity.provider';
 import { InternalBasePermissionAdminService } from './permissions/internal-base-permission-admin.service';
 import { InternalBasePermissionsController } from './permissions/internal-base-permissions.controller';
+import { InternalBasePermissionEnforcementInterceptor } from './permissions/internal-base-permission-enforcement.interceptor';
 
 @Module({
   imports: [NocoModule],
@@ -87,6 +89,10 @@ import { InternalBasePermissionsController } from './permissions/internal-base-p
       useClass: CommunityBasePermissionIdentityProvider,
     },
     InternalBasePermissionAdminService,
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: InternalBasePermissionEnforcementInterceptor,
+    },
   ],
   exports: [
     InternalFeatureRegistryService,

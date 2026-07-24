@@ -20,6 +20,10 @@ import { DataApiLimiterGuard } from '~/guards/data-api-limiter.guard';
 import { GlobalGuard } from '~/guards/global/global.guard';
 import { TenantContext } from '~/decorators/tenant-context.decorator';
 import { NcContext, NcRequest } from '~/interface/config';
+// Internal fork modification: inert route metadata for independently
+// implemented base-permission enforcement.
+import { InternalBasePermission } from '~/modules/internal-extensions/permissions/internal-base-permission';
+import { RequireInternalBasePermission } from '~/modules/internal-extensions/permissions/internal-base-permission-enforcement.decorator';
 
 @Controller()
 @UseGuards(DataApiLimiterGuard, GlobalGuard)
@@ -29,6 +33,7 @@ export class DataTableController {
   // todo: Handle the error case where view doesnt belong to model
   @Get('/api/v2/tables/:modelId/records')
   @Acl('dataList')
+  @RequireInternalBasePermission(InternalBasePermission.RECORDS_READ)
   async dataList(
     @TenantContext() context: NcContext,
     @Req() req: NcRequest,
@@ -54,6 +59,7 @@ export class DataTableController {
 
   @Get(['/api/v2/tables/:modelId/records/count'])
   @Acl('dataCount')
+  @RequireInternalBasePermission(InternalBasePermission.RECORDS_READ)
   async dataCount(
     @TenantContext() context: NcContext,
     @Req() req: NcRequest,
@@ -75,6 +81,7 @@ export class DataTableController {
   @Post(['/api/v2/tables/:modelId/records'])
   @HttpCode(200)
   @Acl('dataInsert')
+  @RequireInternalBasePermission(InternalBasePermission.RECORDS_CREATE)
   async dataInsert(
     @TenantContext() context: NcContext,
     @Req() req: NcRequest,
@@ -95,6 +102,7 @@ export class DataTableController {
 
   @Patch(['/api/v2/tables/:modelId/records'])
   @Acl('dataUpdate')
+  @RequireInternalBasePermission(InternalBasePermission.RECORDS_UPDATE)
   async dataUpdate(
     @TenantContext() context: NcContext,
     @Req() req: NcRequest,
@@ -113,6 +121,7 @@ export class DataTableController {
 
   @Delete(['/api/v2/tables/:modelId/records'])
   @Acl('dataDelete')
+  @RequireInternalBasePermission(InternalBasePermission.RECORDS_DELETE)
   async dataDelete(
     @TenantContext() context: NcContext,
     @Req() req: NcRequest,
@@ -131,6 +140,7 @@ export class DataTableController {
 
   @Get(['/api/v2/tables/:modelId/aggregate'])
   @Acl('dataAggregate')
+  @RequireInternalBasePermission(InternalBasePermission.RECORDS_READ)
   async dataAggregate(
     @TenantContext() context: NcContext,
     @Req() req: NcRequest,
@@ -148,6 +158,7 @@ export class DataTableController {
 
   @Post(['/api/v2/tables/:modelId/bulk/datalist'])
   @Acl('dataList')
+  @RequireInternalBasePermission(InternalBasePermission.RECORDS_READ)
   async bulkDataList(
     @TenantContext() context: NcContext,
     @Req() req: NcRequest,
@@ -165,6 +176,7 @@ export class DataTableController {
 
   @Get(['/api/v2/tables/:modelId/records/:rowId'])
   @Acl('dataRead')
+  @RequireInternalBasePermission(InternalBasePermission.RECORDS_READ)
   async dataRead(
     @TenantContext() context: NcContext,
     @Req() req: NcRequest,
@@ -184,6 +196,7 @@ export class DataTableController {
 
   @Post(['/api/v2/tables/:modelId/records/:rowId/move'])
   @Acl('dataUpdate')
+  @RequireInternalBasePermission(InternalBasePermission.RECORDS_UPDATE)
   async rowMove(
     @TenantContext() context: NcContext,
     @Req() req: NcRequest,
@@ -202,6 +215,7 @@ export class DataTableController {
 
   @Get(['/api/v2/tables/:modelId/links/:columnId/records/:rowId'])
   @Acl('nestedDataList')
+  @RequireInternalBasePermission(InternalBasePermission.RECORDS_READ)
   async nestedDataList(
     @TenantContext() context: NcContext,
     @Req() req: NcRequest,
@@ -223,6 +237,7 @@ export class DataTableController {
 
   @Post(['/api/v2/tables/:modelId/links/:columnId/records/:rowId'])
   @Acl('nestedDataLink')
+  @RequireInternalBasePermission(InternalBasePermission.RECORDS_UPDATE)
   async nestedLink(
     @TenantContext() context: NcContext,
     @Req() req: NcRequest,
@@ -260,6 +275,7 @@ export class DataTableController {
 
   @Delete(['/api/v2/tables/:modelId/links/:columnId/records/:rowId'])
   @Acl('nestedDataUnlink')
+  @RequireInternalBasePermission(InternalBasePermission.RECORDS_UPDATE)
   async nestedUnlink(
     @TenantContext() context: NcContext,
     @Req() req: NcRequest,
@@ -285,6 +301,7 @@ export class DataTableController {
   // todo: naming
   @Post(['/api/v2/tables/:modelId/links/:columnId/records'])
   @Acl('nestedDataListCopyPasteOrDeleteAll')
+  @RequireInternalBasePermission(InternalBasePermission.RECORDS_UPDATE)
   async nestedListCopyPasteOrDeleteAll(
     @TenantContext() context: NcContext,
     @Req() req: NcRequest,
@@ -312,6 +329,7 @@ export class DataTableController {
 
   @Post(['/api/v2/tables/:modelId/bulk/aggregate'])
   @Acl('dataAggregate')
+  @RequireInternalBasePermission(InternalBasePermission.RECORDS_READ)
   async bulkAggregate(
     @TenantContext() context: NcContext,
     @Req() req: NcRequest,
