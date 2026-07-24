@@ -29,10 +29,17 @@ import { KnexInternalAuditRepository } from './audit/knex-internal-audit.reposit
 import { InternalAuditRedactionService } from './audit/internal-audit-redaction.service';
 import { InternalAuditRequestContextAdapter } from './audit/internal-audit-request-context.adapter';
 import { InternalAuditService } from './audit/internal-audit.service';
+import { InternalBasePermissionIdentityProvider } from './permissions/internal-base-permission-identity.provider';
+import { CommunityBasePermissionIdentityProvider } from './permissions/community-base-permission-identity.provider';
+import { InternalBasePermissionAdminService } from './permissions/internal-base-permission-admin.service';
+import { InternalBasePermissionsController } from './permissions/internal-base-permissions.controller';
 
 @Module({
   imports: [NocoModule],
-  controllers: [InternalCapabilitiesController],
+  controllers: [
+    InternalCapabilitiesController,
+    InternalBasePermissionsController,
+  ],
   providers: [
     GlobalGuard,
     MetaApiLimiterGuard,
@@ -75,6 +82,11 @@ import { InternalAuditService } from './audit/internal-audit.service';
     InternalAuditRedactionService,
     InternalAuditRequestContextAdapter,
     InternalAuditService,
+    {
+      provide: InternalBasePermissionIdentityProvider,
+      useClass: CommunityBasePermissionIdentityProvider,
+    },
+    InternalBasePermissionAdminService,
   ],
   exports: [
     InternalFeatureRegistryService,
@@ -90,6 +102,8 @@ import { InternalAuditService } from './audit/internal-audit.service';
     InternalAuditRedactionService,
     InternalAuditRequestContextAdapter,
     InternalAuditService,
+    InternalBasePermissionIdentityProvider,
+    InternalBasePermissionAdminService,
   ],
 })
 export class InternalExtensionsModule {}

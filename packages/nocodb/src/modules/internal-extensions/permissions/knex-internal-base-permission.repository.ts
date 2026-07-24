@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import type { Knex } from 'knex';
 import type { MetaService } from '~/meta/meta.service';
 import {
   INTERNAL_BASE_PERMISSION_CONFIGS_TABLE,
@@ -56,10 +57,17 @@ export class KnexInternalBasePermissionRepository extends InternalBasePermission
   async getConfiguration(
     workspaceId: string,
     baseId: string,
+    transaction?: Knex.Transaction,
+    lockForUpdate = false,
   ): Promise<InternalBasePermissionConfiguration | null> {
-    const row = await this.configurationTable()
-      .where({ workspace_id: workspaceId, base_id: baseId })
-      .first();
+    const query = this.configurationTable(transaction).where({
+      workspace_id: workspaceId,
+      base_id: baseId,
+    });
+    if (lockForUpdate && transaction) {
+      query.forUpdate();
+    }
+    const row = await query.first();
     return row
       ? (configurationSchema.parse(row) as InternalBasePermissionConfiguration)
       : null;
@@ -67,8 +75,9 @@ export class KnexInternalBasePermissionRepository extends InternalBasePermission
 
   async upsertConfiguration(
     configuration: InternalBasePermissionConfiguration,
+    transaction?: Knex.Transaction,
   ): Promise<InternalBasePermissionConfiguration> {
-    await this.configurationTable()
+    await this.configurationTable(transaction)
       .insert(configuration)
       .onConflict('base_id')
       .merge({
@@ -77,10 +86,15 @@ export class KnexInternalBasePermissionRepository extends InternalBasePermission
         updated_at: configuration.updated_at,
         updated_by: configuration.updated_by,
       });
-    const stored = await this.getConfiguration(
-      configuration.workspace_id,
-      configuration.base_id,
-    );
+    const row = await this.configurationTable(transaction)
+      .where({
+        workspace_id: configuration.workspace_id,
+        base_id: configuration.base_id,
+      })
+      .first();
+    const stored = row
+      ? (configurationSchema.parse(row) as InternalBasePermissionConfiguration)
+      : null;
     if (!stored) {
       throw new Error('Internal base permission configuration was not stored');
     }
@@ -90,8 +104,9 @@ export class KnexInternalBasePermissionRepository extends InternalBasePermission
   async listGrants(
     workspaceId: string,
     baseId: string,
+    transaction?: Knex.Transaction,
   ): Promise<InternalBasePermissionGrant[]> {
-    const rows = await this.grantTable()
+    const rows = await this.grantTable(transaction)
       .where({ workspace_id: workspaceId, base_id: baseId })
       .orderBy('id');
     return rows.map(
@@ -101,8 +116,9 @@ export class KnexInternalBasePermissionRepository extends InternalBasePermission
 
   async upsertGrant(
     grant: InternalBasePermissionGrant,
+    transaction?: Knex.Transaction,
   ): Promise<InternalBasePermissionGrant> {
-    await this.grantTable()
+    await this.grantTable(transaction)
       .insert(grant)
       .onConflict(['base_id', 'subject_type', 'subject_id', 'permission'])
       .merge({
@@ -110,7 +126,7 @@ export class KnexInternalBasePermissionRepository extends InternalBasePermission
         updated_at: grant.updated_at,
         updated_by: grant.updated_by,
       });
-    const row = await this.grantTable()
+    const row = await this.grantTable(transaction)
       .where({
         base_id: grant.base_id,
         subject_type: grant.subject_type,
@@ -121,15 +137,56 @@ export class KnexInternalBasePermissionRepository extends InternalBasePermission
     return grantSchema.parse(row) as InternalBasePermissionGrant;
   }
 
-  private configurationTable() {
-    return this.metaService.knexConnection(
-      INTERNAL_BASE_PERMISSION_CONFIGS_TABLE,
+  async replaceSubjectGrants(
+    workspaceId: string,
+    baseId: string,
+    subjectType: InternalPermissionSubjectType,
+    subjectId: string,
+    grants: InternalBasePermissionGrant[],
+    transaction?: Knex.Transaction,
+  ): Promise<InternalBasePermissionGrant[]> {
+    if (
+      grants.some(
+        (grant) =>
+          grant.workspace_id !== workspaceId ||
+          grant.base_id !== baseId ||
+          grant.subject_type !== subjectType ||
+          grant.subject_id !== subjectId,
+      )
+    ) {
+      throw new Error('Internal base permission grant context mismatch');
+    }
+    await this.grantTable(transaction)
+      .where({
+        workspace_id: workspaceId,
+        base_id: baseId,
+        subject_type: subjectType,
+        subject_id: subjectId,
+      })
+      .delete();
+    if (grants.length) {
+      await this.grantTable(transaction).insert(grants);
+    }
+    const rows = await this.grantTable(transaction)
+      .where({
+        workspace_id: workspaceId,
+        base_id: baseId,
+        subject_type: subjectType,
+        subject_id: subjectId,
+      })
+      .orderBy('permission');
+    return rows.map(
+      (row) => grantSchema.parse(row) as InternalBasePermissionGrant,
     );
   }
 
-  private grantTable() {
-    return this.metaService.knexConnection(
-      INTERNAL_BASE_PERMISSION_GRANTS_TABLE,
-    );
+  private configurationTable(transaction?: Knex.Transaction) {
+    const connection = transaction ?? this.metaService.knexConnection;
+    return connection(INTERNAL_BASE_PERMISSION_CONFIGS_TABLE);
+  }
+
+  private grantTable(transaction?: Knex.Transaction) {
+    const connection = transaction ?? this.metaService.knexConnection;
+    return connection(INTERNAL_BASE_PERMISSION_GRANTS_TABLE);
   }
 }
