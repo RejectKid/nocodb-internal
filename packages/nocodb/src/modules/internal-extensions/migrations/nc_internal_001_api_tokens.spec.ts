@@ -28,8 +28,13 @@ describe('nc_internal_001_api_tokens migration', () => {
         'display_name',
         'token_hash',
         'token_prefix',
+        'hash_version',
+        'created_at',
+        'created_by',
         'expires_at',
+        'last_used_at',
         'revoked_at',
+        'revoked_by',
         'allowed_workspace_ids',
         'allowed_base_ids',
         'scopes',
@@ -38,6 +43,8 @@ describe('nc_internal_001_api_tokens migration', () => {
       ]),
     );
     expect(columns).not.toHaveProperty('token');
+    expect(columns.token_hash.nullable).toBe(false);
+    expect(columns.token_prefix.nullable).toBe(false);
 
     await down(knex);
     expect(await knex.schema.hasTable(INTERNAL_API_TOKENS_TABLE)).toBe(false);

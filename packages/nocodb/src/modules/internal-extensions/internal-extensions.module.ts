@@ -6,12 +6,16 @@ import { Module } from '@nestjs/common';
 import { NocoModule } from '~/modules/noco.module';
 import { GlobalGuard } from '~/guards/global/global.guard';
 import { MetaApiLimiterGuard } from '~/guards/meta-api-limiter.guard';
+import { MetaService } from '~/meta/meta.service';
 import { InternalCapabilitiesController } from './feature-registry/internal-capabilities.controller';
 import { InternalAuthenticatedGuard } from './authorization/internal-authenticated.guard';
 import { InternalFeatureRegistryService } from './feature-registry/internal-feature-registry.service';
 import { InternalExtensionsMigrationService } from './migrations/internal-extensions-migration.service';
 import { InternalTokenHashingService } from './api-tokens/internal-token-hashing.service';
 import { ScryptInternalTokenHashingService } from './api-tokens/scrypt-internal-token-hashing.service';
+import { InternalApiTokenRepository } from './api-tokens/internal-api-token.repository';
+import { KnexInternalApiTokenRepository } from './api-tokens/knex-internal-api-token.repository';
+import { InternalApiTokenIssuanceService } from './api-tokens/internal-api-token-issuance.service';
 
 @Module({
   imports: [NocoModule],
@@ -26,7 +30,19 @@ import { ScryptInternalTokenHashingService } from './api-tokens/scrypt-internal-
       provide: InternalTokenHashingService,
       useClass: ScryptInternalTokenHashingService,
     },
+    {
+      provide: InternalApiTokenRepository,
+      inject: [MetaService],
+      useFactory: (metaService: MetaService) =>
+        new KnexInternalApiTokenRepository(metaService),
+    },
+    InternalApiTokenIssuanceService,
   ],
-  exports: [InternalFeatureRegistryService, InternalTokenHashingService],
+  exports: [
+    InternalFeatureRegistryService,
+    InternalTokenHashingService,
+    InternalApiTokenRepository,
+    InternalApiTokenIssuanceService,
+  ],
 })
 export class InternalExtensionsModule {}

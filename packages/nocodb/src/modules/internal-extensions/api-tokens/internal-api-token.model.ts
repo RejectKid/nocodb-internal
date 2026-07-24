@@ -20,6 +20,11 @@ export interface InternalApiTokenRecord {
   metadata: Record<string, unknown> | null;
 }
 
+export type InternalApiTokenSummary = Omit<
+  InternalApiTokenRecord,
+  'token_hash' | 'hash_version'
+>;
+
 export class InternalApiToken {
   constructor(readonly record: InternalApiTokenRecord) {}
 
@@ -36,5 +41,14 @@ export class InternalApiToken {
 
   canAuthenticateAt(now: Date): boolean {
     return !this.isRevoked() && !this.isExpiredAt(now);
+  }
+
+  toSummary(): InternalApiTokenSummary {
+    const {
+      token_hash: _tokenHash,
+      hash_version: _hashVersion,
+      ...summary
+    } = this.record;
+    return summary;
   }
 }
