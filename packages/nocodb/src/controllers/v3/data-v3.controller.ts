@@ -31,6 +31,10 @@ import { DataV3Service } from '~/services/v3/data-v3.service';
 import { DataTableService } from '~/services/data-table.service';
 import { DataAttachmentV3Service } from '~/services/v3/data-attachment-v3.service';
 import { PREFIX_APIV3_DATA } from '~/constants/controllers';
+// Internal fork modification: inert route metadata for independently
+// implemented base-permission enforcement.
+import { InternalBasePermission } from '~/modules/internal-extensions/permissions/internal-base-permission';
+import { RequireInternalBasePermission } from '~/modules/internal-extensions/permissions/internal-base-permission-enforcement.decorator';
 
 @Controller()
 @UseGuards(DataApiLimiterGuard, GlobalGuard)
@@ -43,6 +47,7 @@ export class Datav3Controller {
 
   @Get(`${PREFIX_APIV3_DATA}/:modelId/records`)
   @Acl('dataList')
+  @RequireInternalBasePermission(InternalBasePermission.RECORDS_READ)
   async dataList(
     @TenantContext() context: NcContext,
     @Req() req: NcRequest,
@@ -67,6 +72,10 @@ export class Datav3Controller {
   @Post(`${PREFIX_APIV3_DATA}/:modelId/records/upsert`)
   @HttpCode(200)
   @Acl('dataUpsert')
+  @RequireInternalBasePermission(
+    InternalBasePermission.RECORDS_CREATE,
+    InternalBasePermission.RECORDS_UPDATE,
+  )
   async dataUpsert(
     @TenantContext() context: NcContext,
     @Req() req: NcRequest,
@@ -84,6 +93,7 @@ export class Datav3Controller {
   @Post(`${PREFIX_APIV3_DATA}/:modelId/records`)
   @HttpCode(200)
   @Acl('dataInsert')
+  @RequireInternalBasePermission(InternalBasePermission.RECORDS_CREATE)
   async dataInsert(
     @TenantContext() context: NcContext,
     @Req() req: NcRequest,
@@ -106,6 +116,7 @@ export class Datav3Controller {
   )
   @HttpCode(200)
   @Acl('dataUpdate')
+  @RequireInternalBasePermission(InternalBasePermission.RECORDS_UPDATE)
   async dataAttachmentUpload(
     @TenantContext() context: NcContext,
     @Req() req: NcRequest,
@@ -128,6 +139,7 @@ export class Datav3Controller {
 
   @Delete(`${PREFIX_APIV3_DATA}/:modelId/records`)
   @Acl('dataDelete')
+  @RequireInternalBasePermission(InternalBasePermission.RECORDS_DELETE)
   async dataDelete(
     @TenantContext() context: NcContext,
     @Req() req: NcRequest,
@@ -149,6 +161,7 @@ export class Datav3Controller {
 
   @Patch(`${PREFIX_APIV3_DATA}/:modelId/records`)
   @Acl('dataUpdate')
+  @RequireInternalBasePermission(InternalBasePermission.RECORDS_UPDATE)
   async dataUpdate(
     @TenantContext() context: NcContext,
     @Req() req: NcRequest,
@@ -168,6 +181,7 @@ export class Datav3Controller {
 
   @Get(`${PREFIX_APIV3_DATA}/:modelId/links/:columnId/:rowId`)
   @Acl('nestedDataList')
+  @RequireInternalBasePermission(InternalBasePermission.RECORDS_READ)
   async nestedDataList(
     @TenantContext() context: NcContext,
     @Req() req: NcRequest,
@@ -191,6 +205,7 @@ export class Datav3Controller {
   @Post(`${PREFIX_APIV3_DATA}/:modelId/links/:columnId/:rowId`)
   @HttpCode(200)
   @Acl('nestedDataLink')
+  @RequireInternalBasePermission(InternalBasePermission.RECORDS_UPDATE)
   async nestedLink(
     @TenantContext() context: NcContext,
     @Req() req: NcRequest,
@@ -222,6 +237,7 @@ export class Datav3Controller {
 
   @Delete(`${PREFIX_APIV3_DATA}/:modelId/links/:columnId/:rowId`)
   @Acl('nestedDataUnlink')
+  @RequireInternalBasePermission(InternalBasePermission.RECORDS_UPDATE)
   async nestedUnlink(
     @TenantContext() context: NcContext,
     @Req() req: NcRequest,
@@ -253,6 +269,7 @@ export class Datav3Controller {
 
   @Get(`${PREFIX_APIV3_DATA}/:modelId/count`)
   @Acl('dataCount')
+  @RequireInternalBasePermission(InternalBasePermission.RECORDS_READ)
   async dataCount(
     @TenantContext() context: NcContext,
     @Req() req: NcRequest,
@@ -273,6 +290,7 @@ export class Datav3Controller {
   }
   @Get(`${PREFIX_APIV3_DATA}/:modelId/records/:rowId`)
   @Acl('dataRead')
+  @RequireInternalBasePermission(InternalBasePermission.RECORDS_READ)
   async dataRead(
     @TenantContext() context: NcContext,
     @Req() req: NcRequest,

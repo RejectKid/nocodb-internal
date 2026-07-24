@@ -34,14 +34,14 @@ export class InternalBasePermissionEnforcementInterceptor
     executionContext: ExecutionContext,
     next: CallHandler,
   ): Promise<Observable<unknown>> {
-    const permission = this.reflector.getAllAndOverride<
-      InternalBasePermission | undefined
+    const permissions = this.reflector.getAllAndOverride<
+      readonly InternalBasePermission[] | undefined
     >(INTERNAL_BASE_PERMISSION_METADATA, [
       executionContext.getHandler(),
       executionContext.getClass(),
     ]);
     if (
-      !permission ||
+      !permissions?.length ||
       !this.featureRegistry.getCapabilities().features.basePermissions
     ) {
       return next.handle();
@@ -73,7 +73,7 @@ export class InternalBasePermissionEnforcementInterceptor
       baseId,
       userId,
     );
-    const decision = await this.permissionService.resolve(
+    const decisions = await this.permissionService.resolveMany(
       {
         workspaceId,
         baseId,
@@ -84,9 +84,9 @@ export class InternalBasePermissionEnforcementInterceptor
         // still cannot bypass a Community ACL denial.
         communityAllowed: () => true,
       },
-      permission,
+      permissions,
     );
-    if (!decision.allowed) {
+    if (decisions.some((decision) => !decision.allowed)) {
       throw new ForbiddenException('Internal base permission denied');
     }
 

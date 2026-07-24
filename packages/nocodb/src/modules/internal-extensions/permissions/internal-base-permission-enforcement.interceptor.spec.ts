@@ -75,6 +75,15 @@ class PermissionFixtureController {
     return { allowed: true };
   }
 
+  @Post('/upsert')
+  @RequireInternalBasePermission(
+    InternalBasePermission.RECORDS_CREATE,
+    InternalBasePermission.RECORDS_UPDATE,
+  )
+  upsert() {
+    return { allowed: true };
+  }
+
   @Get('/community-denied')
   @RequireInternalBasePermission(InternalBasePermission.RECORDS_READ)
   @UseInterceptors(CommunityDenyInterceptor)
@@ -108,12 +117,14 @@ describe('InternalBasePermissionEnforcementInterceptor', () => {
     }),
   };
   const permissionService = {
-    resolve: jest.fn().mockResolvedValue({
-      allowed: true,
-      mode: 'internal',
-      source: 'role',
-      reason: 'role_allow',
-    }),
+    resolveMany: jest.fn().mockResolvedValue([
+      {
+        allowed: true,
+        mode: 'internal',
+        source: 'role',
+        reason: 'role_allow',
+      },
+    ]),
   };
 
   beforeAll(async () => {
@@ -178,12 +189,14 @@ describe('InternalBasePermissionEnforcementInterceptor', () => {
       base_id: 'authoritative-base',
       enabled: true,
     });
-    permissionService.resolve.mockResolvedValue({
-      allowed: true,
-      mode: 'internal',
-      source: 'role',
-      reason: 'role_allow',
-    });
+    permissionService.resolveMany.mockResolvedValue([
+      {
+        allowed: true,
+        mode: 'internal',
+        source: 'role',
+        reason: 'role_allow',
+      },
+    ]);
   });
 
   afterAll(async () => {
@@ -217,15 +230,15 @@ describe('InternalBasePermissionEnforcementInterceptor', () => {
         'authoritative-workspace',
         'authoritative-base',
       );
-      expect(permissionService.resolve).toHaveBeenCalledWith(
+      expect(permissionService.resolveMany).toHaveBeenCalledWith(
         expect.objectContaining({
           workspaceId: 'authoritative-workspace',
           baseId: 'authoritative-base',
           communityAllowed: expect.any(Function),
         }),
-        permission,
+        [permission],
       );
-      const input = permissionService.resolve.mock.calls[0][0];
+      const input = permissionService.resolveMany.mock.calls[0][0];
       expect(input.communityAllowed(permission)).toBe(true);
     },
   );
@@ -238,7 +251,7 @@ describe('InternalBasePermissionEnforcementInterceptor', () => {
       .expect(200);
     expect(identityProvider.resolve).not.toHaveBeenCalled();
     expect(repository.getConfiguration).not.toHaveBeenCalled();
-    expect(permissionService.resolve).not.toHaveBeenCalled();
+    expect(permissionService.resolveMany).not.toHaveBeenCalled();
   });
 
   it('preserves Community behavior until the base explicitly opts in', async () => {
@@ -249,7 +262,36 @@ describe('InternalBasePermissionEnforcementInterceptor', () => {
       .expect(200);
     expect(repository.getConfiguration).toHaveBeenCalled();
     expect(identityProvider.resolve).not.toHaveBeenCalled();
-    expect(permissionService.resolve).not.toHaveBeenCalled();
+    expect(permissionService.resolveMany).not.toHaveBeenCalled();
+  });
+
+  it('requires every permission attached to a compound operation', async () => {
+    permissionService.resolveMany.mockResolvedValue([
+      {
+        allowed: true,
+        mode: 'internal',
+        source: 'role',
+        reason: 'role_allow',
+      },
+      {
+        allowed: false,
+        mode: 'internal',
+        source: 'role',
+        reason: 'role_deny',
+      },
+    ]);
+
+    await request(app.getHttpServer())
+      .post('/permission-fixture/workspaces/workspace-1/bases/base-1/upsert')
+      .set('x-test-user', 'active')
+      .expect(403);
+    expect(permissionService.resolveMany).toHaveBeenCalledWith(
+      expect.anything(),
+      [
+        InternalBasePermission.RECORDS_CREATE,
+        InternalBasePermission.RECORDS_UPDATE,
+      ],
+    );
   });
 
   it('cannot grant around a downstream Community ACL denial', async () => {
@@ -259,7 +301,7 @@ describe('InternalBasePermissionEnforcementInterceptor', () => {
       )
       .set('x-test-user', 'active')
       .expect(403);
-    expect(permissionService.resolve).toHaveBeenCalled();
+    expect(permissionService.resolveMany).toHaveBeenCalled();
   });
 
   it('distinguishes missing authentication from authorization denial', async () => {
@@ -267,12 +309,14 @@ describe('InternalBasePermissionEnforcementInterceptor', () => {
       .get('/permission-fixture/workspaces/workspace-1/bases/base-1/read')
       .expect(401);
 
-    permissionService.resolve.mockResolvedValue({
-      allowed: false,
-      mode: 'internal',
-      source: 'role',
-      reason: 'role_deny',
-    });
+    permissionService.resolveMany.mockResolvedValue([
+      {
+        allowed: false,
+        mode: 'internal',
+        source: 'role',
+        reason: 'role_deny',
+      },
+    ]);
     await request(app.getHttpServer())
       .get('/permission-fixture/workspaces/workspace-1/bases/base-1/read')
       .set('x-test-user', 'active')
@@ -289,17 +333,19 @@ describe('InternalBasePermissionEnforcementInterceptor', () => {
     }
     expect(identityProvider.resolve).not.toHaveBeenCalled();
     expect(repository.getConfiguration).not.toHaveBeenCalled();
-    expect(permissionService.resolve).not.toHaveBeenCalled();
+    expect(permissionService.resolveMany).not.toHaveBeenCalled();
   });
 
   it('denies an authenticated user missing from the authoritative base', async () => {
     identityProvider.resolve.mockResolvedValue(null);
-    permissionService.resolve.mockResolvedValue({
-      allowed: false,
-      mode: 'internal',
-      source: 'authentication',
-      reason: 'anonymous',
-    });
+    permissionService.resolveMany.mockResolvedValue([
+      {
+        allowed: false,
+        mode: 'internal',
+        source: 'authentication',
+        reason: 'anonymous',
+      },
+    ]);
 
     await request(app.getHttpServer())
       .get('/permission-fixture/workspaces/workspace-1/bases/base-1/read')
@@ -310,29 +356,32 @@ describe('InternalBasePermissionEnforcementInterceptor', () => {
 
 describe('DataTableController internal permission metadata', () => {
   const reflector = new Reflector();
-  const expected = new Map<keyof DataTableController, InternalBasePermission>([
-    ['dataList', InternalBasePermission.RECORDS_READ],
-    ['dataCount', InternalBasePermission.RECORDS_READ],
-    ['dataInsert', InternalBasePermission.RECORDS_CREATE],
-    ['dataUpdate', InternalBasePermission.RECORDS_UPDATE],
-    ['dataDelete', InternalBasePermission.RECORDS_DELETE],
-    ['dataAggregate', InternalBasePermission.RECORDS_READ],
-    ['bulkDataList', InternalBasePermission.RECORDS_READ],
-    ['dataRead', InternalBasePermission.RECORDS_READ],
-    ['rowMove', InternalBasePermission.RECORDS_UPDATE],
-    ['nestedDataList', InternalBasePermission.RECORDS_READ],
-    ['nestedLink', InternalBasePermission.RECORDS_UPDATE],
-    ['nestedUnlink', InternalBasePermission.RECORDS_UPDATE],
-    ['nestedListCopyPasteOrDeleteAll', InternalBasePermission.RECORDS_UPDATE],
-    ['bulkAggregate', InternalBasePermission.RECORDS_READ],
+  const expected = new Map<
+    keyof DataTableController,
+    readonly InternalBasePermission[]
+  >([
+    ['dataList', [InternalBasePermission.RECORDS_READ]],
+    ['dataCount', [InternalBasePermission.RECORDS_READ]],
+    ['dataInsert', [InternalBasePermission.RECORDS_CREATE]],
+    ['dataUpdate', [InternalBasePermission.RECORDS_UPDATE]],
+    ['dataDelete', [InternalBasePermission.RECORDS_DELETE]],
+    ['dataAggregate', [InternalBasePermission.RECORDS_READ]],
+    ['bulkDataList', [InternalBasePermission.RECORDS_READ]],
+    ['dataRead', [InternalBasePermission.RECORDS_READ]],
+    ['rowMove', [InternalBasePermission.RECORDS_UPDATE]],
+    ['nestedDataList', [InternalBasePermission.RECORDS_READ]],
+    ['nestedLink', [InternalBasePermission.RECORDS_UPDATE]],
+    ['nestedUnlink', [InternalBasePermission.RECORDS_UPDATE]],
+    ['nestedListCopyPasteOrDeleteAll', [InternalBasePermission.RECORDS_UPDATE]],
+    ['bulkAggregate', [InternalBasePermission.RECORDS_READ]],
   ]);
 
-  it.each([...expected])('maps %s to %s', (methodName, permission) => {
+  it.each([...expected])('maps %s to %s', (methodName, permissions) => {
     expect(
       reflector.get(
         INTERNAL_BASE_PERMISSION_METADATA,
         DataTableController.prototype[methodName],
       ),
-    ).toBe(permission);
+    ).toEqual(permissions);
   });
 });

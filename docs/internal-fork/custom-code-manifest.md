@@ -195,3 +195,18 @@ or permission implementation is touched.
 | `packages/nocodb/src/modules/internal-extensions/permissions/internal-base-permission-enforcement.interceptor.spec.ts` | HTTP authorization and production metadata matrix | Community `DataTableController` import only | Low | PERM-001, FND-003 |
 | `packages/nocodb/src/modules/internal-extensions/internal-extensions.module.ts` | Conditional global-interceptor registration | Existing internal composition root | Low | PERM-001 |
 | `packages/nocodb/src/controllers/data-table.controller.ts` | Small typed metadata hooks for the full V2 record family | Self | Medium | PERM-001 |
+
+## Stage 10 V3 record-permission enforcement files
+
+Owner for every file below: Internal Platform Team. No commercial entitlement
+or permission implementation is touched.
+
+| Path | Purpose | Upstream files touched | Merge risk | Feature IDs |
+| --- | --- | --- | --- | --- |
+| `docs/internal-fork/stage-10-v3-record-permission-enforcement-report.md` | V3 mapping, security boundary, validation, and residual-risk record | None | Low | PERM-001 |
+| `packages/nocodb/src/controllers/v3/data-v3.controller.ts` | Typed metadata hooks for the full V3 record family | Self | Medium | PERM-001 |
+| `packages/nocodb/src/modules/internal-extensions/permissions/internal-base-permission-v3-enforcement.spec.ts` | V3 production metadata and compound-resolution tests | Community `Datav3Controller` import only | Low | PERM-001, FND-003 |
+| `packages/nocodb/src/modules/internal-extensions/permissions/internal-base-permission-enforcement.decorator.ts` | Supports one or more typed permission requirements | None | Low | PERM-001 |
+| `packages/nocodb/src/modules/internal-extensions/permissions/internal-base-permission-enforcement.interceptor.ts` | Denies when any required permission fails | Community request context and ACL ordering | Medium | PERM-001, FND-003 |
+| `packages/nocodb/src/modules/internal-extensions/permissions/internal-base-permission-enforcement.interceptor.spec.ts` | Compound HTTP allow/deny regression | None | Low | PERM-001, FND-003 |
+| `packages/nocodb/src/modules/internal-extensions/permissions/internal-base-permission.service.ts` | Evaluates multiple permissions from one fetched read set | None | Low | PERM-001 |

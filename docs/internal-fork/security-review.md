@@ -183,5 +183,25 @@ requires a reason.
       downstream Community denial.
 - [x] No commercial permission, feature flag, entitlement, or license
       implementation is imported or modified.
-- [ ] V1/alias, V3, MCP, attachment, import/export, background-job, and realtime
+- [ ] V1/alias, MCP, attachment, import/export, background-job, and realtime
       record paths require equivalent enforcement before PERM-001 is Ready.
+
+## PERM-001 V3 record-route enforcement evidence
+
+- [x] Every route in Community `Datav3Controller` has explicit typed permission
+      metadata.
+- [x] Upsert requires both `records:create` and `records:update`; one denial
+      denies the complete operation.
+- [x] Compound decisions reuse one fetched configuration and grant set.
+- [x] V3 attachment upload requires `records:update` and does not bypass the
+      centralized record policy.
+- [x] Production metadata tests cover list, read, count, insert, upsert, update,
+      delete, nested link/list/unlink, and attachment upload.
+- [x] HTTP tests prove compound permission denial stops before controller logic.
+- [x] Capability-disabled and base-unconfigured Community fallbacks continue
+      through the same interceptor regressions.
+- [x] No commercial permission, entitlement, feature-flag, or license
+      implementation is imported or modified.
+- [ ] File-specific controls remain required for attachment handling.
+- [ ] V1/alias, MCP, import/export, background-job, and realtime record paths
+      require equivalent enforcement before PERM-001 is Ready.

@@ -1,7 +1,7 @@
 # Internal base permissions
 
-Status: Backend model, administration API, and V2 record enforcement implemented
-(PERM-001, PERM-002)
+Status: Backend model, administration API, and V2/V3 record enforcement
+implemented (PERM-001, PERM-002)
 
 ## Boundary
 
@@ -127,5 +127,28 @@ Each additional route family must likewise supply:
 - the one typed internal permission required by the operation.
 
 Direct API denial, cross-tenant, disabled-user, and owner recovery tests are
-required for each route family. V1/alias APIs, V3 APIs, MCP, imports/exports,
-attachments, jobs, and realtime paths remain outside this completed V2 slice.
+required for each route family.
+
+## V3 record-route enforcement
+
+The same inert metadata and capability-gated interceptor protect the full
+Community `Datav3Controller` surface:
+
+- list, read, count, and nested list require `records:read`;
+- insert requires `records:create`;
+- update, nested link/unlink, and base64 attachment upload require
+  `records:update`;
+- delete requires `records:delete`;
+- upsert requires both `records:create` and `records:update`.
+
+Compound requirements are evaluated from one fetched configuration/grant set,
+and every decision must allow the operation. Requiring both permissions for
+upsert avoids trying to predict from an untrusted payload whether each record
+will insert or update.
+
+Attachment upload is covered as a record update in this slice. Later attachment
+and file-preview work must add file-specific authorization, validation, and
+delivery controls without weakening this record permission.
+
+V1/alias APIs, MCP, imports/exports, other attachment paths, jobs, and realtime
+paths remain outside the completed V2/V3 slices.

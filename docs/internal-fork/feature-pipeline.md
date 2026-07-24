@@ -182,8 +182,10 @@ model and production Community-membership adapter are implemented. The
 administration API supplies audited configuration and assignment mutations;
 the complete Community V2 `DataTableController` family now enforces typed
 record read/create/update/delete permissions through an independently
-registered interceptor. V1/alias, V3, MCP, background-job, attachment,
-import/export, and realtime enforcement remain pending.
+registered interceptor. The full Community V3 `Datav3Controller` family uses
+the same boundary, including conjunctive create-and-update authorization for
+upsert. V1/alias, MCP, background-job, remaining attachment, import/export, and
+realtime enforcement remain pending.
 
 ### PERM-002 — Base permission UI
 

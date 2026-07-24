@@ -10,5 +10,9 @@ export const INTERNAL_BASE_PERMISSION_METADATA =
  * enabled.
  */
 export const RequireInternalBasePermission = (
-  permission: InternalBasePermission,
-) => SetMetadata(INTERNAL_BASE_PERMISSION_METADATA, permission);
+  ...permissions: [InternalBasePermission, ...InternalBasePermission[]]
+) =>
+  SetMetadata(
+    INTERNAL_BASE_PERMISSION_METADATA,
+    Object.freeze([...permissions]),
+  );
