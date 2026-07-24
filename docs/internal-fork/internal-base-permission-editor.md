@@ -1,6 +1,6 @@
 # Internal base-permission editor
 
-Status: Frontend implemented; browser security regression pending
+Status: Security Review
 
 ## Location and boundary
 
@@ -50,5 +50,16 @@ The frontend contract suite verifies:
 - permission-gated mutation state;
 - 409 detection.
 
-A browser-level test covering a direct API denial despite hidden controls is
-still required before moving PERM-002 to Security Review.
+The isolated Playwright suite mounts the production editor and base-settings
+shell with deterministic Community-compatible adapters. It verifies:
+
+- unauthorized users receive a no-access state with no mutation controls;
+- a direct mutation request still receives HTTP 403;
+- authorized writes include the current optimistic revision;
+- disabling the independent capability removes the settings entry;
+- HTTP 409 reloads state and presents a review warning without retrying the
+  mutation.
+
+The HTTP middleware is a browser contract boundary, not a substitute for the
+backend controller and policy suites. Those suites remain authoritative for
+authentication, tenant isolation, and server-side authorization.

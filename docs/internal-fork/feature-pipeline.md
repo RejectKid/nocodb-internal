@@ -180,7 +180,7 @@ Backend progress: The independent tables, typed catalog, validated repository,
 deterministic resolver, owner emergency access, and effective-permission read
 model and production Community-membership adapter are implemented. The
 administration API supplies audited configuration and assignment mutations;
-route-family enforcement and the visual editor remain pending.
+route-family enforcement remains pending.
 
 ### PERM-002 — Base permission UI
 
@@ -196,13 +196,15 @@ route-family enforcement and the visual editor remain pending.
   denial, and audit generation.
 - Documentation required: Administrator guide.
 - Estimated complexity: L
-- Status: Testing
+- Status: Security Review
 - Progress: Authenticated state, configuration, and subject-assignment
   endpoints are implemented with server-side authorization, owner recovery,
   atomic SEC-001 events, tenant isolation, and optimistic concurrency. An
   isolated General base-settings editor now distinguishes direct users from
   inherited roles, explains effective sources, and reloads stale writes. A
-  browser-level security regression remains before Security Review.
+  browser regression mounts the real editor and settings shell to verify
+  capability gating, hidden unauthorized controls, direct-request denial,
+  revision-bearing writes, and stale-write recovery.
 - Acceptance criteria: Effective sources are visible; changes validate and
   audit; only authorized administrators can save.
 - Known risks: Matrix usability and inherited-role ambiguity.

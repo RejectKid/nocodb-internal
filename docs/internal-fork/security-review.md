@@ -137,3 +137,28 @@ requires a reason.
 - [x] All seven shared API-token matrix cases execute through production policy.
 - [ ] Production owner-permission lookup, route resource extraction, token
       verification rate limiting, and HTTP denial tests remain release blockers.
+
+## PERM-002 base-permission administration evidence
+
+- [x] Existing Community authentication guards protect every administration
+      route; authorization is independently enforced by the centralized
+      internal base-permission service.
+- [x] Backend tests distinguish anonymous authentication failure from
+      authenticated authorization denial and cover authorized success.
+- [x] Cross-workspace and cross-base identities fail closed without disclosing
+      permission state.
+- [x] Administration mutations and their SEC-001 audit events commit
+      atomically, and audit summaries exclude secrets and request bodies.
+- [x] Optimistic revisions prevent silent lost updates.
+- [x] The browser suite mounts the production editor and verifies that
+      unauthorized controls remain hidden while a direct mutation is denied.
+- [x] The browser suite verifies independent capability disablement removes the
+      settings entry without consulting commercial entitlements.
+- [x] The browser suite verifies stale writes reload state, warn the
+      administrator, and are not automatically retried.
+- [x] Playwright is pinned in the GUI workspace and its lockfile change is
+      isolated to the existing package version.
+- [x] No migration, commercial entitlement file, or commercial permission
+      component is changed by the browser-security slice.
+- [ ] A reviewer must record formal sign-off in Release evidence before
+      PERM-002 is marked Ready.

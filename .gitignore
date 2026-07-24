@@ -17,6 +17,8 @@ app/tests/coverage/
 .bower-*/
 .idea/
 coverage/
+test-results/
+playwright-report/
 
 # MEAN.js app and assets
 # ======================
