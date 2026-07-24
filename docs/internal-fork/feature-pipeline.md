@@ -171,10 +171,15 @@ changing entitlements. Any intentional difference must be documented.
   disabled user, and Community fallback.
 - Documentation required: Resolution algorithm and emergency-access policy.
 - Estimated complexity: XL
-- Status: Proposed
+- Status: Backend
 - Acceptance criteria: All listed permissions are enforced; Community behavior
   remains unchanged until base opt-in; resolution is deterministic.
 - Known risks: Conflicts with upstream role evolution.
+
+Backend progress: The independent tables, typed catalog, validated repository,
+deterministic resolver, owner emergency access, and effective-permission read
+model are implemented. Production Community-membership adapters, route
+enforcement, audited mutations, and UI remain pending.
 
 ### PERM-002 — Base permission UI
 

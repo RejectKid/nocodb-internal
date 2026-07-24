@@ -1,0 +1,76 @@
+import { Injectable } from '@nestjs/common';
+import {
+  INTERNAL_BASE_PERMISSIONS,
+  type InternalBasePermission,
+} from './internal-base-permission';
+import { InternalBasePermissionPolicy } from './internal-base-permission.policy';
+import type {
+  InternalBasePermissionActor,
+  InternalBasePermissionDecision,
+} from './internal-base-permission.policy';
+import { InternalBasePermissionRepository } from './internal-base-permission.repository';
+
+export interface ResolveInternalBasePermissionInput {
+  workspaceId: string;
+  baseId: string;
+  actor: InternalBasePermissionActor | null;
+  communityAllowed: (permission: InternalBasePermission) => boolean;
+}
+
+export interface InternalEffectiveBasePermission {
+  permission: InternalBasePermission;
+  allowed: boolean;
+  mode: InternalBasePermissionDecision['mode'];
+  source: InternalBasePermissionDecision['source'];
+  reason: string;
+}
+
+@Injectable()
+export class InternalBasePermissionService {
+  constructor(
+    private readonly repository: InternalBasePermissionRepository,
+    private readonly policy: InternalBasePermissionPolicy,
+  ) {}
+
+  async resolve(
+    input: ResolveInternalBasePermissionInput,
+    permission: InternalBasePermission,
+  ): Promise<InternalBasePermissionDecision> {
+    const [configuration, grants] = await Promise.all([
+      this.repository.getConfiguration(input.workspaceId, input.baseId),
+      this.repository.listGrants(input.workspaceId, input.baseId),
+    ]);
+
+    return this.policy.evaluate({
+      workspaceId: input.workspaceId,
+      baseId: input.baseId,
+      permission,
+      actor: input.actor,
+      configuration,
+      grants,
+      communityAllowed: input.communityAllowed(permission),
+    });
+  }
+
+  async resolveAll(
+    input: ResolveInternalBasePermissionInput,
+  ): Promise<InternalEffectiveBasePermission[]> {
+    const [configuration, grants] = await Promise.all([
+      this.repository.getConfiguration(input.workspaceId, input.baseId),
+      this.repository.listGrants(input.workspaceId, input.baseId),
+    ]);
+
+    return INTERNAL_BASE_PERMISSIONS.map((permission) => ({
+      permission,
+      ...this.policy.evaluate({
+        workspaceId: input.workspaceId,
+        baseId: input.baseId,
+        permission,
+        actor: input.actor,
+        configuration,
+        grants,
+        communityAllowed: input.communityAllowed(permission),
+      }),
+    }));
+  }
+}

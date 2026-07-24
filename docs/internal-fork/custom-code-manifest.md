@@ -88,3 +88,26 @@ No license controller/service, entitlement loader, paid feature flag, EE
 overlay, existing API-token model/table/strategy, existing gated
 fine-grained-token migration, `useEeConfig`, or license UI file is modified by
 this manifest.
+
+## Stage 4 base-permission model files
+
+Owner for every file below: Internal Platform Team. No upstream commercial file
+is touched.
+
+| Path | Purpose | Upstream files touched | Merge risk | Feature IDs |
+| --- | --- | --- | --- | --- |
+| `docs/internal-fork/internal-base-permissions.md` | Resolution and rollout design | None | Low | PERM-001 |
+| `docs/internal-fork/stage-4-base-permission-model-report.md` | Delivery and validation record | None | Low | PERM-001 |
+| `packages/nocodb/src/modules/internal-extensions/permissions/internal-base-permission.ts` | Typed permission catalog | None | Low | PERM-001 |
+| `packages/nocodb/src/modules/internal-extensions/permissions/community-base-membership.adapter.ts` | Community effective-role fact adapter | Community `User.getWithRoles` result | Medium | PERM-001 |
+| `packages/nocodb/src/modules/internal-extensions/permissions/community-base-membership.adapter.spec.ts` | Effective-role, owner, and lifecycle mapping tests | None | Low | PERM-001 |
+| `packages/nocodb/src/modules/internal-extensions/permissions/internal-base-permission.model.ts` | Configuration and assignment models | None | Low | PERM-001 |
+| `packages/nocodb/src/modules/internal-extensions/permissions/internal-base-permission.repository.ts` | Persistence contract | None | Low | PERM-001 |
+| `packages/nocodb/src/modules/internal-extensions/permissions/knex-internal-base-permission.repository.ts` | Validated metadata persistence | Metadata connection | Medium | PERM-001 |
+| `packages/nocodb/src/modules/internal-extensions/permissions/knex-internal-base-permission.repository.spec.ts` | Persistence, isolation, update, and corruption tests | SQLite test connection | Low | PERM-001 |
+| `packages/nocodb/src/modules/internal-extensions/permissions/internal-base-permission.policy.ts` | Central policy contract | None | Low | PERM-001 |
+| `packages/nocodb/src/modules/internal-extensions/permissions/default-internal-base-permission.policy.ts` | Deterministic default policy | None | Low | PERM-001 |
+| `packages/nocodb/src/modules/internal-extensions/permissions/default-internal-base-permission.policy.spec.ts` | Resolution and denial tests | None | Low | PERM-001, FND-003 |
+| `packages/nocodb/src/modules/internal-extensions/permissions/internal-base-permission.service.ts` | Effective-permission read model | None | Low | PERM-001 |
+| `packages/nocodb/src/modules/internal-extensions/migrations/nc_internal_002_base_permissions.ts` | Independent permission tables | None | Medium | PERM-001 |
+| `packages/nocodb/src/modules/internal-extensions/migrations/nc_internal_002_base_permissions.spec.ts` | Migration and uniqueness tests | None | Low | PERM-001 |
