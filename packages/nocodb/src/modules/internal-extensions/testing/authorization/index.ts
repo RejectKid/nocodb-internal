@@ -2,3 +2,4 @@ export * from './authorization-regression-matrix.loader';
 export * from './internal-authorization-fixtures';
 export * from './internal-authorization-harness.types';
 export * from './internal-authorization-matrix.runner';
+export * from './internal-token-policy.matrix.executor';

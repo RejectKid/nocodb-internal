@@ -30,6 +30,8 @@ It provides:
 - a framework-neutral runner that distinguishes `401` authentication failures,
   `403` authorization failures, and successful `2xx` results;
 - case selection for smaller feature-specific suites;
+- a Stage 3 executor that maps shared token cases into the production
+  `DefaultInternalTokenAuthorizationPolicy`;
 - an HTTP test against the unchanged Community cache-delete controller route.
 
 No fixture contains or returns a plaintext token value.
@@ -65,6 +67,11 @@ revocation, cross-base, cross-workspace, and disabled-owner cases.
 
 Do not use the reference executor as evidence that a production route is
 secure. It exists only to self-test the matrix and runner.
+
+`internal-token-policy.matrix.executor.ts` is valid evidence for the centralized
+policy itself because it invokes the production policy implementation. It is
+not route evidence; token-enabled controllers must still supply an executor
+that makes direct HTTP requests.
 
 ## Shared case catalog
 
