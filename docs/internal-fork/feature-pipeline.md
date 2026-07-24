@@ -530,10 +530,15 @@ enforcement, audited mutations, and UI remain pending.
   failure atomicity, and access control.
 - Documentation required: Event catalog and retention.
 - Estimated complexity: L
-- Status: Proposed
+- Status: Backend
 - Acceptance criteria: Every named mutation emits the required safe fields and
   never records plaintext tokens.
 - Known risks: Partial audit on failed transactions.
+
+Backend progress: The independent table, typed catalog, recursive redaction,
+tenant-bounded repository, request-context adapter, and atomic mutation/audit
+helper are implemented. Feature-owned mutation hooks, authorized read APIs,
+retention automation, and frontend views remain pending.
 
 ### SEC-002 — Authorization regression matrix
 

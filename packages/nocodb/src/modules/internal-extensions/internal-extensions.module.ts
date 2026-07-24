@@ -24,6 +24,11 @@ import { InternalBasePermissionPolicy } from './permissions/internal-base-permis
 import { DefaultInternalBasePermissionPolicy } from './permissions/default-internal-base-permission.policy';
 import { InternalBasePermissionService } from './permissions/internal-base-permission.service';
 import { CommunityBaseMembershipAdapter } from './permissions/community-base-membership.adapter';
+import { InternalAuditRepository } from './audit/internal-audit.repository';
+import { KnexInternalAuditRepository } from './audit/knex-internal-audit.repository';
+import { InternalAuditRedactionService } from './audit/internal-audit-redaction.service';
+import { InternalAuditRequestContextAdapter } from './audit/internal-audit-request-context.adapter';
+import { InternalAuditService } from './audit/internal-audit.service';
 
 @Module({
   imports: [NocoModule],
@@ -61,6 +66,15 @@ import { CommunityBaseMembershipAdapter } from './permissions/community-base-mem
     },
     InternalBasePermissionService,
     CommunityBaseMembershipAdapter,
+    {
+      provide: InternalAuditRepository,
+      inject: [MetaService],
+      useFactory: (metaService: MetaService) =>
+        new KnexInternalAuditRepository(metaService),
+    },
+    InternalAuditRedactionService,
+    InternalAuditRequestContextAdapter,
+    InternalAuditService,
   ],
   exports: [
     InternalFeatureRegistryService,
@@ -72,6 +86,10 @@ import { CommunityBaseMembershipAdapter } from './permissions/community-base-mem
     InternalBasePermissionPolicy,
     InternalBasePermissionService,
     CommunityBaseMembershipAdapter,
+    InternalAuditRepository,
+    InternalAuditRedactionService,
+    InternalAuditRequestContextAdapter,
+    InternalAuditService,
   ],
 })
 export class InternalExtensionsModule {}
