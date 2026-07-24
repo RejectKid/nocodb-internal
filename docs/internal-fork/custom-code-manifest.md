@@ -89,6 +89,26 @@ overlay, existing API-token model/table/strategy, existing gated
 fine-grained-token migration, `useEeConfig`, or license UI file is modified by
 this manifest.
 
+## Stage 5 internal security audit files
+
+Owner for every file below: Internal Platform Team. No upstream commercial file
+is touched.
+
+| Path | Purpose | Upstream files touched | Merge risk | Feature IDs |
+| --- | --- | --- | --- | --- |
+| `docs/internal-fork/internal-security-audit-events.md` | Event, redaction, atomicity, and retention design | None | Low | SEC-001 |
+| `docs/internal-fork/stage-5-security-audit-foundation-report.md` | Delivery and validation record | None | Low | SEC-001 |
+| `packages/nocodb/src/modules/internal-extensions/audit/internal-audit-event.ts` | Typed action, actor, and resource catalog | None | Low | SEC-001 |
+| `packages/nocodb/src/modules/internal-extensions/audit/internal-audit-event.model.ts` | Event and context contracts | None | Low | SEC-001 |
+| `packages/nocodb/src/modules/internal-extensions/audit/internal-audit-redaction.service.ts` | Recursive secret redaction | None | Medium | SEC-001 |
+| `packages/nocodb/src/modules/internal-extensions/audit/internal-audit-request-context.adapter.ts` | Bounded request-context extraction | Community request context | Medium | SEC-001 |
+| `packages/nocodb/src/modules/internal-extensions/audit/internal-audit.repository.ts` | Append, bounded-read, and transaction contract | None | Low | SEC-001 |
+| `packages/nocodb/src/modules/internal-extensions/audit/knex-internal-audit.repository.ts` | Validated metadata persistence | Metadata connection | Medium | SEC-001 |
+| `packages/nocodb/src/modules/internal-extensions/audit/internal-audit.service.ts` | Event preparation and atomic mutation helper | None | Medium | SEC-001 |
+| `packages/nocodb/src/modules/internal-extensions/audit/*.spec.ts` | Redaction, context, persistence, isolation, and atomicity tests | SQLite test connection | Low | SEC-001 |
+| `packages/nocodb/src/modules/internal-extensions/migrations/nc_internal_003_audit_events.ts` | Independent audit table and indexes | None | Medium | SEC-001 |
+| `packages/nocodb/src/modules/internal-extensions/migrations/nc_internal_003_audit_events.spec.ts` | Migration and rollback tests | None | Low | SEC-001 |
+
 ## Stage 4 base-permission model files
 
 Owner for every file below: Internal Platform Team. No upstream commercial file
