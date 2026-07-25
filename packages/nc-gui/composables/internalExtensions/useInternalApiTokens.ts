@@ -13,6 +13,7 @@ export interface InternalApiTokenSummary {
   created_at: string
   expires_at: string | null
   last_used_at: string | null
+  disabled_at: string | null
   revoked_at: string | null
   allowed_workspace_ids: string[]
   allowed_base_ids: string[]
@@ -44,6 +45,7 @@ export interface IssuedInternalApiToken {
 export interface InternalApiTokenClient {
   get<T>(url: string): Promise<{ data: T }>
   post<T>(url: string, body: unknown): Promise<{ data: T }>
+  patch<T>(url: string, body: unknown): Promise<{ data: T }>
   delete<T>(url: string): Promise<{ data: T }>
 }
 
@@ -78,6 +80,34 @@ export async function revokeInternalApiToken(
   return response.data
 }
 
+export async function updateInternalApiToken(
+  client: InternalApiTokenClient,
+  workspaceId: string,
+  baseId: string,
+  tokenId: string,
+  draft: InternalApiTokenDraft,
+) {
+  const response = await client.patch<InternalApiTokenSummary>(
+    `${internalApiTokenPath(workspaceId, baseId)}/${encodeURIComponent(tokenId)}`,
+    draft,
+  )
+  return response.data
+}
+
+export async function setInternalApiTokenEnabled(
+  client: InternalApiTokenClient,
+  workspaceId: string,
+  baseId: string,
+  tokenId: string,
+  enabled: boolean,
+) {
+  const response = await client.patch<InternalApiTokenSummary>(
+    `${internalApiTokenPath(workspaceId, baseId)}/${encodeURIComponent(tokenId)}/status`,
+    { enabled },
+  )
+  return response.data
+}
+
 export function internalApiTokenErrorStatus(error: unknown) {
   if (!error || typeof error !== 'object') return
   const response = (error as { response?: { status?: unknown } }).response
@@ -86,6 +116,7 @@ export function internalApiTokenErrorStatus(error: unknown) {
 
 export function tokenLifecycle(token: InternalApiTokenSummary, now = Date.now()) {
   if (token.revoked_at) return 'revoked'
+  if (token.disabled_at) return 'disabled'
   if (token.expires_at && new Date(token.expires_at).getTime() <= now) return 'expired'
   return 'active'
 }

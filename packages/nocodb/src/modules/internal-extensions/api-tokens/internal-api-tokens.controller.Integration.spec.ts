@@ -56,6 +56,14 @@ describe('InternalApiTokensController HTTP integration', () => {
       token: { id: 'token-1' },
       value: 'shown-once',
     }),
+    update: jest.fn().mockResolvedValue({
+      id: 'token-1',
+      display_name: 'Renamed',
+    }),
+    setEnabled: jest.fn().mockResolvedValue({
+      id: 'token-1',
+      disabled_at: '2026-07-24T12:00:00.000Z',
+    }),
     revoke: jest.fn().mockResolvedValue({
       id: 'token-1',
       revoked_at: '2026-07-24T13:00:00.000Z',
@@ -123,6 +131,26 @@ describe('InternalApiTokensController HTTP integration', () => {
       .delete(`${path}/token-1`)
       .set('x-internal-test-user', 'active')
       .expect(200);
+    await request(app.getHttpServer())
+      .patch(`${path}/token-1`)
+      .set('x-internal-test-user', 'active')
+      .send({
+        displayName: 'Renamed',
+        allowedWorkspaceIds: ['workspace-1'],
+        allowedBaseIds: ['base-1'],
+        scopes: ['documents:read'],
+      })
+      .expect(200)
+      .expect({ id: 'token-1', display_name: 'Renamed' });
+    await request(app.getHttpServer())
+      .patch(`${path}/token-1/status`)
+      .set('x-internal-test-user', 'active')
+      .send({ enabled: false })
+      .expect(200)
+      .expect({
+        id: 'token-1',
+        disabled_at: '2026-07-24T12:00:00.000Z',
+      });
     expect(adminService.create).toHaveBeenCalledWith(
       expect.anything(),
       'workspace-1',

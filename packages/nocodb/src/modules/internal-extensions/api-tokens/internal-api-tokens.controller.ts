@@ -4,6 +4,7 @@ import {
   Delete,
   Get,
   Param,
+  Patch,
   Post,
   Req,
   UseGuards,
@@ -14,7 +15,10 @@ import { MetaApiLimiterGuard } from '~/guards/meta-api-limiter.guard';
 import { InternalAuthenticatedGuard } from '../authorization/internal-authenticated.guard';
 import { InternalAuditRequestContextAdapter } from '../audit/internal-audit-request-context.adapter';
 import { InternalBasePermission } from '../permissions/internal-base-permission';
-import type { CreateInternalApiTokenAdminRequest } from './internal-api-token-admin.types';
+import type {
+  CreateInternalApiTokenAdminRequest,
+  UpdateInternalApiTokenAdminRequest,
+} from './internal-api-token-admin.types';
 import { InternalApiTokenAdminService } from './internal-api-token-admin.service';
 import { InternalApiTokenScope } from './internal-api-token-scope';
 import { InternalTokenAuthenticationGuard } from './internal-token-authentication.guard';
@@ -71,6 +75,52 @@ export class InternalApiTokensController {
       workspaceId,
       baseId,
       body,
+      this.actor(request, workspaceId, baseId),
+    );
+  }
+
+  @Patch('/:tokenId')
+  @RequireInternalTokenScope(
+    InternalApiTokenScope.TOKENS_WRITE,
+    'base',
+    InternalBasePermission.BASE_MANAGE_TOKENS,
+  )
+  update(
+    @Param('workspaceId') workspaceId: string,
+    @Param('baseId') baseId: string,
+    @Param('tokenId') tokenId: string,
+    @Body() body: UpdateInternalApiTokenAdminRequest,
+    @Req() request: NcRequest,
+  ) {
+    return this.adminService.update(
+      request.context,
+      workspaceId,
+      baseId,
+      tokenId,
+      body,
+      this.actor(request, workspaceId, baseId),
+    );
+  }
+
+  @Patch('/:tokenId/status')
+  @RequireInternalTokenScope(
+    InternalApiTokenScope.TOKENS_WRITE,
+    'base',
+    InternalBasePermission.BASE_MANAGE_TOKENS,
+  )
+  setEnabled(
+    @Param('workspaceId') workspaceId: string,
+    @Param('baseId') baseId: string,
+    @Param('tokenId') tokenId: string,
+    @Body() body: { enabled: boolean },
+    @Req() request: NcRequest,
+  ) {
+    return this.adminService.setEnabled(
+      request.context,
+      workspaceId,
+      baseId,
+      tokenId,
+      body.enabled === true,
       this.actor(request, workspaceId, baseId),
     );
   }

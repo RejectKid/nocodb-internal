@@ -12,8 +12,8 @@ if ($PSVersionTable.PSVersion.Major -lt 7) {
 }
 
 $nodeVersion = [version]((node --version).TrimStart('v'))
-if ($nodeVersion.Major -ne 22) {
-  throw "Node.js 22 is required; found $nodeVersion. Install Node 22 LTS or put the portable Node 22 directory first on PATH."
+if ($nodeVersion.Major -lt 22) {
+  throw "Node.js 22 or newer is required; found $nodeVersion."
 }
 
 if (Test-Path -LiteralPath $environmentFile) {
@@ -47,11 +47,8 @@ foreach ($entry in $defaults.GetEnumerator()) {
 }
 
 Set-Location -LiteralPath $repositoryRoot
-corepack enable
-corepack prepare pnpm@10.28.0 --activate
-
 if ($Bootstrap -or !(Test-Path -LiteralPath (Join-Path $repositoryRoot 'node_modules'))) {
-  pnpm run bootstrap
+  corepack pnpm run bootstrap
 }
 
 node scripts/internal-fork/dev.mjs

@@ -62,6 +62,18 @@ export class InternalOpenApiService {
         get: this.operation('List fine-grained tokens', 'tokens:read'),
         post: this.operation('Create a fine-grained token', 'tokens:write'),
       },
+      '/api/internal/v1/workspaces/{workspaceId}/bases/{baseId}/tokens/{tokenId}':
+        {
+          patch: this.operation('Update a fine-grained token', 'tokens:write'),
+          delete: this.operation('Revoke a fine-grained token', 'tokens:write'),
+        },
+      '/api/internal/v1/workspaces/{workspaceId}/bases/{baseId}/tokens/{tokenId}/status':
+        {
+          patch: this.operation(
+            'Disable or re-enable a fine-grained token',
+            'tokens:write',
+          ),
+        },
       '/api/internal/v1/workspaces/{workspaceId}/bases/{baseId}/permissions': {
         get: this.operation('Read base permissions', 'admin:read'),
       },
@@ -92,6 +104,24 @@ export class InternalOpenApiService {
             'data:update',
           ),
         },
+      '/api/internal/v1/workspaces/{workspaceId}/bases/{baseId}/models/{modelId}/records/{recordId}/discussion/{commentId}':
+        {
+          patch: this.operation(
+            'Edit a record discussion comment',
+            'data:update',
+          ),
+          delete: this.operation(
+            'Delete a record discussion comment',
+            'data:update',
+          ),
+        },
+      '/api/internal/v1/workspaces/{workspaceId}/bases/{baseId}/models/{modelId}/records/{recordId}/discussion/{commentId}/resolution':
+        {
+          patch: this.operation(
+            'Resolve or reopen a record discussion thread',
+            'data:update',
+          ),
+        },
       '/api/internal/v1/workspaces/{workspaceId}/bases/{baseId}/documents': {
         get: this.operation('List discoverable documents', 'documents:read'),
         post: this.operation('Create a document', 'documents:write'),
@@ -114,10 +144,32 @@ export class InternalOpenApiService {
         {
           get: this.operation('List document revisions', 'documents:read'),
         },
+      '/api/internal/v1/workspaces/{workspaceId}/bases/{baseId}/documents/{documentId}/revisions/{revisionId}/restore':
+        {
+          post: this.operation(
+            'Restore a document revision',
+            'documents:write',
+          ),
+        },
       '/api/internal/v1/workspaces/{workspaceId}/bases/{baseId}/documents/{documentId}/comments':
         {
           get: this.operation('List document comments', 'documents:read'),
           post: this.operation('Create a document comment', 'documents:write'),
+        },
+      '/api/internal/v1/workspaces/{workspaceId}/bases/{baseId}/documents/{documentId}/comments/{commentId}':
+        {
+          patch: this.operation('Edit a document comment', 'documents:write'),
+          delete: this.operation(
+            'Delete a document comment',
+            'documents:write',
+          ),
+        },
+      '/api/internal/v1/workspaces/{workspaceId}/bases/{baseId}/documents/{documentId}/comments/{commentId}/resolution':
+        {
+          patch: this.operation(
+            'Resolve or reopen a document comment thread',
+            'documents:write',
+          ),
         },
       '/api/internal/v1/workspaces/{workspaceId}/bases/{baseId}/documents/{documentId}/export.pdf':
         {

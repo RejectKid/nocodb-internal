@@ -4,8 +4,9 @@
 
 Requirements:
 
-- Node.js 22 LTS
-- Corepack (included with Node 22)
+- Node.js 22 or newer (the repository currently pins Node 24.14 through
+  `.npmrc`)
+- Corepack (included with supported Node releases)
 - Git
 - About 8 GB free memory for the first workspace build
 
@@ -29,6 +30,11 @@ cp deploy/internal-fork/.env.example .env.internal
 
 The first run installs the exact `pnpm` version and builds workspace
 dependencies. Later runs omit `-Bootstrap` or `--bootstrap`.
+
+On Windows, the launcher disables only Vite's eager development dependency
+prebundle. This avoids endpoint-security filters denying esbuild reads on
+secondary drives such as `E:`. Normal development transformation and production
+build optimization remain enabled.
 
 - UI: <http://localhost:3000>
 - Backend: <http://localhost:8080>
@@ -72,6 +78,13 @@ deployment. For multiple users or multiple application processes:
 7. Run migrations in a staging copy before each upgrade.
 8. Restrict `/internal/admin` to trusted super administrators and monitor
    internal audit events.
+
+Production frontend builds require an 8 GB Node heap in this repository:
+
+```powershell
+$env:NODE_OPTIONS='--max-old-space-size=8192'
+corepack pnpm --filter nc-gui exec nuxi build
+```
 
 Do not bake `.env.internal`, token values, database passwords, or JWT secrets
 into an image. Fine-grained token plaintext is returned only once.

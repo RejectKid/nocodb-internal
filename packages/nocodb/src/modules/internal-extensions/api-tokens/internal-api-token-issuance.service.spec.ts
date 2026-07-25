@@ -49,6 +49,9 @@ describe('InternalApiTokenIssuanceService', () => {
       useNullAsDefault: true,
     });
     await up(knex);
+    await knex.schema.alterTable(INTERNAL_API_TOKENS_TABLE, (table) => {
+      table.timestamp('disabled_at').nullable();
+    });
     repository = new KnexInternalApiTokenRepository({
       knexConnection: knex,
     } as MetaService);

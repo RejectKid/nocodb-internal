@@ -51,6 +51,26 @@ test('revocation removes the active action immediately', async ({ page }) => {
     .toMatchObject({ method: 'DELETE' })
 })
 
+test('tokens can be edited, disabled, and re-enabled without revealing the secret', async ({ page }) => {
+  const scenario = `token-edit-${Date.now()}`
+  await page.goto(`/?screen=tokens&scenario=${scenario}`)
+
+  await page.getByTestId('edit-internal-token-token-existing').click()
+  await page.getByTestId('internal-token-edit-name').fill('Renamed token')
+  await page.getByTestId('save-internal-token-edit').click()
+  await expect(page.getByText('Renamed token')).toBeVisible()
+
+  await page.getByTestId('disable-internal-token-token-existing').click()
+  await expect(page.getByText('disabled', { exact: true })).toBeVisible()
+  await page.getByTestId('enable-internal-token-token-existing').click()
+  await expect(page.getByText('active', { exact: true })).toBeVisible()
+  await expect(page.getByTestId('internal-token-secret')).toHaveCount(0)
+
+  await expect
+    .poll(() => page.evaluate(() => window.__internalBrowserRequests.filter(({ method }) => method === 'PATCH').length))
+    .toBe(3)
+})
+
 test('capability-disabled base settings do not expose token navigation', async ({ page }) => {
   await page.goto('/?screen=settings&scenario=token-capability-off')
   await expect(page.getByTestId('internal-api-tokens-tab')).toHaveCount(0)

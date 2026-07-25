@@ -1,5 +1,8 @@
 export enum InternalAuditAction {
   TOKEN_CREATED = 'token.created',
+  TOKEN_UPDATED = 'token.updated',
+  TOKEN_ENABLED = 'token.enabled',
+  TOKEN_DISABLED = 'token.disabled',
   TOKEN_REVOKED = 'token.revoked',
   BASE_PERMISSION_CHANGED = 'base.permission.changed',
   USER_DISABLED = 'user.disabled',
@@ -13,6 +16,7 @@ export enum InternalAuditAction {
   VALIDATION_RULE_CHANGED = 'validation.rule.changed',
   DISCUSSION_COMMENT_CREATED = 'discussion.comment.created',
   DISCUSSION_COMMENT_UPDATED = 'discussion.comment.updated',
+  DISCUSSION_COMMENT_RESOLVED = 'discussion.comment.resolved',
   DISCUSSION_COMMENT_DELETED = 'discussion.comment.deleted',
   DOCUMENT_CREATED = 'document.created',
   DOCUMENT_UPDATED = 'document.updated',

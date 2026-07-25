@@ -48,6 +48,7 @@ export class InternalDocumentPermissionService {
     if (
       roles?.[OrgUserRoles.SUPER_ADMIN] ||
       baseRoles?.[ProjectRoles.OWNER] ||
+      baseRoles?.[ProjectRoles.CREATOR] ||
       document.createdBy === request.user?.id
     ) {
       return new Set(Object.values(InternalDocumentPermission));

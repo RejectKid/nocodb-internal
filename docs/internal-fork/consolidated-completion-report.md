@@ -33,6 +33,10 @@ permission interceptors, and isolated Nuxt components/composables under
 Rollback drops only these internal tables in dependency order. Rollback is
 destructive to internal feature data and requires a backup.
 
+`nc_internal_005_parity_hardening` adds reversible token-disable state and
+discussion resolution metadata without changing upstream tables. Its rollback
+removes only those internal columns.
+
 ## Tests added
 
 - Migration create/rollback and upstream-table sentinel.
@@ -43,35 +47,45 @@ destructive to internal feature data and requires a backup.
 - Four additional machine-readable authorization cases.
 - Frontend path encoding, validation preview, document snapshot conversion, and
   SFC compilation.
+- Editable and reversible token lifecycle, one-level discussion threads,
+  resolve/reopen behavior, document stale-write protection, and SQLite
+  validation persistence.
+- Paid-workflow parity matrix and explicit unsupported-workflow release gates.
 
 ## Commands and results
 
-| Command | Result |
-| --- | --- |
-| `pnpm --filter nocodb-sdk run build:main` | Passed |
-| `pnpm --filter nocodb-sdk run build:module` | Passed |
-| Internal backend Jest suite | Passed: 44 suites, 232 tests |
-| Targeted internal frontend Vitest suite | Passed: 4 files, 14 tests |
-| Vue SFC parser/compiler check for all changed/new screens | Passed |
-| Backend `tsc --noEmit` | Repository baseline failed; no `internal-extensions` errors remained |
-| Frontend `vue-tsc --noEmit` | Repository baseline failed with thousands of existing errors; new isolated components have no remaining reported errors |
-| Frontend production build | Repository baseline failed resolving the SDK `./lib` directory (`EISDIR`) |
-| Backend production Rspack build | Repository baseline failed with 72 upstream SDK/type/Oracle errors; no internal-extension error was reported |
-| Internal Playwright browser suite | Passed: 8 tests |
-| ESLint | Repository baseline crashed in `@eslint/eslintrc`/Ajv before linting files |
+| Command                                                               | Result                                                                                                |
+| --------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| `corepack pnpm --filter nocodb-sdk run build`                         | Passed                                                                                                |
+| Internal backend Jest suite with `jest.internal-extensions.config.js` | Passed: 46 suites, 240 tests                                                                          |
+| Targeted internal frontend Vitest suite                               | Passed: 4 files, 14 tests                                                                             |
+| Internal Playwright browser suite                                     | Passed: 9 tests                                                                                       |
+| Backend `tsc --noEmit`                                                | Passed                                                                                                |
+| Frontend `nuxi typecheck` with 8 GB heap                              | Upstream repository baseline failed; no `internalExtensions` component/composable/page error remained |
+| Frontend production `nuxi build` with 8 GB heap                       | Passed; upstream chunk-size and deprecation warnings remain                                           |
+| Backend production Rspack build                                       | Passed; one upstream dynamic-require warning remains                                                  |
+| Windows `start.ps1` source launcher                                   | Passed: UI HTTP 200, backend live, Nuxt checker reported no errors                                    |
+| Anonymous internal-capabilities request                               | Passed: HTTP 401                                                                                      |
+| SQLite migration and live validation exercise                         | Passed                                                                                                |
 
-The exact final reruns and totals are included in the pull request description.
+The browser harness and Windows launcher disable Vite's eager dependency
+prebundle to avoid an endpoint-security/esbuild file-access conflict on the
+secondary drive. Production optimization is unchanged.
 
 ## Known failures and risks
 
-- The upstream checkout does not currently have a clean repository-wide
-  TypeScript/lint/build baseline.
+- The upstream GUI does not currently have a clean repository-wide TypeScript
+  baseline; the production GUI and backend bundles nevertheless pass.
 - Collaboration mutations call Community services and then append an internal
   audit event; they cannot share one database transaction across both systems.
 - Snapshot documents are safe and reliable but are not realtime co-editing.
 - PDF rendering is deliberately minimal and does not reproduce rich layout.
 - Full PostgreSQL/MySQL migration rehearsals and load tests remain release
   gates.
+- The all-future-bases token wildcard, team permission subjects, preview-mode
+  upload, rich comment attachments/image annotations, visual document revision
+  diffs, realtime presence/offline reconciliation, Markdown/HTML export, and
+  public document sharing remain explicit parity gaps.
 - Frontend navigation is intentionally isolated, so administrators enter
   internal pages from the capability page or direct route.
 

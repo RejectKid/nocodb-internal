@@ -37,17 +37,26 @@ const grantSubjectType = ref<'user' | 'role'>('user')
 const grantSubjectId = ref('')
 const grantPermission = ref<InternalDocumentPermission>('read')
 const isSaving = ref(false)
+const saveStatus = ref<'saved' | 'unsaved' | 'saving' | 'error'>('saved')
+const isHydrating = ref(false)
 const error = ref('')
+let autosaveTimer: ReturnType<typeof setTimeout> | undefined
 
 const canEdit = computed(() => activeDocument.value?.permissions.includes('edit'))
 const canManage = computed(() => activeDocument.value?.permissions.includes('manage'))
 const canComment = computed(() => activeDocument.value?.permissions.includes('comment'))
 const canExport = computed(() => activeDocument.value?.permissions.includes('export'))
 
-watch(activeDocument, (document) => {
+watch(activeDocument, (document, previous) => {
+  if (isSaving.value && document?.id === previous?.id) return
+  isHydrating.value = true
   title.value = document?.title ?? ''
   body.value = document ? documentContentToText(document.content) : ''
   changeSummary.value = ''
+  saveStatus.value = 'saved'
+  void nextTick(() => {
+    isHydrating.value = false
+  })
 })
 
 async function run(action: () => Promise<unknown>) {
@@ -59,12 +68,29 @@ async function run(action: () => Promise<unknown>) {
   }
 }
 
-async function saveDocument() {
+async function saveDocument(summary = changeSummary.value || undefined) {
   if (!activeDocument.value) return
+  const savingTitle = title.value
+  const savingBody = body.value
   isSaving.value = true
-  await run(() => save({ title: title.value, text: body.value, summary: changeSummary.value || undefined }))
+  saveStatus.value = 'saving'
+  await run(() => save({ title: savingTitle, text: savingBody, summary }))
   isSaving.value = false
+  saveStatus.value = error.value ? 'error' : title.value === savingTitle && body.value === savingBody ? 'saved' : 'unsaved'
+  if (saveStatus.value === 'unsaved') scheduleAutosave()
 }
+
+function scheduleAutosave() {
+  if (autosaveTimer) clearTimeout(autosaveTimer)
+  if (!activeDocument.value || !canEdit.value) return
+  saveStatus.value = 'unsaved'
+  autosaveTimer = setTimeout(() => void saveDocument('Auto-saved'), 1500)
+}
+
+watch([title, body], ([nextTitle, nextBody], [previousTitle, previousBody]) => {
+  if (isHydrating.value) return
+  if (nextTitle !== previousTitle || nextBody !== previousBody) scheduleAutosave()
+})
 
 async function addComment() {
   if (!commentDraft.value.trim()) return
@@ -105,6 +131,9 @@ watch(
   () => void run(() => refresh(search.value)),
   { immediate: true },
 )
+onBeforeUnmount(() => {
+  if (autosaveTimer) clearTimeout(autosaveTimer)
+})
 </script>
 
 <template>
@@ -144,21 +173,35 @@ watch(
       <NcAlert v-if="error" type="error" class="m-3">{{ error }}</NcAlert>
       <div class="flex items-center gap-2 border-b-1 border-nc-border-gray-medium p-3">
         <a-input v-model:value="title" :disabled="!canEdit" class="max-w-lg font-semibold" />
+        <span class="text-xs text-nc-content-gray-muted" aria-live="polite">
+          {{
+            saveStatus === 'saving'
+              ? 'Saving…'
+              : saveStatus === 'unsaved'
+              ? 'Unsaved changes'
+              : saveStatus === 'error'
+              ? 'Save failed'
+              : 'Saved'
+          }}
+        </span>
         <div class="ml-auto flex gap-2">
           <a v-if="canExport" :href="exportUrl()" target="_blank" rel="noopener">
             <NcButton size="small">Export PDF</NcButton>
           </a>
           <NcButton v-if="canManage" size="small" type="danger" @click="run(() => remove(activeDocument!.id))"> Delete </NcButton>
-          <NcButton v-if="canEdit" size="small" type="primary" :loading="isSaving" @click="saveDocument"> Save </NcButton>
+          <NcButton v-if="canEdit" size="small" type="primary" :loading="isSaving" @click="saveDocument()"> Save </NcButton>
         </div>
       </div>
       <div class="grid min-h-0 flex-1 grid-cols-[minmax(0,1fr)_320px]">
         <div class="flex min-h-0 flex-col p-4">
-          <a-textarea
+          <CellRichText
             v-model:value="body"
-            :disabled="!canEdit"
-            class="min-h-0 flex-1 !resize-none font-mono"
-            placeholder="Document content"
+            :read-only="!canEdit"
+            :show-menu="canEdit"
+            full-mode
+            hide-mention
+            class="min-h-0 flex-1 overflow-auto rounded-lg border-1 border-nc-border-gray-medium p-4"
+            placeholder="Start writing…"
           />
           <a-input v-if="canEdit" v-model:value="changeSummary" class="mt-2" placeholder="Optional revision summary" />
         </div>

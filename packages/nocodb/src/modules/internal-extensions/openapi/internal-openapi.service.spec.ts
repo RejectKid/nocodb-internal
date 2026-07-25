@@ -18,6 +18,16 @@ describe('InternalOpenApiService', () => {
         post: expect.any(Object),
       }),
     );
+    expect(
+      contract.paths[
+        '/api/internal/v1/workspaces/{workspaceId}/bases/{baseId}/tokens/{tokenId}/status'
+      ].patch,
+    ).toEqual(expect.any(Object));
+    expect(
+      contract.paths[
+        '/api/internal/v1/workspaces/{workspaceId}/bases/{baseId}/models/{modelId}/records/{recordId}/discussion/{commentId}/resolution'
+      ].patch,
+    ).toEqual(expect.any(Object));
     expect(JSON.stringify(contract)).not.toContain('/api/v2/meta/licenses');
   });
 });

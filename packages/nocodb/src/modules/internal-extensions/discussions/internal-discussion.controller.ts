@@ -109,6 +109,33 @@ export class InternalDiscussionController {
     );
   }
 
+  @Patch('/:commentId/resolution')
+  @RequireInternalTokenScope(
+    InternalApiTokenScope.DATA_UPDATE,
+    'base',
+    InternalBasePermission.RECORDS_UPDATE,
+  )
+  @RequireInternalBasePermission(InternalBasePermission.RECORDS_UPDATE)
+  resolve(
+    @Param('workspaceId') workspaceId: string,
+    @Param('baseId') baseId: string,
+    @Param('modelId') modelId: string,
+    @Param('recordId') recordId: string,
+    @Param('commentId') commentId: string,
+    @Body() body: { resolved: boolean },
+    @Req() request: NcRequest,
+  ) {
+    return this.service.resolve(
+      workspaceId,
+      baseId,
+      modelId,
+      recordId,
+      commentId,
+      body.resolved === true,
+      request,
+    );
+  }
+
   @Delete('/:commentId')
   @RequireInternalTokenScope(
     InternalApiTokenScope.DATA_UPDATE,

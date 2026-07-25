@@ -4,6 +4,15 @@ import type {
 } from './internal-api-token.model';
 import type { Knex } from 'knex';
 
+export type InternalApiTokenMutableFields = Pick<
+  InternalApiTokenRecord,
+  | 'display_name'
+  | 'expires_at'
+  | 'allowed_workspace_ids'
+  | 'allowed_base_ids'
+  | 'scopes'
+>;
+
 export class InternalApiTokenPrefixConflictError extends Error {
   constructor(readonly prefix: string) {
     super(`Internal API token prefix already exists: ${prefix}`);
@@ -32,6 +41,16 @@ export abstract class InternalApiTokenRepository {
     id: string,
     revokedBy: string,
     revokedAt: Date,
+    transaction?: Knex.Transaction,
+  ): Promise<InternalApiToken | null>;
+  abstract update(
+    id: string,
+    fields: InternalApiTokenMutableFields,
+    transaction?: Knex.Transaction,
+  ): Promise<InternalApiToken | null>;
+  abstract setDisabled(
+    id: string,
+    disabledAt: Date | null,
     transaction?: Knex.Transaction,
   ): Promise<InternalApiToken | null>;
   abstract markUsed(

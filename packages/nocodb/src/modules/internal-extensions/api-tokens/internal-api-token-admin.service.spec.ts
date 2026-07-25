@@ -13,6 +13,7 @@ const summary = (overrides: Record<string, unknown> = {}) => ({
   created_by: 'user-1',
   expires_at: null,
   last_used_at: null,
+  disabled_at: null,
   revoked_at: null,
   revoked_by: null,
   allowed_workspace_ids: ['workspace-1'],
@@ -28,6 +29,8 @@ describe('InternalApiTokenAdminService', () => {
   const repository = {
     listByUserId: jest.fn(),
     findById: jest.fn(),
+    update: jest.fn(),
+    setDisabled: jest.fn(),
     revoke: jest.fn(),
   };
   const issuanceService = {
@@ -224,5 +227,77 @@ describe('InternalApiTokenAdminService', () => {
     );
     expect(recordedEvent.action).toBe('token.revoked');
     expect(JSON.stringify(recordedEvent)).not.toContain('secret-hash');
+  });
+
+  it('edits an active token and audits only its safe summary', async () => {
+    const active = new InternalApiToken({
+      ...summary(),
+      token_hash: 'secret-hash',
+      hash_version: 1,
+    } as any);
+    const edited = new InternalApiToken({
+      ...active.record,
+      display_name: 'Renamed',
+      scopes: [InternalApiTokenScope.DOCUMENTS_READ],
+    });
+    repository.findById.mockResolvedValue(active);
+    repository.update.mockResolvedValue(edited);
+
+    const result = await service.update(
+      context,
+      'workspace-1',
+      'base-1',
+      'token-1',
+      {
+        displayName: 'Renamed',
+        expiresAt: null,
+        allowedWorkspaceIds: ['workspace-1'],
+        allowedBaseIds: ['base-1'],
+        scopes: [InternalApiTokenScope.DOCUMENTS_READ],
+      },
+      actor,
+    );
+
+    expect(result.display_name).toBe('Renamed');
+    expect(recordedEvent.action).toBe('token.updated');
+    expect(JSON.stringify(recordedEvent)).not.toContain('secret-hash');
+  });
+
+  it('temporarily disables and re-enables a token', async () => {
+    const active = new InternalApiToken({
+      ...summary(),
+      token_hash: 'secret-hash',
+      hash_version: 1,
+    } as any);
+    repository.findById.mockResolvedValue(active);
+    repository.setDisabled.mockImplementation(
+      async (_id: string, disabledAt: Date | null) =>
+        new InternalApiToken({
+          ...active.record,
+          disabled_at: disabledAt?.toISOString() ?? null,
+        }),
+    );
+
+    const disabled = await service.setEnabled(
+      context,
+      'workspace-1',
+      'base-1',
+      'token-1',
+      false,
+      actor,
+    );
+    expect(disabled.disabled_at).not.toBeNull();
+    expect(recordedEvent.action).toBe('token.disabled');
+
+    const enabled = await service.setEnabled(
+      context,
+      'workspace-1',
+      'base-1',
+      'token-1',
+      true,
+      actor,
+    );
+    expect(enabled.disabled_at).toBeNull();
+    expect(recordedEvent.action).toBe('token.enabled');
   });
 });

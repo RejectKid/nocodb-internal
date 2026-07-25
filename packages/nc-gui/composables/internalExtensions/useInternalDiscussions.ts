@@ -6,6 +6,8 @@ export interface InternalDiscussionComment {
   author: { id: string; displayName: string | null }
   createdAt: string
   updatedAt: string
+  resolvedAt: string | null
+  resolvedBy: string | null
 }
 
 export interface InternalDiscussionClient {
@@ -57,5 +59,10 @@ export function useInternalDiscussions(
     await refresh()
   }
 
-  return { comments: readonly(comments), isLoading: readonly(isLoading), refresh, create, update, remove }
+  async function resolve(commentId: string, resolved: boolean) {
+    await api.instance.patch(`${path.value}/${encodeURIComponent(commentId)}/resolution`, { resolved })
+    await refresh()
+  }
+
+  return { comments: readonly(comments), isLoading: readonly(isLoading), refresh, create, update, remove, resolve }
 }

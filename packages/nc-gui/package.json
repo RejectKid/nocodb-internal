@@ -231,6 +231,7 @@
     "vite-plugin-monaco-editor": "^1.1.0",
     "vite-plugin-purge-icons": "^0.10.0",
     "vitest": "^3.0.7",
+    "vue-tsc": "~2.2.10",
     "windicss": "^3.5.6"
   }
 }

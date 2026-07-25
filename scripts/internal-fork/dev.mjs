@@ -1,15 +1,30 @@
 import { spawn } from "node:child_process";
 import process from "node:process";
 
-const command = process.platform === "win32" ? "pnpm.cmd" : "pnpm";
+const spawnOptions = {
+  stdio: "inherit",
+  env: process.env,
+};
+
+const spawnPnpm = (args, envOverrides = {}) => {
+  const options = {
+    ...spawnOptions,
+    env: { ...process.env, ...envOverrides },
+  };
+  if (process.platform === "win32") {
+    return spawn(
+      process.env.ComSpec ?? "cmd.exe",
+      ["/d", "/s", "/c", ["corepack", "pnpm", ...args].join(" ")],
+      options
+    );
+  }
+  return spawn("corepack", ["pnpm", ...args], options);
+};
+
 const children = [
-  spawn(command, ["--filter", "nocodb", "run", "start"], {
-    stdio: "inherit",
-    env: process.env,
-  }),
-  spawn(command, ["--filter", "nc-gui", "run", "dev"], {
-    stdio: "inherit",
-    env: process.env,
+  spawnPnpm(["--filter", "nocodb", "run", "start"]),
+  spawnPnpm(["--filter", "nc-gui", "run", "dev"], {
+    NC_INTERNAL_DISABLE_VITE_OPTIMIZE_DEPS: "true",
   }),
 ];
 

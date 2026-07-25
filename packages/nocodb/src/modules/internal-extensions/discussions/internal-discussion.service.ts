@@ -76,7 +76,11 @@ export class InternalDiscussionService {
         })
         .whereNull('deleted_at')
         .first();
-      if (!parent) throw new BadRequestException('Parent comment is invalid');
+      if (!parent || parent.parent_id) {
+        throw new BadRequestException(
+          'Replies must target a top-level comment in this discussion',
+        );
+      }
     }
     const id = nanoid(20);
     await this.audit.execute(
@@ -213,6 +217,52 @@ export class InternalDiscussionService {
     return { id: commentId, deleted: true };
   }
 
+  async resolve(
+    workspaceId: string,
+    baseId: string,
+    modelId: string,
+    recordId: string,
+    commentId: string,
+    resolved: boolean,
+    request: NcRequest,
+  ) {
+    const comment = await this.getRow(commentId, {
+      workspace_id: workspaceId,
+      base_id: baseId,
+      model_id: modelId,
+      record_id: recordId,
+    });
+    if (comment.parent_id) {
+      throw new BadRequestException(
+        'Only top-level discussion comments can be resolved',
+      );
+    }
+    await this.audit.execute(
+      {
+        action: InternalAuditAction.DISCUSSION_COMMENT_RESOLVED,
+        resourceType: InternalAuditResourceType.DISCUSSION_COMMENT,
+        resourceId: commentId,
+        context: {
+          ...this.auditContext.fromRequest(request),
+          workspaceId,
+          baseId,
+        },
+        before: { resolved: Boolean(comment.resolved_at) },
+        after: { resolved },
+      },
+      (transaction) =>
+        transaction(INTERNAL_RECORD_COMMENTS_TABLE)
+          .where({ id: commentId })
+          .update({
+            resolved_at: resolved ? new Date().toISOString() : null,
+            resolved_by: resolved ? request.user.id : null,
+            updated_by: request.user.id,
+            updated_at: new Date().toISOString(),
+          }),
+    );
+    return this.get(commentId);
+  }
+
   private table() {
     return this.metaService.knexConnection(INTERNAL_RECORD_COMMENTS_TABLE);
   }
@@ -295,6 +345,10 @@ export class InternalDiscussionService {
       },
       createdAt: new Date(row.created_at).toISOString(),
       updatedAt: new Date(row.updated_at).toISOString(),
+      resolvedAt: row.resolved_at
+        ? new Date(row.resolved_at).toISOString()
+        : null,
+      resolvedBy: row.resolved_by ?? null,
     };
   }
 }

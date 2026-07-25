@@ -11,6 +11,7 @@ export interface InternalApiTokenRecord {
   created_by: string;
   expires_at: string | null;
   last_used_at: string | null;
+  disabled_at: string | null;
   revoked_at: string | null;
   revoked_by: string | null;
   allowed_workspace_ids: string[];
@@ -39,8 +40,12 @@ export class InternalApiToken {
     return this.record.revoked_at !== null;
   }
 
+  isDisabled(): boolean {
+    return Boolean(this.record.disabled_at);
+  }
+
   canAuthenticateAt(now: Date): boolean {
-    return !this.isRevoked() && !this.isExpiredAt(now);
+    return !this.isRevoked() && !this.isDisabled() && !this.isExpiredAt(now);
   }
 
   toSummary(): InternalApiTokenSummary {

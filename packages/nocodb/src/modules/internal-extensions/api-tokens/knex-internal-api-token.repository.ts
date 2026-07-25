@@ -21,6 +21,7 @@ type InternalApiTokenDatabaseRow = Omit<
   | 'created_at'
   | 'expires_at'
   | 'last_used_at'
+  | 'disabled_at'
   | 'revoked_at'
 > & {
   allowed_workspace_ids: string;
@@ -30,6 +31,7 @@ type InternalApiTokenDatabaseRow = Omit<
   created_at: string | Date;
   expires_at: string | Date | null;
   last_used_at: string | Date | null;
+  disabled_at: string | Date | null;
   revoked_at: string | Date | null;
 };
 
@@ -94,6 +96,7 @@ function toModel(row: InternalApiTokenDatabaseRow): InternalApiToken {
     created_at: createdAt,
     expires_at: toIsoTimestamp(row.expires_at, 'expires_at'),
     last_used_at: toIsoTimestamp(row.last_used_at, 'last_used_at'),
+    disabled_at: toIsoTimestamp(row.disabled_at, 'disabled_at'),
     revoked_at: toIsoTimestamp(row.revoked_at, 'revoked_at'),
     allowed_workspace_ids: parseJsonField(
       row.allowed_workspace_ids,
@@ -199,6 +202,36 @@ export class KnexInternalApiTokenRepository extends InternalApiTokenRepository {
     return this.findById(id, transaction);
   }
 
+  async update(
+    id: string,
+    fields: import('./internal-api-token.repository').InternalApiTokenMutableFields,
+    transaction?: Knex.Transaction,
+  ): Promise<InternalApiToken | null> {
+    await this.table(transaction)
+      .where({ id })
+      .whereNull('revoked_at')
+      .update({
+        display_name: fields.display_name,
+        expires_at: fields.expires_at,
+        allowed_workspace_ids: JSON.stringify(fields.allowed_workspace_ids),
+        allowed_base_ids: JSON.stringify(fields.allowed_base_ids),
+        scopes: JSON.stringify(fields.scopes),
+      });
+    return this.findById(id, transaction);
+  }
+
+  async setDisabled(
+    id: string,
+    disabledAt: Date | null,
+    transaction?: Knex.Transaction,
+  ): Promise<InternalApiToken | null> {
+    await this.table(transaction)
+      .where({ id })
+      .whereNull('revoked_at')
+      .update({ disabled_at: disabledAt?.toISOString() ?? null });
+    return this.findById(id, transaction);
+  }
+
   async markUsed(
     id: string,
     usedAt: Date,
@@ -208,6 +241,7 @@ export class KnexInternalApiTokenRepository extends InternalApiTokenRepository {
     const updated = await this.table(transaction)
       .where({ id })
       .whereNull('revoked_at')
+      .whereNull('disabled_at')
       .andWhere((builder) =>
         builder
           .whereNull('last_used_at')

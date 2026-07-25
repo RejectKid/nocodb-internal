@@ -182,6 +182,7 @@ export class InternalApiTokenIssuanceService {
         created_by: createdBy,
         expires_at: expiresAt?.toISOString() ?? null,
         last_used_at: null,
+        disabled_at: null,
         revoked_at: null,
         revoked_by: null,
         allowed_workspace_ids: allowedWorkspaceIds,

@@ -11,6 +11,7 @@ const record = {
   created_by: 'user-1',
   expires_at: '2026-07-24T12:00:00.000Z',
   last_used_at: null,
+  disabled_at: null,
   revoked_at: null,
   revoked_by: null,
   allowed_workspace_ids: [],
@@ -39,6 +40,17 @@ describe('InternalApiToken', () => {
     const token = new InternalApiToken({
       ...record,
       revoked_at: '2026-07-23T13:00:00.000Z',
+    });
+
+    expect(token.canAuthenticateAt(new Date('2026-07-23T14:00:00.000Z'))).toBe(
+      false,
+    );
+  });
+
+  it('rejects a temporarily disabled token', () => {
+    const token = new InternalApiToken({
+      ...record,
+      disabled_at: '2026-07-23T13:00:00.000Z',
     });
 
     expect(token.canAuthenticateAt(new Date('2026-07-23T14:00:00.000Z'))).toBe(

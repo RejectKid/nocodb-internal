@@ -41,8 +41,7 @@ export class InternalValidationRepository {
     transaction?: Knex.Transaction,
   ): Promise<InternalFieldValidationConfiguration> {
     const rules = internalValidationRulesSchema.parse(input.rules);
-    const table = this.table(transaction);
-    const existing = await table
+    const existing = await this.table(transaction)
       .where({
         base_id: input.baseId,
         model_id: input.modelId,
@@ -67,14 +66,14 @@ export class InternalValidationRepository {
       updated_at: new Date().toISOString(),
     };
     if (existing) {
-      await table.where({ id: existing.id }).update(values);
+      await this.table(transaction).where({ id: existing.id }).update(values);
     } else {
-      await table.insert({
+      await this.table(transaction).insert({
         id: nanoid(20),
         ...values,
       });
     }
-    const saved = await table
+    const saved = await this.table(transaction)
       .where({
         base_id: input.baseId,
         model_id: input.modelId,

@@ -7,6 +7,7 @@ import {
 } from '@nestjs/common';
 import { nanoid } from 'nanoid';
 import type { Knex } from 'knex';
+import { ProjectRoles } from 'nocodb-sdk';
 import type { NcRequest } from '~/interface/config';
 import { MetaService } from '~/meta/meta.service';
 import { MetaTable } from '~/utils/globals';
@@ -163,6 +164,24 @@ export class InternalDocumentService {
           updated_at: now,
         };
         await transaction(INTERNAL_DOCUMENTS_TABLE).insert(row);
+        await transaction(INTERNAL_DOCUMENT_GRANTS_TABLE).insert(
+          [
+            [ProjectRoles.VIEWER, InternalDocumentPermission.READ],
+            [ProjectRoles.VIEWER, InternalDocumentPermission.EXPORT],
+            [ProjectRoles.COMMENTER, InternalDocumentPermission.COMMENT],
+            [ProjectRoles.COMMENTER, InternalDocumentPermission.EXPORT],
+            [ProjectRoles.EDITOR, InternalDocumentPermission.EDIT],
+            [ProjectRoles.EDITOR, InternalDocumentPermission.EXPORT],
+            [ProjectRoles.CREATOR, InternalDocumentPermission.MANAGE],
+          ].map(([subjectId, permission]) => ({
+            id: nanoid(20),
+            document_id: id,
+            subject_type: 'role',
+            subject_id: subjectId,
+            permission,
+            created_by: request.user.id,
+          })),
+        );
         await this.insertRevision(transaction, this.toDocument(row), 'Created');
       },
     );
@@ -255,7 +274,7 @@ export class InternalDocumentService {
         },
       },
       async (transaction) => {
-        await transaction(INTERNAL_DOCUMENTS_TABLE)
+        const changed = await transaction(INTERNAL_DOCUMENTS_TABLE)
           .where({
             id: documentId,
             workspace_id: workspaceId,
@@ -263,6 +282,9 @@ export class InternalDocumentService {
             version: document.version,
           })
           .update(this.toRowUpdate(updated));
+        if (Number(changed) !== 1) {
+          throw new ConflictException('Document version is stale');
+        }
         await this.insertRevision(
           transaction,
           updated,
@@ -568,7 +590,11 @@ export class InternalDocumentService {
         .where({ id: input.parentId, document_id: documentId })
         .whereNull('deleted_at')
         .first();
-      if (!parent) throw new BadRequestException('Parent comment is invalid');
+      if (!parent || parent.parent_id) {
+        throw new BadRequestException(
+          'Replies must target a top-level document comment',
+        );
+      }
     }
     const id = nanoid(20);
     await this.audit.execute(

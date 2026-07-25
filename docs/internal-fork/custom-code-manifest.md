@@ -351,6 +351,25 @@ Owner for every file below: Internal Platform Team.
 | `docs/internal-fork/product-suite-implementation.md` | Architecture and compatibility note | None | Low | All |
 | `docs/internal-fork/consolidated-completion-report.md` | Validation and risk report | None | Low | All |
 
+## Parity hardening files
+
+Owner for every file below: Internal Platform Team.
+
+| Path | Purpose | Upstream files touched | Merge risk | Feature IDs |
+| --- | --- | --- | --- | --- |
+| `docs/internal-fork/parity-test-matrix.md` | Evidence-based paid-workflow parity and gap matrix | None | Low | All |
+| `packages/nocodb/src/modules/internal-extensions/migrations/nc_internal_005_parity_hardening.ts` | Additive token disable and discussion-resolution columns | Internal migration runner | Low | TOK-003, MODE-003 |
+| `packages/nocodb/src/modules/internal-extensions/migrations/nc_internal_005_parity_hardening.spec.ts` | SQLite migration/rollback isolation regression | None | Low | FND-003 |
+| `packages/nocodb/src/modules/internal-extensions/validation/internal-validation.repository.spec.ts` | SQLite query-builder reuse regression | None | Low | VAL-001 |
+| `packages/nocodb/src/modules/internal-extensions/openapi/internal-openapi.service.ts` | Token lifecycle and thread-resolution API contract | None | Low | API-001, TOK-003, MODE-003, DOC-003 |
+| `pnpm-workspace.yaml` | pnpm 10 override and build-script policy | Root dependency install | Medium | FND-001 |
+| `packages/noco-integrations/pnpm-workspace.yaml` | Matching nested-workspace pnpm 10 policy | Integrations bootstrap | Medium | FND-001 |
+| `packages/nocodb-sdk/package.json` | Cross-platform SDK generation cleanup | SDK build script | Low | FND-001 |
+| `packages/nc-gui/nuxt.config.ts` | Opt-in development prebundle compatibility switch for the internal launcher | Community Nuxt development config | Low | FND-001 |
+| `packages/nc-gui/package.json` | Pins a Nuxt-compatible Vue type-checker version | GUI development dependencies | Low | FND-001 |
+| `packages/nc-gui/test/internal-extensions-browser/vite.config.ts` | Disables eager prebundling in the isolated browser harness | Internal test harness only | Low | FND-003 |
+| `scripts/internal-fork/dev.mjs` | Cross-platform Corepack launch and Windows endpoint-security compatibility environment | Internal launcher only | Low | FND-001 |
+
 The existing registration hooks modified by this suite are
 `internal-extensions.module.ts`, `internal-feature.config.ts`,
 `internal-migration-source.ts`, `noco.module.ts`, the two Community expanded

@@ -10,6 +10,9 @@ export interface CreateInternalApiTokenAdminRequest {
   scopes: InternalApiTokenScope[];
 }
 
+export type UpdateInternalApiTokenAdminRequest =
+  CreateInternalApiTokenAdminRequest;
+
 export interface InternalApiTokenAdminState {
   tokens: InternalApiTokenSummary[];
   scopeCatalog: readonly InternalApiTokenScopeDefinition[];

@@ -1,14 +1,22 @@
 <script setup lang="ts">
+import { ProjectRoles } from 'nocodb-sdk'
+
 const props = defineProps<{ rowId?: string | null }>()
 const meta = inject(MetaInj, ref())
 const { activeWorkspaceId } = storeToRefs(useWorkspace())
 const { activeProjectId } = storeToRefs(useBases())
 const { user } = useGlobal()
+const { baseRoles } = useRoles()
 const workspaceId = computed(() => activeWorkspaceId.value || (meta.value as any)?.fk_workspace_id || '')
 const baseId = computed(() => activeProjectId.value || meta.value?.base_id || '')
 const modelId = computed(() => meta.value?.id || '')
 const recordId = computed(() => props.rowId || '')
-const { comments, isLoading, refresh, create, update, remove } = useInternalDiscussions(workspaceId, baseId, modelId, recordId)
+const { comments, isLoading, refresh, create, update, remove, resolve } = useInternalDiscussions(
+  workspaceId,
+  baseId,
+  modelId,
+  recordId,
+)
 const draft = ref('')
 const replyTo = ref<string | null>(null)
 const editingId = ref('')
@@ -33,6 +41,10 @@ function startEdit(comment: { id: string; body: string }) {
   editingBody.value = comment.body
 }
 
+const isModerator = computed(
+  () => Boolean(baseRoles.value?.[ProjectRoles.OWNER]) || Boolean(baseRoles.value?.[ProjectRoles.CREATOR]),
+)
+
 watch(recordId, refresh, { immediate: true })
 </script>
 
@@ -53,7 +65,10 @@ watch(recordId, refresh, { immediate: true })
       >
         <div class="flex items-center justify-between gap-2">
           <strong class="text-sm">{{ comment.author.displayName || comment.author.id }}</strong>
-          <span class="text-xs text-nc-content-gray-muted">{{ new Date(comment.createdAt).toLocaleString() }}</span>
+          <div class="flex items-center gap-2">
+            <span v-if="comment.resolvedAt" class="rounded bg-nc-bg-green-light px-2 py-0.5 text-xs">Resolved</span>
+            <span class="text-xs text-nc-content-gray-muted">{{ new Date(comment.createdAt).toLocaleString() }}</span>
+          </div>
         </div>
         <template v-if="editingId === comment.id">
           <a-textarea v-model:value="editingBody" class="mt-2" />
@@ -64,9 +79,14 @@ watch(recordId, refresh, { immediate: true })
         </template>
         <p v-else class="mt-2 whitespace-pre-wrap text-sm">{{ comment.body }}</p>
         <div class="mt-2 flex gap-2">
-          <NcButton size="xs" type="text" @click="replyTo = comment.id">Reply</NcButton>
+          <NcButton v-if="!comment.parentId" size="xs" type="text" @click="replyTo = comment.id">Reply</NcButton>
           <NcButton v-if="comment.author.id === user?.id" size="xs" type="text" @click="startEdit(comment)"> Edit </NcButton>
-          <NcButton size="xs" type="text" @click="remove(comment.id)">Delete</NcButton>
+          <NcButton v-if="!comment.parentId" size="xs" type="text" @click="resolve(comment.id, !comment.resolvedAt)">
+            {{ comment.resolvedAt ? 'Reopen' : 'Resolve' }}
+          </NcButton>
+          <NcButton v-if="comment.author.id === user?.id || isModerator" size="xs" type="text" @click="remove(comment.id)">
+            Delete
+          </NcButton>
         </div>
       </div>
     </div>
