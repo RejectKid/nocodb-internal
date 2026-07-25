@@ -146,9 +146,16 @@ remain active is not supported.
   listing, and idempotent revocation
 - `InternalApiTokenIssuanceService`: validated one-time issuance and bounded
   prefix-collision retry
+- `InternalApiTokenAdminService`: base-permission authorization, selected-base
+  validation, current-user ownership, and atomic audit mutations
+- `InternalApiTokensController`: authenticated internal v1 list/create/revoke
+  contract
+- isolated base-settings editor: typed scopes, expiration, tenant boundaries,
+  copy-once secret handling, lifecycle display, and revocation
 
-No controller, create/list/revoke API, frontend administration UI, or global
-authentication strategy is delivered in TOK-001.
+TOK-003 delivers the controller and administration UI. A global authentication
+strategy remains intentionally outside TOK-003 and is the remaining TOK-002
+production integration.
 
 ## Required next tests
 

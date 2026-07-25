@@ -221,3 +221,24 @@ requires a reason.
 - [ ] Job workers should recheck authorization before final delivery so a
       permission revoked after enqueue cannot release an export (SEC-002).
 - [ ] A reviewer must record formal sign-off before PERM-001 is marked Ready.
+
+## TOK-003 token administration evidence
+
+- [x] Routes require authentication and server-side `base:manage_tokens`.
+- [x] Creation verifies every selected base and cannot expand beyond the
+      current workspace through a modified request.
+- [x] Listing and revocation are restricted to the current user's tokens and
+      the authoritative workspace/base boundary.
+- [x] The plaintext secret appears only in the create response and component
+      memory; list, revoke, persistence, and audit records exclude it.
+- [x] Token mutation and audit append share one metadata transaction.
+- [x] Revocation is write-once and immediately changes the token model's
+      authentication decision.
+- [x] Capability-disabled navigation and unauthorized mutation controls are
+      absent, while direct requests still receive denial.
+- [x] Browser tests cover copy-once dismissal, tenant-bound creation, direct
+      denial, revocation propagation, and capability gating.
+- [ ] Reviewer sign-off is required before TOK-003 is marked Ready.
+- [ ] Clipboard clearing and endpoint handling remain operator responsibilities.
+- [ ] TOK-002 production authentication must update `last_used_at` and apply
+      rate limiting.
