@@ -27,6 +27,12 @@ export interface InternalTokenAuthorizationRequest {
   now: Date;
 }
 
+export interface InternalTokenAuthenticationRequest {
+  token: InternalApiToken;
+  owner: InternalTokenOwnerContext | null;
+  now: Date;
+}
+
 export type InternalTokenAuthorizationFailureClass =
   | 'none'
   | 'authentication'
@@ -69,6 +75,10 @@ export type InternalTokenAuthorizationDecision =
     };
 
 export abstract class InternalTokenAuthorizationPolicy {
+  abstract authenticate(
+    request: InternalTokenAuthenticationRequest,
+  ): Promise<InternalTokenAuthorizationDecision>;
+
   abstract authorize(
     request: InternalTokenAuthorizationRequest,
   ): Promise<InternalTokenAuthorizationDecision>;

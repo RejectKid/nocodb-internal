@@ -16,6 +16,9 @@ const KEY_LENGTH = 32;
 const SCRYPT_COST = 16_384;
 const SCRYPT_BLOCK_SIZE = 8;
 const SCRYPT_PARALLELIZATION = 1;
+const TOKEN_VALUE_PATTERN = /^nci_[A-Za-z0-9_-]{12}_[A-Za-z0-9_-]{43}$/;
+const SALT_PATTERN = /^[A-Za-z0-9_-]{22}$/;
+const HASH_PATTERN = /^[A-Za-z0-9_-]{43}$/;
 
 function deriveKey(
   tokenValue: string,
@@ -68,8 +71,11 @@ export class ScryptInternalTokenHashingService extends InternalTokenHashingServi
   }
 
   async verify(tokenValue: string, storedHash: string): Promise<boolean> {
-    const [name, version, cost, blockSize, parallelization, salt, hash] =
-      storedHash.split('$');
+    const parts = storedHash.split('$');
+    if (parts.length !== 7 || !TOKEN_VALUE_PATTERN.test(tokenValue)) {
+      return false;
+    }
+    const [name, version, cost, blockSize, parallelization, salt, hash] = parts;
 
     if (
       name !== HASH_NAME ||
@@ -81,26 +87,24 @@ export class ScryptInternalTokenHashingService extends InternalTokenHashingServi
       !hash ||
       Number(cost) !== SCRYPT_COST ||
       Number(blockSize) !== SCRYPT_BLOCK_SIZE ||
-      Number(parallelization) !== SCRYPT_PARALLELIZATION
+      Number(parallelization) !== SCRYPT_PARALLELIZATION ||
+      !SALT_PATTERN.test(salt) ||
+      !HASH_PATTERN.test(hash)
     ) {
       return false;
     }
 
     const expected = Buffer.from(hash, 'base64url');
-    if (expected.length !== KEY_LENGTH) {
+    const saltBuffer = Buffer.from(salt, 'base64url');
+    if (expected.length !== KEY_LENGTH || saltBuffer.length !== 16) {
       return false;
     }
-    const actual = await deriveKey(
-      tokenValue,
-      Buffer.from(salt, 'base64url'),
-      expected.length,
-      {
-        N: Number(cost),
-        r: Number(blockSize),
-        p: Number(parallelization),
-        maxmem: 64 * 1024 * 1024,
-      },
-    );
+    const actual = await deriveKey(tokenValue, saltBuffer, expected.length, {
+      N: Number(cost),
+      r: Number(blockSize),
+      p: Number(parallelization),
+      maxmem: 64 * 1024 * 1024,
+    });
 
     return (
       expected.length === actual.length && timingSafeEqual(expected, actual)

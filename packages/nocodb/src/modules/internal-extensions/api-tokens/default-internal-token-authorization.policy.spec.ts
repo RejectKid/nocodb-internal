@@ -46,6 +46,20 @@ function request(
 describe('DefaultInternalTokenAuthorizationPolicy', () => {
   const policy = new DefaultInternalTokenAuthorizationPolicy();
 
+  it('authenticates an active token owner without granting a route scope', async () => {
+    await expect(
+      policy.authenticate({
+        token: request().token,
+        owner: owner({ permissions: [] }),
+        now,
+      }),
+    ).resolves.toEqual({
+      allowed: true,
+      failureClass: 'none',
+      reason: 'allowed',
+    });
+  });
+
   it.each(INTERNAL_API_TOKEN_SCOPE_CATALOG)(
     'allows the typed $scope scope when owner and target access intersect',
     async ({ scope }) => {

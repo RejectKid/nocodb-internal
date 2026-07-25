@@ -34,4 +34,19 @@ describe('ScryptInternalTokenHashingService', () => {
       false,
     );
   });
+
+  it('rejects unbounded or non-canonical stored hash material before scrypt', async () => {
+    const token = service.generate().value;
+    const storedHash = await service.hash(token);
+
+    await expect(
+      service.verify(token, `${storedHash}$unexpected`),
+    ).resolves.toBe(false);
+    await expect(
+      service.verify(
+        token,
+        storedHash.replace(/\$[^$]+\$/, `$${'a'.repeat(5_000)}$`),
+      ),
+    ).resolves.toBe(false);
+  });
 });
