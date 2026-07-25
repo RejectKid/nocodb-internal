@@ -37,6 +37,12 @@ import { InternalBasePermissionsController } from './permissions/internal-base-p
 import { InternalBasePermissionEnforcementInterceptor } from './permissions/internal-base-permission-enforcement.interceptor';
 import { InternalApiTokenAdminService } from './api-tokens/internal-api-token-admin.service';
 import { InternalApiTokensController } from './api-tokens/internal-api-tokens.controller';
+import { InternalTokenOwnerProvider } from './api-tokens/internal-token-owner.provider';
+import { CommunityInternalTokenOwnerProvider } from './api-tokens/community-internal-token-owner.provider';
+import { InternalTokenVerificationRateLimiter } from './api-tokens/internal-token-verification-rate-limiter';
+import { InternalTokenAuthenticationService } from './api-tokens/internal-token-authentication.service';
+import { InternalTokenAuthenticationGuard } from './api-tokens/internal-token-authentication.guard';
+import { InternalTokenScopeGuard } from './api-tokens/internal-token-scope.guard';
 
 @Module({
   imports: [NocoModule],
@@ -63,6 +69,14 @@ import { InternalApiTokensController } from './api-tokens/internal-api-tokens.co
     },
     InternalApiTokenIssuanceService,
     InternalApiTokenAdminService,
+    {
+      provide: InternalTokenOwnerProvider,
+      useClass: CommunityInternalTokenOwnerProvider,
+    },
+    InternalTokenVerificationRateLimiter,
+    InternalTokenAuthenticationService,
+    InternalTokenAuthenticationGuard,
+    InternalTokenScopeGuard,
     {
       provide: InternalTokenAuthorizationPolicy,
       useClass: DefaultInternalTokenAuthorizationPolicy,
@@ -104,6 +118,11 @@ import { InternalApiTokensController } from './api-tokens/internal-api-tokens.co
     InternalApiTokenRepository,
     InternalApiTokenIssuanceService,
     InternalApiTokenAdminService,
+    InternalTokenOwnerProvider,
+    InternalTokenVerificationRateLimiter,
+    InternalTokenAuthenticationService,
+    InternalTokenAuthenticationGuard,
+    InternalTokenScopeGuard,
     InternalTokenAuthorizationPolicy,
     InternalBasePermissionRepository,
     InternalBasePermissionPolicy,

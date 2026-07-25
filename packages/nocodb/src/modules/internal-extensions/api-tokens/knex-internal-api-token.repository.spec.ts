@@ -103,6 +103,41 @@ describe('KnexInternalApiTokenRepository', () => {
     expect(second?.record.revoked_at).toBe('2026-07-24T12:00:00.000Z');
   });
 
+  it('throttles last-used writes and never updates a revoked token', async () => {
+    await repository.insert(tokenRecord());
+
+    await expect(
+      repository.markUsed(
+        'token-1',
+        new Date('2026-07-24T12:00:00.000Z'),
+        new Date('2026-07-24T11:55:00.000Z'),
+      ),
+    ).resolves.toBe(true);
+    await expect(
+      repository.markUsed(
+        'token-1',
+        new Date('2026-07-24T12:01:00.000Z'),
+        new Date('2026-07-24T11:56:00.000Z'),
+      ),
+    ).resolves.toBe(false);
+    expect((await repository.findById('token-1'))?.record.last_used_at).toBe(
+      '2026-07-24T12:00:00.000Z',
+    );
+
+    await repository.revoke(
+      'token-1',
+      'admin-1',
+      new Date('2026-07-24T12:02:00.000Z'),
+    );
+    await expect(
+      repository.markUsed(
+        'token-1',
+        new Date('2026-07-24T12:10:00.000Z'),
+        new Date('2026-07-24T12:05:00.000Z'),
+      ),
+    ).resolves.toBe(false);
+  });
+
   it('maps a duplicate public prefix to a typed collision error', async () => {
     await repository.insert(tokenRecord());
 

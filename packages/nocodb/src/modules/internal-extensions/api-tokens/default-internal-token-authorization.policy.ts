@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InternalApiTokenScope } from './internal-api-token-scope';
 import {
+  type InternalTokenAuthenticationRequest,
   type InternalTokenAuthorizationDecision,
   type InternalTokenAuthorizationDeniedReason,
   type InternalTokenAuthorizationRequest,
@@ -39,17 +40,10 @@ function denyAuthorization(
 
 @Injectable()
 export class DefaultInternalTokenAuthorizationPolicy extends InternalTokenAuthorizationPolicy {
-  async authorize(
-    request: InternalTokenAuthorizationRequest,
+  async authenticate(
+    request: InternalTokenAuthenticationRequest,
   ): Promise<InternalTokenAuthorizationDecision> {
-    const {
-      token,
-      owner,
-      requiredScope,
-      requiredOwnerPermission,
-      target,
-      now,
-    } = request;
+    const { token, owner, now } = request;
 
     if (token.isRevoked()) {
       return denyAuthentication('revoked');
@@ -63,9 +57,6 @@ export class DefaultInternalTokenAuthorizationPolicy extends InternalTokenAuthor
     if (!token.record.scopes.every((scope) => SUPPORTED_SCOPES.has(scope))) {
       return denyAuthentication('invalid_scope_set');
     }
-    if (!SUPPORTED_SCOPES.has(requiredScope)) {
-      return denyAuthorization('unsupported_required_scope');
-    }
     if (!owner) {
       return denyAuthentication('owner_not_found');
     }
@@ -74,6 +65,33 @@ export class DefaultInternalTokenAuthorizationPolicy extends InternalTokenAuthor
     }
     if (owner.state !== 'active') {
       return denyAuthentication(`owner_${owner.state}`);
+    }
+
+    return allowedDecision;
+  }
+
+  async authorize(
+    request: InternalTokenAuthorizationRequest,
+  ): Promise<InternalTokenAuthorizationDecision> {
+    const {
+      token,
+      owner,
+      requiredScope,
+      requiredOwnerPermission,
+      target,
+      now,
+    } = request;
+
+    const authentication = await this.authenticate({ token, owner, now });
+    if (!authentication.allowed) {
+      return authentication;
+    }
+    if (!SUPPORTED_SCOPES.has(requiredScope)) {
+      return denyAuthorization('unsupported_required_scope');
+    }
+    // authenticate() guarantees a current, active owner.
+    if (!owner) {
+      return denyAuthentication('owner_not_found');
     }
     if (
       !requiredOwnerPermission ||

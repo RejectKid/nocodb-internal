@@ -199,6 +199,24 @@ export class KnexInternalApiTokenRepository extends InternalApiTokenRepository {
     return this.findById(id, transaction);
   }
 
+  async markUsed(
+    id: string,
+    usedAt: Date,
+    previousUseNotAfter: Date,
+    transaction?: Knex.Transaction,
+  ): Promise<boolean> {
+    const updated = await this.table(transaction)
+      .where({ id })
+      .whereNull('revoked_at')
+      .andWhere((builder) =>
+        builder
+          .whereNull('last_used_at')
+          .orWhere('last_used_at', '<=', previousUseNotAfter.toISOString()),
+      )
+      .update({ last_used_at: usedAt.toISOString() });
+    return Number(updated) > 0;
+  }
+
   private table(transaction?: Knex.Transaction) {
     const connection = transaction ?? this.metaService.knexConnection;
     return connection<InternalApiTokenDatabaseRow>(INTERNAL_API_TOKENS_TABLE);

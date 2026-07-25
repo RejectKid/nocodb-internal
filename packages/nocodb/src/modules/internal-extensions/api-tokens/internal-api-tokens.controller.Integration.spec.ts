@@ -21,6 +21,20 @@ jest.mock('~/guards/meta-api-limiter.guard', () => ({
     }
   },
 }));
+jest.mock('./internal-token-authentication.guard', () => ({
+  InternalTokenAuthenticationGuard: class InternalTokenAuthenticationGuard {
+    canActivate() {
+      return true;
+    }
+  },
+}));
+jest.mock('./internal-token-scope.guard', () => ({
+  InternalTokenScopeGuard: class InternalTokenScopeGuard {
+    canActivate() {
+      return true;
+    }
+  },
+}));
 
 import { Test } from '@nestjs/testing';
 import request from 'supertest';
@@ -30,6 +44,8 @@ import { MetaApiLimiterGuard } from '~/guards/meta-api-limiter.guard';
 import { InternalAuthenticatedGuard } from '../authorization/internal-authenticated.guard';
 import { InternalAuditRequestContextAdapter } from '../audit/internal-audit-request-context.adapter';
 import { InternalApiTokenAdminService } from './internal-api-token-admin.service';
+import { InternalTokenAuthenticationGuard } from './internal-token-authentication.guard';
+import { InternalTokenScopeGuard } from './internal-token-scope.guard';
 import { InternalApiTokensController } from './internal-api-tokens.controller';
 
 describe('InternalApiTokensController HTTP integration', () => {
@@ -53,6 +69,8 @@ describe('InternalApiTokensController HTTP integration', () => {
         GlobalGuard,
         MetaApiLimiterGuard,
         InternalAuthenticatedGuard,
+        InternalTokenAuthenticationGuard,
+        InternalTokenScopeGuard,
         InternalAuditRequestContextAdapter,
         {
           provide: InternalApiTokenAdminService,

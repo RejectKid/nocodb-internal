@@ -13,11 +13,22 @@ import { GlobalGuard } from '~/guards/global/global.guard';
 import { MetaApiLimiterGuard } from '~/guards/meta-api-limiter.guard';
 import { InternalAuthenticatedGuard } from '../authorization/internal-authenticated.guard';
 import { InternalAuditRequestContextAdapter } from '../audit/internal-audit-request-context.adapter';
+import { InternalBasePermission } from '../permissions/internal-base-permission';
 import type { CreateInternalApiTokenAdminRequest } from './internal-api-token-admin.types';
 import { InternalApiTokenAdminService } from './internal-api-token-admin.service';
+import { InternalApiTokenScope } from './internal-api-token-scope';
+import { InternalTokenAuthenticationGuard } from './internal-token-authentication.guard';
+import { RequireInternalTokenScope } from './internal-token-scope.decorator';
+import { InternalTokenScopeGuard } from './internal-token-scope.guard';
 
 @Controller('/api/internal/v1/workspaces/:workspaceId/bases/:baseId/tokens')
-@UseGuards(MetaApiLimiterGuard, GlobalGuard, InternalAuthenticatedGuard)
+@UseGuards(
+  MetaApiLimiterGuard,
+  GlobalGuard,
+  InternalTokenAuthenticationGuard,
+  InternalAuthenticatedGuard,
+  InternalTokenScopeGuard,
+)
 export class InternalApiTokensController {
   constructor(
     private readonly adminService: InternalApiTokenAdminService,
@@ -25,6 +36,11 @@ export class InternalApiTokensController {
   ) {}
 
   @Get()
+  @RequireInternalTokenScope(
+    InternalApiTokenScope.TOKENS_READ,
+    'base',
+    InternalBasePermission.BASE_MANAGE_TOKENS,
+  )
   getState(
     @Param('workspaceId') workspaceId: string,
     @Param('baseId') baseId: string,
@@ -39,6 +55,11 @@ export class InternalApiTokensController {
   }
 
   @Post()
+  @RequireInternalTokenScope(
+    InternalApiTokenScope.TOKENS_WRITE,
+    'base',
+    InternalBasePermission.BASE_MANAGE_TOKENS,
+  )
   create(
     @Param('workspaceId') workspaceId: string,
     @Param('baseId') baseId: string,
@@ -55,6 +76,11 @@ export class InternalApiTokensController {
   }
 
   @Delete('/:tokenId')
+  @RequireInternalTokenScope(
+    InternalApiTokenScope.TOKENS_WRITE,
+    'base',
+    InternalBasePermission.BASE_MANAGE_TOKENS,
+  )
   revoke(
     @Param('workspaceId') workspaceId: string,
     @Param('baseId') baseId: string,

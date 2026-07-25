@@ -34,4 +34,10 @@ export abstract class InternalApiTokenRepository {
     revokedAt: Date,
     transaction?: Knex.Transaction,
   ): Promise<InternalApiToken | null>;
+  abstract markUsed(
+    id: string,
+    usedAt: Date,
+    previousUseNotAfter: Date,
+    transaction?: Knex.Transaction,
+  ): Promise<boolean>;
 }
