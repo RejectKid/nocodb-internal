@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { nanoid } from 'nanoid';
+import type { Knex } from 'knex';
 import { InternalApiTokenScope } from './internal-api-token-scope';
 import type {
   InternalApiTokenRecord,
@@ -115,6 +116,7 @@ export class InternalApiTokenIssuanceService {
 
   async create(
     request: CreateInternalApiTokenRequest,
+    transaction?: Knex.Transaction,
   ): Promise<IssuedInternalApiToken> {
     const now = new Date();
     const userId = normalizeIdentifier(request.userId, 'userId');
@@ -165,7 +167,7 @@ export class InternalApiTokenIssuanceService {
           'metadata cannot contain token material',
         );
       }
-      if (await this.repository.findByPrefix(generated.prefix)) {
+      if (await this.repository.findByPrefix(generated.prefix, transaction)) {
         continue;
       }
 
@@ -190,7 +192,7 @@ export class InternalApiTokenIssuanceService {
       };
 
       try {
-        const inserted = await this.repository.insert(record);
+        const inserted = await this.repository.insert(record, transaction);
         return {
           token: inserted.toSummary(),
           value: generated.value,

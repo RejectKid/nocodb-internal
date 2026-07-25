@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import type { Knex } from 'knex';
 import type { MetaService } from '~/meta/meta.service';
 import { INTERNAL_API_TOKENS_TABLE } from '../migrations/nc_internal_001_api_tokens';
 import { InternalApiTokenScope } from './internal-api-token-scope';
@@ -133,38 +134,52 @@ export class KnexInternalApiTokenRepository extends InternalApiTokenRepository {
     super();
   }
 
-  async insert(record: InternalApiTokenRecord): Promise<InternalApiToken> {
+  async insert(
+    record: InternalApiTokenRecord,
+    transaction?: Knex.Transaction,
+  ): Promise<InternalApiToken> {
     try {
-      await this.table().insert(toDatabaseRow(record));
+      await this.table(transaction).insert(toDatabaseRow(record));
     } catch (error) {
       if (
         isUniqueConstraintError(error) &&
-        (await this.findByPrefix(record.token_prefix))
+        (await this.findByPrefix(record.token_prefix, transaction))
       ) {
         throw new InternalApiTokenPrefixConflictError(record.token_prefix);
       }
       throw error;
     }
 
-    const inserted = await this.findById(record.id);
+    const inserted = await this.findById(record.id, transaction);
     if (!inserted) {
       throw new Error('Inserted internal API token could not be reloaded');
     }
     return inserted;
   }
 
-  async findById(id: string): Promise<InternalApiToken | null> {
-    const row = await this.table().where({ id }).first();
+  async findById(
+    id: string,
+    transaction?: Knex.Transaction,
+  ): Promise<InternalApiToken | null> {
+    const row = await this.table(transaction).where({ id }).first();
     return row ? toModel(row) : null;
   }
 
-  async findByPrefix(prefix: string): Promise<InternalApiToken | null> {
-    const row = await this.table().where({ token_prefix: prefix }).first();
+  async findByPrefix(
+    prefix: string,
+    transaction?: Knex.Transaction,
+  ): Promise<InternalApiToken | null> {
+    const row = await this.table(transaction)
+      .where({ token_prefix: prefix })
+      .first();
     return row ? toModel(row) : null;
   }
 
-  async listByUserId(userId: string): Promise<InternalApiToken[]> {
-    const rows = await this.table()
+  async listByUserId(
+    userId: string,
+    transaction?: Knex.Transaction,
+  ): Promise<InternalApiToken[]> {
+    const rows = await this.table(transaction)
       .where({ user_id: userId })
       .orderBy('created_at', 'desc');
     return rows.map(toModel);
@@ -174,18 +189,18 @@ export class KnexInternalApiTokenRepository extends InternalApiTokenRepository {
     id: string,
     revokedBy: string,
     revokedAt: Date,
+    transaction?: Knex.Transaction,
   ): Promise<InternalApiToken | null> {
-    await this.table().where({ id }).whereNull('revoked_at').update({
+    await this.table(transaction).where({ id }).whereNull('revoked_at').update({
       revoked_at: revokedAt.toISOString(),
       revoked_by: revokedBy,
     });
 
-    return this.findById(id);
+    return this.findById(id, transaction);
   }
 
-  private table() {
-    return this.metaService.knexConnection<InternalApiTokenDatabaseRow>(
-      INTERNAL_API_TOKENS_TABLE,
-    );
+  private table(transaction?: Knex.Transaction) {
+    const connection = transaction ?? this.metaService.knexConnection;
+    return connection<InternalApiTokenDatabaseRow>(INTERNAL_API_TOKENS_TABLE);
   }
 }

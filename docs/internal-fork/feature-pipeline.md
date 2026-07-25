@@ -125,12 +125,12 @@ changing entitlements. Any intentional difference must be documented.
   revoked, disabled user, direct route, and scope-version mismatch.
 - Documentation required: Scope catalog and policy algorithm.
 - Estimated complexity: XL
-- Status: Security Review
+- Status: Backend
 - Acceptance criteria: Typed centralized scopes; boundaries enforced; route
   tests cover success and denial.
 - Known risks: Scope explosion, stale owner-permission facts, and inconsistent
-  resource extraction. HTTP integration remains blocked on PERM-001, rate
-  limiting, and PostgreSQL migration coverage.
+  resource extraction. HTTP authentication/route integration, rate limiting,
+  and PostgreSQL migration coverage remain.
 
 ### TOK-003 — Token administration UI
 
@@ -147,7 +147,14 @@ changing entitlements. Any intentional difference must be documented.
   direct API denial, and revoke propagation.
 - Documentation required: User guide and incident-response steps.
 - Estimated complexity: L
-- Status: Proposed
+- Status: Security Review
+- Progress: An authenticated base-settings API and isolated editor create,
+  list, and revoke the current user's tokens. Creation selects typed scopes,
+  expiration, the current workspace, and one or more bases; the backend
+  independently requires `base:manage_tokens` for every selected base. Secrets
+  are returned once, held only in component memory, and excluded from lists and
+  audit summaries. Creation/revocation and their audit events share one
+  metadata transaction. Unit, HTTP denial, and browser tests cover the flow.
 - Acceptance criteria: All requested operations work; secret is not retrievable;
   UI and backend restrictions match.
 - Known risks: Browser clipboard leakage and stale list state.
@@ -171,7 +178,7 @@ changing entitlements. Any intentional difference must be documented.
   disabled user, and Community fallback.
 - Documentation required: Resolution algorithm and emergency-access policy.
 - Estimated complexity: XL
-- Status: Backend
+- Status: Security Review
 - Acceptance criteria: All listed permissions are enforced; Community behavior
   remains unchanged until base opt-in; resolution is deterministic.
 - Known risks: Conflicts with upstream role evolution.

@@ -4,6 +4,7 @@ import type { Plugin } from 'vite'
 import { defineConfig } from 'vite'
 
 const attempts = new Map<string, number>()
+const tokenState = new Map<string, Array<Record<string, unknown>>>()
 
 function json(response: import('node:http').ServerResponse, status: number, body: unknown) {
   response.statusCode = status
@@ -52,7 +53,7 @@ function internalApi(): Plugin {
             schemaVersion: 1,
             features: {
               internalAdmin: false,
-              fineGrainedApiTokens: false,
+              fineGrainedApiTokens: !scenario.startsWith('token-capability-off'),
               basePermissions: !scenario.startsWith('capability-off'),
               inputValidation: false,
               documentPermissions: false,
@@ -60,6 +61,64 @@ function internalApi(): Plugin {
               discussionMode: false,
             },
           })
+        }
+
+        if (path.includes('/tokens')) {
+          if (scenario.startsWith('token-unauthorized')) {
+            return json(response, 403, { message: 'Internal token administration denied' })
+          }
+          const tokens = tokenState.get(scenario) ?? [
+            {
+              id: 'token-existing',
+              user_id: 'user-1',
+              display_name: 'Existing token',
+              token_prefix: 'nci_existing001',
+              created_at: '2026-07-24T12:00:00.000Z',
+              expires_at: null,
+              last_used_at: null,
+              revoked_at: null,
+              allowed_workspace_ids: ['workspace-1'],
+              allowed_base_ids: ['base-1'],
+              scopes: ['data:read'],
+            },
+          ]
+          tokenState.set(scenario, tokens)
+          if (request.method === 'GET') {
+            return json(response, 200, {
+              tokens,
+              scopeCatalog: [
+                { scope: 'data:read', family: 'data', label: 'Read records', mutation: false },
+                { scope: 'data:update', family: 'data', label: 'Update records', mutation: true },
+              ],
+              boundary: { workspaceId: 'workspace-1', baseId: 'base-1' },
+            })
+          }
+          if (request.method === 'DELETE') {
+            const tokenId = path.split('/').at(-1)
+            const token = tokens.find(({ id }) => id === tokenId)
+            if (token) token.revoked_at = '2026-07-24T13:00:00.000Z'
+            return json(response, 200, token)
+          }
+          if (request.method === 'POST') {
+            const created = {
+              id: 'token-created',
+              user_id: 'user-1',
+              display_name: 'Browser automation',
+              token_prefix: 'nci_created001',
+              created_at: '2026-07-24T12:30:00.000Z',
+              expires_at: null,
+              last_used_at: null,
+              revoked_at: null,
+              allowed_workspace_ids: ['workspace-1'],
+              allowed_base_ids: ['base-1'],
+              scopes: ['data:read'],
+            }
+            tokens.unshift(created)
+            return json(response, 201, {
+              token: created,
+              value: 'nci_created001_shown-once-secret',
+            })
+          }
         }
 
         if (!path.includes('/permissions')) return json(response, 404, { message: 'Not found' })

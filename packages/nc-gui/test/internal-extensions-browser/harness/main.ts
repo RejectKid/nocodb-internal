@@ -1,6 +1,7 @@
-import { computed, createApp, defineComponent, h, onMounted, ref, watch } from 'vue'
+import { computed, createApp, defineComponent, h, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import BaseSettings from '../../../components/dashboard/settings/base/index.vue'
 import PermissionEditor from '../../../components/internalExtensions/basePermissions/Editor.vue'
+import TokenEditor from '../../../components/internalExtensions/apiTokens/Editor.vue'
 
 declare global {
   interface Window {
@@ -37,8 +38,10 @@ async function request<T>(method: string, url: string, body?: unknown) {
 
 const client = {
   get: <T>(url: string) => request<T>('GET', url),
+  post: <T>(url: string, body: unknown) => request<T>('POST', url, body),
   patch: <T>(url: string, body: unknown) => request<T>('PATCH', url, body),
   put: <T>(url: string, body: unknown) => request<T>('PUT', url, body),
+  delete: <T>(url: string) => request<T>('DELETE', url),
 }
 
 const activeWorkspaceId = ref('workspace-1')
@@ -57,6 +60,10 @@ const basesUser = ref(
     ],
   ]),
 )
+const basesList = ref([
+  { id: 'base-1', title: 'Primary Base', fk_workspace_id: 'workspace-1' },
+  { id: 'base-2', title: 'Secondary Base', fk_workspace_id: 'workspace-1' },
+])
 const router = {
   currentRoute: ref({ query: {} as Record<string, string> }),
   push: async (route: { query?: Record<string, string> }) => {
@@ -66,6 +73,7 @@ const router = {
 
 Object.assign(globalThis, {
   computed,
+  onBeforeUnmount,
   onMounted,
   ref,
   watch,
@@ -73,6 +81,7 @@ Object.assign(globalThis, {
   useWorkspace: () => ({ activeWorkspaceId }),
   useBases: () => ({
     basesUser,
+    basesList,
     getBaseUsers: async () => ({ users: basesUser.value.get('base-1') }),
   }),
   useApi: () => ({ api: { instance: client } }),
@@ -146,7 +155,8 @@ const NcAlert = defineComponent({
 const NcSelect = defineComponent({
   inheritAttrs: false,
   props: {
-    value: String,
+    value: [String, Array],
+    mode: String,
   },
   emits: ['update:value', 'change'],
   setup(props, { attrs, emit, slots }) {
@@ -155,9 +165,11 @@ const NcSelect = defineComponent({
         'select',
         {
           ...attrs,
-          value: props.value,
+          multiple: props.mode === 'multiple',
+          value: props.value as any,
           onChange: (event: Event) => {
-            const value = (event.target as HTMLSelectElement).value
+            const select = event.target as HTMLSelectElement
+            const value = props.mode === 'multiple' ? [...select.selectedOptions].map((option) => option.value) : select.value
             emit('update:value', value)
             emit('change', value)
           },
@@ -169,9 +181,23 @@ const NcSelect = defineComponent({
 const SelectOption = defineComponent({
   props: {
     value: String,
+    disabled: Boolean,
   },
   setup(props, { slots }) {
-    return () => h('option', { value: props.value }, slots.default?.())
+    return () => h('option', { value: props.value, disabled: props.disabled }, slots.default?.())
+  },
+})
+const NcCheckbox = defineComponent({
+  props: { checked: Boolean },
+  emits: ['update:checked'],
+  setup(props, { attrs, emit }) {
+    return () =>
+      h('input', {
+        ...attrs,
+        type: 'checkbox',
+        checked: props.checked,
+        onChange: (event: Event) => emit('update:checked', (event.target as HTMLInputElement).checked),
+      })
   },
 })
 const Empty = defineComponent({
@@ -185,6 +211,7 @@ const components: Record<string, unknown> = {
   NcSwitch,
   NcAlert,
   NcSelect,
+  NcCheckbox,
   ASelectOption: SelectOption,
   GeneralIcon: Empty,
   DashboardSettingsBaseAccess: Empty,
@@ -199,9 +226,17 @@ const components: Record<string, unknown> = {
           },
         })
       : PermissionEditor,
+  InternalExtensionsApiTokensEditor:
+    screen === 'settings'
+      ? defineComponent({
+          setup() {
+            return () => h('div', { 'data-testid': 'token-editor-mounted' })
+          },
+        })
+      : TokenEditor,
 }
 
-const app = createApp(screen === 'settings' ? BaseSettings : PermissionEditor, {
+const app = createApp(screen === 'settings' ? BaseSettings : screen === 'tokens' ? TokenEditor : PermissionEditor, {
   baseId: 'base-1',
 })
 for (const [name, component] of Object.entries(components)) app.component(name, component)

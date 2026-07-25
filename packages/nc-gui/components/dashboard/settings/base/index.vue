@@ -28,6 +28,7 @@ const router = useRouter()
 
 const { capabilities, refresh: refreshInternalCapabilities } = useInternalCapabilities()
 const internalBasePermissionsAvailable = computed(() => Boolean(capabilities.value?.features.basePermissions))
+const internalApiTokensAvailable = computed(() => Boolean(capabilities.value?.features.fineGrainedApiTokens))
 const allTabs = computed(() => [
   'baseType',
   'snapshots',
@@ -35,6 +36,7 @@ const allTabs = computed(() => [
   'migrateToV3',
   'migrate',
   ...(internalBasePermissionsAvailable.value ? ['internalPermissions'] : []),
+  ...(internalApiTokensAvailable.value ? ['internalTokens'] : []),
 ])
 
 const getDefaultTab = () => {
@@ -145,6 +147,18 @@ watch(
           <span>Permissions</span>
         </div>
         <div
+          v-if="internalApiTokensAvailable"
+          :class="{
+            'active-menu': activeMenu === 'internalTokens',
+          }"
+          class="gap-3 hover:bg-nc-bg-gray-light transition-all text-nc-content-gray flex rounded-lg items-center cursor-pointer py-1.5 px-3"
+          data-testid="internal-api-tokens-tab"
+          @click="selectMenu('internalTokens')"
+        >
+          <GeneralIcon icon="ncKey2" />
+          <span>API tokens</span>
+        </div>
+        <div
           v-if="hasPermissionForMigrateToV3"
           :class="{
             'active-menu': activeMenu === 'migrateToV3',
@@ -178,6 +192,7 @@ watch(
       <DashboardSettingsBaseAccess v-if="activeMenu === 'baseType'" />
       <DashboardSettingsBaseVisibility v-if="activeMenu === 'visibility'" />
       <InternalExtensionsBasePermissionsEditor v-if="activeMenu === 'internalPermissions'" :base-id="props.baseId" />
+      <InternalExtensionsApiTokensEditor v-if="activeMenu === 'internalTokens'" :base-id="props.baseId" />
       <DashboardSettingsBaseMigrateToV3 v-if="activeMenu === 'migrateToV3'" />
       <DashboardSettingsBaseMigrate v-if="activeMenu === 'migrate'" />
     </div>

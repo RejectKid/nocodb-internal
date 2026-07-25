@@ -116,6 +116,19 @@ describe('KnexInternalApiTokenRepository', () => {
     ).rejects.toBeInstanceOf(InternalApiTokenPrefixConflictError);
   });
 
+  it('participates in the caller transaction for atomic audit mutations', async () => {
+    await expect(
+      knex.transaction(async (transaction) => {
+        await repository.insert(tokenRecord(), transaction);
+        throw new Error('roll back audit mutation');
+      }),
+    ).rejects.toThrow('roll back audit mutation');
+
+    await expect(
+      knex(INTERNAL_API_TOKENS_TABLE).count('* as count').first(),
+    ).resolves.toEqual({ count: 0 });
+  });
+
   it('fails closed when stored scopes are malformed', async () => {
     await repository.insert(tokenRecord());
     await knex(INTERNAL_API_TOKENS_TABLE)

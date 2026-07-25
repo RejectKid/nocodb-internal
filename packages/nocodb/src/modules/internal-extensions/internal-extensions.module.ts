@@ -35,12 +35,15 @@ import { CommunityBasePermissionIdentityProvider } from './permissions/community
 import { InternalBasePermissionAdminService } from './permissions/internal-base-permission-admin.service';
 import { InternalBasePermissionsController } from './permissions/internal-base-permissions.controller';
 import { InternalBasePermissionEnforcementInterceptor } from './permissions/internal-base-permission-enforcement.interceptor';
+import { InternalApiTokenAdminService } from './api-tokens/internal-api-token-admin.service';
+import { InternalApiTokensController } from './api-tokens/internal-api-tokens.controller';
 
 @Module({
   imports: [NocoModule],
   controllers: [
     InternalCapabilitiesController,
     InternalBasePermissionsController,
+    InternalApiTokensController,
   ],
   providers: [
     GlobalGuard,
@@ -59,6 +62,7 @@ import { InternalBasePermissionEnforcementInterceptor } from './permissions/inte
         new KnexInternalApiTokenRepository(metaService),
     },
     InternalApiTokenIssuanceService,
+    InternalApiTokenAdminService,
     {
       provide: InternalTokenAuthorizationPolicy,
       useClass: DefaultInternalTokenAuthorizationPolicy,
@@ -99,6 +103,7 @@ import { InternalBasePermissionEnforcementInterceptor } from './permissions/inte
     InternalTokenHashingService,
     InternalApiTokenRepository,
     InternalApiTokenIssuanceService,
+    InternalApiTokenAdminService,
     InternalTokenAuthorizationPolicy,
     InternalBasePermissionRepository,
     InternalBasePermissionPolicy,

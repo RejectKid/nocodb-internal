@@ -229,3 +229,30 @@ or permission implementation is touched.
 | `packages/nocodb/src/mcp/mcp-token.guard.spec.ts` | MCP authentication and disabled-user denial tests | None | Low | PERM-001, FND-003 |
 | `packages/nocodb/src/modules/jobs/jobs/data-export/data-export.controller.ts` | Explicit export plus record-read requirement | Self | Medium | PERM-001 |
 | `packages/nocodb/src/modules/noco.module.ts` | Registers the MCP authentication guard | Existing MCP provider list | Low | PERM-001 |
+
+## Stage 12 token administration files
+
+Owner for every file below: Internal Platform Team. No commercial token,
+entitlement, or permission implementation is touched.
+
+| Path | Purpose | Upstream files touched | Merge risk | Feature IDs |
+| --- | --- | --- | --- | --- |
+| `docs/internal-fork/internal-api-token-administration.md` | Administrator and incident-response guide | None | Low | TOK-003 |
+| `docs/internal-fork/stage-12-token-administration-report.md` | Delivery, validation, and residual-risk record | None | Low | TOK-003 |
+| `packages/nocodb/src/modules/internal-extensions/api-tokens/internal-api-token-admin.types.ts` | Independent administration contracts | None | Low | TOK-003 |
+| `packages/nocodb/src/modules/internal-extensions/api-tokens/internal-api-token-admin.service.ts` | Boundary validation, authorization, and audited mutations | Internal permission and audit services | Medium | TOK-003, PERM-001, SEC-001 |
+| `packages/nocodb/src/modules/internal-extensions/api-tokens/internal-api-tokens.controller.ts` | Authenticated internal v1 administration routes | Existing Community guards | Medium | TOK-003 |
+| `packages/nocodb/src/modules/internal-extensions/api-tokens/internal-api-token-admin.service.spec.ts` | Authorization, boundary, secret, audit, and revoke tests | None | Low | TOK-003, FND-003 |
+| `packages/nocodb/src/modules/internal-extensions/api-tokens/internal-api-tokens.controller.Integration.spec.ts` | Direct HTTP authentication and contract tests | None | Low | TOK-003, FND-003 |
+| `packages/nocodb/src/modules/internal-extensions/api-tokens/internal-api-token.repository.ts` | Adds caller-transaction support | None | Low | TOK-003, SEC-001 |
+| `packages/nocodb/src/modules/internal-extensions/api-tokens/knex-internal-api-token.repository.ts` | Atomic token persistence in audit transactions | Metadata connection | Medium | TOK-003, SEC-001 |
+| `packages/nocodb/src/modules/internal-extensions/api-tokens/knex-internal-api-token.repository.spec.ts` | Caller-transaction rollback regression | None | Low | TOK-003, SEC-001 |
+| `packages/nocodb/src/modules/internal-extensions/api-tokens/internal-api-token-issuance.service.ts` | Transaction-aware one-time issuance | None | Low | TOK-003 |
+| `packages/nocodb/src/modules/internal-extensions/internal-extensions.module.ts` | Registers isolated token controller and service | Existing internal composition root | Low | TOK-003 |
+| `packages/nc-gui/composables/internalExtensions/useInternalApiTokens.ts` | Typed token administration client and lifecycle helpers | Existing Axios instance | Low | TOK-003 |
+| `packages/nc-gui/components/internalExtensions/apiTokens/Editor.vue` | Capability-gated token editor and one-time secret flow | Existing base/settings stores | Medium | TOK-003 |
+| `packages/nc-gui/components/dashboard/settings/base/index.vue` | Small API Tokens navigation and component hook | Community base-settings shell | Medium | TOK-003 |
+| `packages/nc-gui/test/internal-api-tokens.test.ts` | Client path and lifecycle tests | None | Low | TOK-003 |
+| `packages/nc-gui/test/internal-extensions-browser/internal-api-tokens.spec.ts` | Browser denial, copy-once, revoke, and gating tests | Existing isolated browser harness | Low | TOK-003, FND-003 |
+| `packages/nc-gui/test/internal-extensions-browser/harness/main.ts` | Adds real token-editor mounting and client adapters | Existing browser harness | Low | TOK-003 |
+| `packages/nc-gui/test/internal-extensions-browser/vite.config.ts` | Deterministic token administration HTTP scenarios | Existing browser harness | Low | TOK-003, FND-003 |
