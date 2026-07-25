@@ -37,6 +37,8 @@ import {
   View,
 } from '~/models';
 import { RootScopes } from '~/utils/globals';
+import { RequireInternalBasePermissionFromRequest } from '~/modules/internal-extensions/permissions/internal-base-permission-enforcement.decorator';
+import { InternalPermissionRequestKind } from '~/modules/internal-extensions/permissions/internal-request-permission-resolver';
 
 @Controller()
 @UseGuards(MetaApiLimiterGuard, GlobalGuard)
@@ -214,6 +216,9 @@ export class InternalController {
   }
 
   @Get(['/api/v2/internal/:workspaceId/:baseId'])
+  @RequireInternalBasePermissionFromRequest(
+    InternalPermissionRequestKind.INTERNAL_API,
+  )
   protected async internalAPI(
     @TenantContext() context: NcContext,
     @Param('workspaceId') workspaceId: string,
@@ -236,6 +241,9 @@ export class InternalController {
   }
 
   @Post(['/api/v2/internal/:workspaceId/:baseId'])
+  @RequireInternalBasePermissionFromRequest(
+    InternalPermissionRequestKind.INTERNAL_API,
+  )
   // return 200 instead 201 for more generic operations
   @HttpCode(200)
   protected async internalAPIPost(

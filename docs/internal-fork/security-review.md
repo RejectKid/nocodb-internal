@@ -183,5 +183,41 @@ requires a reason.
       downstream Community denial.
 - [x] No commercial permission, feature flag, entitlement, or license
       implementation is imported or modified.
-- [ ] V1/alias, V3, MCP, attachment, import/export, background-job, and realtime
+- [ ] V1/alias, MCP, attachment, import/export, background-job, and realtime
       record paths require equivalent enforcement before PERM-001 is Ready.
+
+## PERM-001 V3 record-route enforcement evidence
+
+- [x] Every route in Community `Datav3Controller` has explicit typed permission
+      metadata.
+- [x] Upsert requires both `records:create` and `records:update`; one denial
+      denies the complete operation.
+- [x] Compound decisions reuse one fetched configuration and grant set.
+- [x] V3 attachment upload requires `records:update` and does not bypass the
+      centralized record policy.
+- [x] Production metadata tests cover list, read, count, insert, upsert, update,
+      delete, nested link/list/unlink, and attachment upload.
+- [x] HTTP tests prove compound permission denial stops before controller logic.
+- [x] Capability-disabled and base-unconfigured Community fallbacks continue
+      through the same interceptor regressions.
+- [x] No commercial permission, entitlement, feature-flag, or license
+      implementation is imported or modified.
+- [ ] File-specific controls remain required for attachment handling.
+- [x] V1, old-data, alias, bulk, calendar, relation, and nested record routes
+      are covered by the centralized Community ACL adapter.
+- [x] Internal API operations and batches derive typed permissions from the
+      operation contract before dispatch.
+- [x] MCP authentication resolves the actor before policy interception and MCP
+      record tools map to read/create/update/delete permissions.
+- [x] Import triggers require `base:import`; export enqueue requires
+      `base:export` and `records:read`.
+- [x] Base-scoped schema, view, member, base-token, and base operations map to
+      the corresponding typed permission families.
+- [x] Public share sessions remain governed by Community share authorization.
+- [x] Community realtime exposes broadcasts but no independent record mutation
+      entry point.
+- [ ] Raw attachment routes without authoritative record context require the
+      signed-delivery design in MODE-002.
+- [ ] Job workers should recheck authorization before final delivery so a
+      permission revoked after enqueue cannot release an export (SEC-002).
+- [ ] A reviewer must record formal sign-off before PERM-001 is marked Ready.

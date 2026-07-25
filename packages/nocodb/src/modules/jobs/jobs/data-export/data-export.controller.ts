@@ -12,6 +12,8 @@ import { AppEvents } from 'nocodb-sdk';
 import type { DataExportJobData } from '~/interface/Jobs';
 import { GlobalGuard } from '~/guards/global/global.guard';
 import { Acl } from '~/middlewares/extract-ids/extract-ids.middleware';
+import { InternalBasePermission } from '~/modules/internal-extensions/permissions/internal-base-permission';
+import { RequireInternalBasePermission } from '~/modules/internal-extensions/permissions/internal-base-permission-enforcement.decorator';
 import { BasesService } from '~/services/bases.service';
 import { Model, View } from '~/models';
 import { JobTypes } from '~/interface/Jobs';
@@ -35,6 +37,10 @@ export class DataExportController {
   @HttpCode(200)
   // TODO add new ACL
   @Acl('dataList')
+  @RequireInternalBasePermission(
+    InternalBasePermission.BASE_EXPORT,
+    InternalBasePermission.RECORDS_READ,
+  )
   async exportModelData(
     @TenantContext() context: NcContext,
     @Req() req: NcRequest,

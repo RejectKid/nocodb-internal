@@ -195,3 +195,37 @@ or permission implementation is touched.
 | `packages/nocodb/src/modules/internal-extensions/permissions/internal-base-permission-enforcement.interceptor.spec.ts` | HTTP authorization and production metadata matrix | Community `DataTableController` import only | Low | PERM-001, FND-003 |
 | `packages/nocodb/src/modules/internal-extensions/internal-extensions.module.ts` | Conditional global-interceptor registration | Existing internal composition root | Low | PERM-001 |
 | `packages/nocodb/src/controllers/data-table.controller.ts` | Small typed metadata hooks for the full V2 record family | Self | Medium | PERM-001 |
+
+## Stage 10 V3 record-permission enforcement files
+
+Owner for every file below: Internal Platform Team. No commercial entitlement
+or permission implementation is touched.
+
+| Path | Purpose | Upstream files touched | Merge risk | Feature IDs |
+| --- | --- | --- | --- | --- |
+| `docs/internal-fork/stage-10-v3-record-permission-enforcement-report.md` | V3 mapping, security boundary, validation, and residual-risk record | None | Low | PERM-001 |
+| `packages/nocodb/src/controllers/v3/data-v3.controller.ts` | Typed metadata hooks for the full V3 record family | Self | Medium | PERM-001 |
+| `packages/nocodb/src/modules/internal-extensions/permissions/internal-base-permission-v3-enforcement.spec.ts` | V3 production metadata and compound-resolution tests | Community `Datav3Controller` import only | Low | PERM-001, FND-003 |
+| `packages/nocodb/src/modules/internal-extensions/permissions/internal-base-permission-enforcement.decorator.ts` | Supports one or more typed permission requirements | None | Low | PERM-001 |
+| `packages/nocodb/src/modules/internal-extensions/permissions/internal-base-permission-enforcement.interceptor.ts` | Denies when any required permission fails | Community request context and ACL ordering | Medium | PERM-001, FND-003 |
+| `packages/nocodb/src/modules/internal-extensions/permissions/internal-base-permission-enforcement.interceptor.spec.ts` | Compound HTTP allow/deny regression | None | Low | PERM-001, FND-003 |
+| `packages/nocodb/src/modules/internal-extensions/permissions/internal-base-permission.service.ts` | Evaluates multiple permissions from one fetched read set | None | Low | PERM-001 |
+
+## Stage 11 base-permission enforcement completion files
+
+Owner for every file below: Internal Platform Team. No commercial entitlement
+or permission implementation is touched.
+
+| Path | Purpose | Upstream files touched | Merge risk | Feature IDs |
+| --- | --- | --- | --- | --- |
+| `docs/internal-fork/stage-11-base-permission-enforcement-completion-report.md` | Full enforcement coverage, validation, and residual-risk record | None | Low | PERM-001, SEC-002 |
+| `packages/nocodb/src/modules/internal-extensions/permissions/internal-community-acl-permission-map.ts` | Central typed adapter for base-scoped Community ACL names | Community ACL metadata contract | Medium | PERM-001 |
+| `packages/nocodb/src/modules/internal-extensions/permissions/internal-community-acl-permission-map.spec.ts` | Permission-family and commercial-operation isolation tests | None | Low | PERM-001, FND-003 |
+| `packages/nocodb/src/modules/internal-extensions/permissions/internal-request-permission-resolver.ts` | Bounded internal API and MCP operation resolver | Shared-route request contracts | Medium | PERM-001 |
+| `packages/nocodb/src/modules/internal-extensions/permissions/internal-request-permission-resolver.spec.ts` | Single, batch, protocol, and MCP mapping tests | None | Low | PERM-001, FND-003 |
+| `packages/nocodb/src/controllers/internal.controller.ts` | Small request-derived authorization metadata hooks | Self | Medium | PERM-001 |
+| `packages/nocodb/src/mcp/mcp.controller.ts` | MCP request-derived permission hook and pre-dispatch guard | Self | Medium | PERM-001 |
+| `packages/nocodb/src/mcp/mcp-token.guard.ts` | Pre-interceptor MCP actor authentication | Community MCP token and user models | Medium | PERM-001, FND-003 |
+| `packages/nocodb/src/mcp/mcp-token.guard.spec.ts` | MCP authentication and disabled-user denial tests | None | Low | PERM-001, FND-003 |
+| `packages/nocodb/src/modules/jobs/jobs/data-export/data-export.controller.ts` | Explicit export plus record-read requirement | Self | Medium | PERM-001 |
+| `packages/nocodb/src/modules/noco.module.ts` | Registers the MCP authentication guard | Existing MCP provider list | Low | PERM-001 |

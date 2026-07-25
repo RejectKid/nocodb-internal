@@ -13,10 +13,18 @@ import type { Observable } from 'rxjs';
 import type { NcRequest } from '~/interface/config';
 import { InternalFeatureRegistryService } from '../feature-registry/internal-feature-registry.service';
 import type { InternalBasePermission } from './internal-base-permission';
-import { INTERNAL_BASE_PERMISSION_METADATA } from './internal-base-permission-enforcement.decorator';
+import {
+  INTERNAL_BASE_PERMISSION_METADATA,
+  INTERNAL_BASE_PERMISSION_REQUEST_METADATA,
+} from './internal-base-permission-enforcement.decorator';
 import { InternalBasePermissionIdentityProvider } from './internal-base-permission-identity.provider';
 import { InternalBasePermissionRepository } from './internal-base-permission.repository';
 import { InternalBasePermissionService } from './internal-base-permission.service';
+import { resolveInternalPermissionsForCommunityAcl } from './internal-community-acl-permission-map';
+import {
+  InternalPermissionRequestKind,
+  resolveInternalPermissionsForRequest,
+} from './internal-request-permission-resolver';
 
 @Injectable()
 export class InternalBasePermissionEnforcementInterceptor
@@ -34,20 +42,53 @@ export class InternalBasePermissionEnforcementInterceptor
     executionContext: ExecutionContext,
     next: CallHandler,
   ): Promise<Observable<unknown>> {
-    const permission = this.reflector.getAllAndOverride<
-      InternalBasePermission | undefined
+    const explicitPermissions = this.reflector.getAllAndOverride<
+      readonly InternalBasePermission[] | undefined
     >(INTERNAL_BASE_PERMISSION_METADATA, [
       executionContext.getHandler(),
       executionContext.getClass(),
     ]);
+    const requestKind = this.reflector.getAllAndOverride<
+      InternalPermissionRequestKind | undefined
+    >(INTERNAL_BASE_PERMISSION_REQUEST_METADATA, [
+      executionContext.getHandler(),
+      executionContext.getClass(),
+    ]);
+    const communityPermission = this.reflector.getAllAndOverride<
+      string | undefined
+    >('permission', [
+      executionContext.getHandler(),
+      executionContext.getClass(),
+    ]);
+    const scope = this.reflector.getAllAndOverride<string | undefined>(
+      'scope',
+      [executionContext.getHandler(), executionContext.getClass()],
+    );
+
+    const request = executionContext.switchToHttp().getRequest<NcRequest>();
+    const permissions =
+      explicitPermissions ??
+      (requestKind
+        ? resolveInternalPermissionsForRequest(requestKind, request)
+        : scope === 'base'
+        ? resolveInternalPermissionsForCommunityAcl(communityPermission)
+        : undefined);
     if (
-      !permission ||
+      !permissions?.length ||
       !this.featureRegistry.getCapabilities().features.basePermissions
     ) {
       return next.handle();
     }
 
-    const request = executionContext.switchToHttp().getRequest<NcRequest>();
+    // Shared/public-base sessions keep their dedicated upstream share
+    // authorization. Internal grants are user assignments and cannot be
+    // resolved safely for an anonymous/public identity.
+    if (
+      request.context?.is_public ||
+      (request.user as { isPublicBase?: boolean } | undefined)?.isPublicBase
+    ) {
+      return next.handle();
+    }
     const workspaceId = request.ncWorkspaceId ?? request.context?.workspace_id;
     const baseId = request.ncBaseId ?? request.context?.base_id;
     if (!request.context || !workspaceId || !baseId) {
@@ -73,7 +114,7 @@ export class InternalBasePermissionEnforcementInterceptor
       baseId,
       userId,
     );
-    const decision = await this.permissionService.resolve(
+    const decisions = await this.permissionService.resolveMany(
       {
         workspaceId,
         baseId,
@@ -84,9 +125,9 @@ export class InternalBasePermissionEnforcementInterceptor
         // still cannot bypass a Community ACL denial.
         communityAllowed: () => true,
       },
-      permission,
+      permissions,
     );
-    if (!decision.allowed) {
+    if (decisions.some((decision) => !decision.allowed)) {
       throw new ForbiddenException('Internal base permission denied');
     }
 

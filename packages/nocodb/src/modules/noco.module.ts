@@ -114,6 +114,7 @@ import { ViewsService } from '~/services/views.service';
 import { McpTokenService } from '~/services/mcp.service';
 import { McpService } from '~/mcp/mcp.service';
 import { McpController } from '~/mcp/mcp.controller';
+import { McpTokenGuard } from '~/mcp/mcp-token.guard';
 import { InternalController } from '~/controllers/internal.controller';
 import { WorkspaceUsersController } from '~/controllers/workspace-users.controller';
 import { ViewRowColorV3Service } from '~/services/v3/view-row-color-v3.service';
@@ -335,6 +336,7 @@ export const nocoModuleMetadata = {
     NocoJobsService,
     McpTokenService,
     McpService,
+    McpTokenGuard,
     ViewRowColorService,
     ViewRowColorV3Service,
     ViewsV3Service,

@@ -1,8 +1,11 @@
 import { SetMetadata } from '@nestjs/common';
 import type { InternalBasePermission } from './internal-base-permission';
+import type { InternalPermissionRequestKind } from './internal-request-permission-resolver';
 
 export const INTERNAL_BASE_PERMISSION_METADATA =
   'nc.internal.base-permission' as const;
+export const INTERNAL_BASE_PERMISSION_REQUEST_METADATA =
+  'nc.internal.base-permission-request' as const;
 
 /**
  * Marks an upstream Community route for additional internal authorization.
@@ -10,5 +13,13 @@ export const INTERNAL_BASE_PERMISSION_METADATA =
  * enabled.
  */
 export const RequireInternalBasePermission = (
-  permission: InternalBasePermission,
-) => SetMetadata(INTERNAL_BASE_PERMISSION_METADATA, permission);
+  ...permissions: [InternalBasePermission, ...InternalBasePermission[]]
+) =>
+  SetMetadata(
+    INTERNAL_BASE_PERMISSION_METADATA,
+    Object.freeze([...permissions]),
+  );
+
+export const RequireInternalBasePermissionFromRequest = (
+  kind: InternalPermissionRequestKind,
+) => SetMetadata(INTERNAL_BASE_PERMISSION_REQUEST_METADATA, kind);

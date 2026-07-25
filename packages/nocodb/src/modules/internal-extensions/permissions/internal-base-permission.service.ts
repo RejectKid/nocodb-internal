@@ -36,20 +36,29 @@ export class InternalBasePermissionService {
     input: ResolveInternalBasePermissionInput,
     permission: InternalBasePermission,
   ): Promise<InternalBasePermissionDecision> {
+    return (await this.resolveMany(input, [permission]))[0];
+  }
+
+  async resolveMany(
+    input: ResolveInternalBasePermissionInput,
+    permissions: readonly InternalBasePermission[],
+  ): Promise<InternalBasePermissionDecision[]> {
     const [configuration, grants] = await Promise.all([
       this.repository.getConfiguration(input.workspaceId, input.baseId),
       this.repository.listGrants(input.workspaceId, input.baseId),
     ]);
 
-    return this.policy.evaluate({
-      workspaceId: input.workspaceId,
-      baseId: input.baseId,
-      permission,
-      actor: input.actor,
-      configuration,
-      grants,
-      communityAllowed: input.communityAllowed(permission),
-    });
+    return permissions.map((permission) =>
+      this.policy.evaluate({
+        workspaceId: input.workspaceId,
+        baseId: input.baseId,
+        permission,
+        actor: input.actor,
+        configuration,
+        grants,
+        communityAllowed: input.communityAllowed(permission),
+      }),
+    );
   }
 
   async resolveAll(
