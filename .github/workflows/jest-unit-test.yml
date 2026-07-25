@@ -44,6 +44,6 @@ jobs:
         run: |
           pnpm run generate:sdk
           pnpm run build:main
-      - name: run unit tests
+      - name: run internal-extension tests
         working-directory: ./packages/nocodb
-        run: pnpm run test
+        run: pnpm exec jest --config jest.internal-extensions.config.js --runInBand --forceExit
