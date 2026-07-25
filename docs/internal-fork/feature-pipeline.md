@@ -252,7 +252,7 @@ remain owned by MODE-002 and DOC-001 respectively.
   failure, and timeout.
 - Documentation required: Metric definitions.
 - Estimated complexity: L
-- Status: Proposed
+- Status: Security Review
 - Acceptance criteria: All requested safe statuses/counts display; no secret
   values are returned.
 - Known risks: Health checks causing load or leaking infrastructure details.
@@ -273,7 +273,7 @@ remain owned by MODE-002 and DOC-001 respectively.
   revocation, and audit.
 - Documentation required: Disable/re-enable runbook.
 - Estimated complexity: XL
-- Status: Proposed
+- Status: Security Review
 - Acceptance criteria: Requested actions work without impersonation and are
   audited.
 - Known risks: Upstream token/session invalidation semantics.
@@ -292,7 +292,7 @@ remain owned by MODE-002 and DOC-001 respectively.
 - Tests required: Search boundaries, orphan detection, disable behavior, audit.
 - Documentation required: Orphan definitions and recovery steps.
 - Estimated complexity: L
-- Status: Proposed
+- Status: Security Review
 - Acceptance criteria: All requested inspection fields and extension disable
   action are present and authorized.
 - Known risks: Expensive aggregate queries.
@@ -315,7 +315,7 @@ remain owned by MODE-002 and DOC-001 respectively.
   contract.
 - Documentation required: Published internal OpenAPI file and version policy.
 - Estimated complexity: L
-- Status: Proposed
+- Status: Security Review
 - Acceptance criteria: Generated docs cover all custom endpoints with standard
   pagination/errors/auth and mutation audit.
 - Known risks: Contract drift without CI checks.
@@ -336,7 +336,7 @@ remain owned by MODE-002 and DOC-001 respectively.
   audit.
 - Documentation required: API examples and lifecycle.
 - Estimated complexity: XL
-- Status: Proposed
+- Status: Security Review
 - Acceptance criteria: Defined independent operations work only after token and
   permission foundations are stable.
 - Known risks: Upstream membership side effects.
@@ -355,7 +355,7 @@ remain owned by MODE-002 and DOC-001 respectively.
   cross-base denial, and reorder consistency.
 - Documentation required: Supported-type matrix.
 - Estimated complexity: L
-- Status: Proposed
+- Status: Security Review
 - Acceptance criteria: Operations and authorization match the stated scope.
 - Known risks: Upstream view metadata changes.
 
@@ -377,7 +377,7 @@ remain owned by MODE-002 and DOC-001 respectively.
   config, and legacy-record behavior.
 - Documentation required: Rule semantics and import limitations.
 - Estimated complexity: XL
-- Status: Proposed
+- Status: Security Review
 - Acceptance criteria: Backend rejects invalid data with field/rule errors;
   existing rows are untouched.
 - Known risks: Achieving complete write-path coverage.
@@ -396,7 +396,7 @@ remain owned by MODE-002 and DOC-001 respectively.
 - Tests required: Type compatibility, preview, localization, direct API denial.
 - Documentation required: Form-builder guide.
 - Estimated complexity: L
-- Status: Proposed
+- Status: Security Review
 - Acceptance criteria: Incompatible rules are hidden/rejected; preview and
   server behavior agree.
 - Known risks: Client/server validation drift.
@@ -418,7 +418,7 @@ remain owned by MODE-002 and DOC-001 respectively.
 - Tests required: Field denial/direct API, grouping, read-only, regression.
 - Documentation required: Mode architecture note.
 - Estimated complexity: XL
-- Status: Proposed
+- Status: Security Review
 - Acceptance criteria: Enhancements are independent and permission-correct.
 - Known risks: Tight coupling to expanded-form internals.
 
@@ -437,7 +437,7 @@ remain owned by MODE-002 and DOC-001 respectively.
   content, and download permission.
 - Documentation required: Supported files and security model.
 - Estimated complexity: XL
-- Status: Proposed
+- Status: Security Review
 - Acceptance criteria: Supported previews/navigation work and every attachment
   fetch is authorized.
 - Known risks: Browser/PDF parser vulnerabilities and storage URL leakage.
@@ -459,7 +459,7 @@ remain owned by MODE-002 and DOC-001 respectively.
   and audit.
 - Documentation required: Collaboration guide.
 - Estimated complexity: XL
-- Status: Proposed
+- Status: Security Review
 - Acceptance criteria: Initial scope works with enforced ownership and audits.
 - Known risks: Realtime consistency and notification volume.
 
@@ -482,7 +482,7 @@ remain owned by MODE-002 and DOC-001 respectively.
   URL, and search non-disclosure.
 - Documentation required: Permission resolution and threat model.
 - Estimated complexity: XL
-- Status: Proposed
+- Status: Security Review
 - Acceptance criteria: All six permissions apply consistently to all listed
   paths and unauthorized metadata is absent.
 - Known risks: Realtime and search-index leakage.
@@ -503,7 +503,7 @@ remain owned by MODE-002 and DOC-001 respectively.
   audit.
 - Documentation required: Retention/restore operations.
 - Estimated complexity: L
-- Status: Proposed
+- Status: Security Review
 - Acceptance criteria: Reliable snapshots and audited restore work.
 - Known risks: Storage growth and concurrent edits.
 
@@ -522,7 +522,7 @@ remain owned by MODE-002 and DOC-001 respectively.
 - Tests required: Own/moderator actions, anchor fallback, cross-tenant, XSS.
 - Documentation required: Anchor limitations.
 - Estimated complexity: XL
-- Status: Proposed
+- Status: Security Review
 - Acceptance criteria: Permission-correct threads work with a reliable general
   comment fallback.
 - Known risks: Anchor stability after collaborative edits.
@@ -542,7 +542,7 @@ remain owned by MODE-002 and DOC-001 respectively.
   timeout, and visible-content parity.
 - Documentation required: Renderer hardening/runbook.
 - Estimated complexity: XL
-- Status: Proposed
+- Status: Security Review
 - Acceptance criteria: Export is authorized and matches visible permissions
   without unrestricted resource access.
 - Known risks: Renderer supply-chain and sandbox escapes.
@@ -565,7 +565,7 @@ remain owned by MODE-002 and DOC-001 respectively.
   failure atomicity, and access control.
 - Documentation required: Event catalog and retention.
 - Estimated complexity: L
-- Status: Backend
+- Status: Security Review
 - Acceptance criteria: Every named mutation emits the required safe fields and
   never records plaintext tokens.
 - Known risks: Partial audit on failed transactions.
@@ -590,7 +590,7 @@ retention automation, and frontend views remain pending.
 - Tests required: Matrix schema self-test and CI execution.
 - Documentation required: Adding cases and interpreting failures.
 - Estimated complexity: L
-- Status: Proposed
+- Status: Security Review
 - Acceptance criteria: CI runs the checked-in matrix and reports precise
   mismatches.
 - Known risks: Runtime and fixture combinatorics.
@@ -611,7 +611,7 @@ retention automation, and frontend views remain pending.
 - Tests required: Not applicable; checklist verifies required evidence.
 - Documentation required: `security-review.md`.
 - Estimated complexity: S
-- Status: Documentation
+- Status: Security Review
 - Acceptance criteria: Every requested topic has explicit review questions and
   release evidence fields.
 - Known risks: Checklist becoming ceremonial; release owners must sign and link

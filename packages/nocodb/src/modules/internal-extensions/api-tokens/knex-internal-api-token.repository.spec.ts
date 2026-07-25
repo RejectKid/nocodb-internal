@@ -28,6 +28,7 @@ function tokenRecord(
     created_by: 'user-1',
     expires_at: '2026-08-23T12:00:00.000Z',
     last_used_at: null,
+    disabled_at: null,
     revoked_at: null,
     revoked_by: null,
     allowed_workspace_ids: ['workspace-1'],
@@ -50,6 +51,9 @@ describe('KnexInternalApiTokenRepository', () => {
       useNullAsDefault: true,
     });
     await up(knex);
+    await knex.schema.alterTable(INTERNAL_API_TOKENS_TABLE, (table) => {
+      table.timestamp('disabled_at').nullable();
+    });
     repository = new KnexInternalApiTokenRepository({
       knexConnection: knex,
     } as MetaService);
@@ -101,6 +105,37 @@ describe('KnexInternalApiTokenRepository', () => {
     expect(first?.record.revoked_by).toBe('admin-1');
     expect(second?.record.revoked_by).toBe('admin-1');
     expect(second?.record.revoked_at).toBe('2026-07-24T12:00:00.000Z');
+  });
+
+  it('updates editable fields and supports reversible disablement', async () => {
+    await repository.insert(tokenRecord());
+
+    const updated = await repository.update('token-1', {
+      display_name: 'Renamed',
+      expires_at: null,
+      allowed_workspace_ids: ['workspace-1'],
+      allowed_base_ids: ['base-1', 'base-2'],
+      scopes: [InternalApiTokenScope.DOCUMENTS_READ],
+    });
+    expect(updated?.record).toEqual(
+      expect.objectContaining({
+        display_name: 'Renamed',
+        allowed_base_ids: ['base-1', 'base-2'],
+        scopes: [InternalApiTokenScope.DOCUMENTS_READ],
+      }),
+    );
+
+    const disabled = await repository.setDisabled(
+      'token-1',
+      new Date('2026-07-24T12:00:00.000Z'),
+    );
+    expect(
+      disabled?.canAuthenticateAt(new Date('2026-07-24T12:01:00.000Z')),
+    ).toBe(false);
+    const enabled = await repository.setDisabled('token-1', null);
+    expect(
+      enabled?.canAuthenticateAt(new Date('2026-07-24T12:01:00.000Z')),
+    ).toBe(true);
   });
 
   it('throttles last-used writes and never updates a revoked token', async () => {

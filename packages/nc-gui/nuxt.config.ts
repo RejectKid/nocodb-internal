@@ -366,6 +366,10 @@ export default defineNuxtConfig({
         'y-protocols/awareness',
         'lib0/buffer',
       ],
+      // The internal Windows launcher disables eager prebundling because some
+      // endpoint-security filters deny esbuild access to downloaded dependency
+      // files on secondary volumes. Production builds remain unchanged.
+      ...(process.env.NC_INTERNAL_DISABLE_VITE_OPTIMIZE_DEPS === 'true' ? { noDiscovery: true, include: [] } : {}),
       esbuildOptions: {
         define: {
           global: 'globalThis',

@@ -42,6 +42,7 @@ export type InternalTokenAuthorizationReason =
   | 'allowed'
   | 'expired'
   | 'revoked'
+  | 'disabled'
   | 'owner_not_found'
   | 'owner_mismatch'
   | 'owner_blocked'

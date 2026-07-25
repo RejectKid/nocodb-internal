@@ -45,7 +45,7 @@ const roles = computed(() =>
   OrderedProjectRoles.filter((role) => role !== ProjectRoles.INHERIT && role !== ProjectRoles.NO_ACCESS),
 )
 const members = computed(() =>
-  (basesUser.value.get(props.baseId) ?? []).filter((member: { deleted?: boolean }) => !member.deleted),
+  (basesUser.value.get(props.baseId) ?? []).filter((member) => !(member as unknown as { deleted?: boolean }).deleted),
 )
 const selectedGrantSet = computed(() =>
   grantSets.value.find(
@@ -92,7 +92,7 @@ function selectNewSubject() {
 }
 
 function changeSubjectType() {
-  selectedSubjectId.value = selectedSubjectType.value === 'role' ? (roles.value[0] ?? '') : (members.value[0]?.id ?? '')
+  selectedSubjectId.value = selectedSubjectType.value === 'role' ? roles.value[0] ?? '' : members.value[0]?.id ?? ''
   selectNewSubject()
 }
 

@@ -126,3 +126,4 @@ antd.variable.css
 .nc-dev-proxy.pid
 .nc-dev-proxy.log
 .nc-dev-logs/
+.env.internal

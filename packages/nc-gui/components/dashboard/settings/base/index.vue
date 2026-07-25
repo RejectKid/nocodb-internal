@@ -29,6 +29,7 @@ const router = useRouter()
 const { capabilities, refresh: refreshInternalCapabilities } = useInternalCapabilities()
 const internalBasePermissionsAvailable = computed(() => Boolean(capabilities.value?.features.basePermissions))
 const internalApiTokensAvailable = computed(() => Boolean(capabilities.value?.features.fineGrainedApiTokens))
+const internalValidationAvailable = computed(() => Boolean(capabilities.value?.features.inputValidation))
 const allTabs = computed(() => [
   'baseType',
   'snapshots',
@@ -37,6 +38,7 @@ const allTabs = computed(() => [
   'migrate',
   ...(internalBasePermissionsAvailable.value ? ['internalPermissions'] : []),
   ...(internalApiTokensAvailable.value ? ['internalTokens'] : []),
+  ...(internalValidationAvailable.value ? ['internalValidation'] : []),
 ])
 
 const getDefaultTab = () => {
@@ -159,6 +161,16 @@ watch(
           <span>API tokens</span>
         </div>
         <div
+          v-if="internalValidationAvailable"
+          :class="{ 'active-menu': activeMenu === 'internalValidation' }"
+          class="gap-3 hover:bg-nc-bg-gray-light transition-all text-nc-content-gray flex rounded-lg items-center cursor-pointer py-1.5 px-3"
+          data-testid="internal-validation-tab"
+          @click="selectMenu('internalValidation')"
+        >
+          <GeneralIcon icon="ncCheck" />
+          <span>Validation</span>
+        </div>
+        <div
           v-if="hasPermissionForMigrateToV3"
           :class="{
             'active-menu': activeMenu === 'migrateToV3',
@@ -193,6 +205,7 @@ watch(
       <DashboardSettingsBaseVisibility v-if="activeMenu === 'visibility'" />
       <InternalExtensionsBasePermissionsEditor v-if="activeMenu === 'internalPermissions'" :base-id="props.baseId" />
       <InternalExtensionsApiTokensEditor v-if="activeMenu === 'internalTokens'" :base-id="props.baseId" />
+      <InternalExtensionsValidationEditor v-if="activeMenu === 'internalValidation'" :base-id="props.baseId" />
       <DashboardSettingsBaseMigrateToV3 v-if="activeMenu === 'migrateToV3'" />
       <DashboardSettingsBaseMigrate v-if="activeMenu === 'migrate'" />
     </div>

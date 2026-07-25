@@ -322,4 +322,23 @@ describe('DefaultInternalTokenAuthorizationPolicy', () => {
       reason: 'expired',
     });
   });
+
+  it('fails authentication while a token is temporarily disabled', async () => {
+    const token = request().token;
+
+    await expect(
+      policy.authenticate({
+        token: new InternalApiToken({
+          ...token.record,
+          disabled_at: now.toISOString(),
+        }),
+        owner: owner(),
+        now,
+      }),
+    ).resolves.toEqual({
+      allowed: false,
+      failureClass: 'authentication',
+      reason: 'disabled',
+    });
+  });
 });

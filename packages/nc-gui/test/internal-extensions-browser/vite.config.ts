@@ -76,6 +76,7 @@ function internalApi(): Plugin {
               created_at: '2026-07-24T12:00:00.000Z',
               expires_at: null,
               last_used_at: null,
+              disabled_at: null,
               revoked_at: null,
               allowed_workspace_ids: ['workspace-1'],
               allowed_base_ids: ['base-1'],
@@ -99,6 +100,21 @@ function internalApi(): Plugin {
             if (token) token.revoked_at = '2026-07-24T13:00:00.000Z'
             return json(response, 200, token)
           }
+          if (request.method === 'PATCH') {
+            const segments = path.split('/')
+            const statusMutation = segments.at(-1) === 'status'
+            const tokenId = statusMutation ? segments.at(-2) : segments.at(-1)
+            const token = tokens.find(({ id }) => id === tokenId)
+            if (token) {
+              if (statusMutation) {
+                token.disabled_at = token.disabled_at ? null : '2026-07-24T13:00:00.000Z'
+              } else {
+                token.display_name = 'Renamed token'
+                token.scopes = ['data:update']
+              }
+            }
+            return json(response, 200, token)
+          }
           if (request.method === 'POST') {
             const created = {
               id: 'token-created',
@@ -108,6 +124,7 @@ function internalApi(): Plugin {
               created_at: '2026-07-24T12:30:00.000Z',
               expires_at: null,
               last_used_at: null,
+              disabled_at: null,
               revoked_at: null,
               allowed_workspace_ids: ['workspace-1'],
               allowed_base_ids: ['base-1'],
@@ -154,6 +171,10 @@ function stripApplicationStyles(): Plugin {
 export default defineConfig({
   root: resolve(__dirname, 'harness'),
   plugins: [stripApplicationStyles(), vue(), internalApi()],
+  optimizeDeps: {
+    noDiscovery: true,
+    include: [],
+  },
   resolve: {
     alias: [
       {

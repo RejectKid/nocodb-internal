@@ -2,6 +2,7 @@
   "name": "nocodb-root",
   "description": "NocoDB Root",
   "private": true,
+  "packageManager": "pnpm@10.28.0",
   "author": {
     "name": "NocoDB Inc",
     "url": "https://nocodb.com/"

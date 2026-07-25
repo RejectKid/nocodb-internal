@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { TableType, ViewType } from 'nocodb-sdk'
+import type { ExpandedFormModeType, TableType, ViewType } from 'nocodb-sdk'
 import { ExpandedFormMode } from 'nocodb-sdk'
 import type { Ref } from 'vue'
 import { useStorage } from '@vueuse/core'
@@ -26,7 +26,20 @@ const { isMobileMode } = useGlobal()
 
 const panelRef = ref<HTMLElement>()
 
-const activeViewMode = ref(ExpandedFormMode.FIELD)
+const activeViewMode = ref<ExpandedFormModeType>(ExpandedFormMode.FIELD)
+
+const { capabilities: internalCapabilities, refresh: refreshInternalCapabilities } = useInternalCapabilities()
+
+const useInternalRecordModes = computed(
+  () =>
+    !isEeUI &&
+    !isNew.value &&
+    Boolean(internalCapabilities.value?.features.filePreviewMode || internalCapabilities.value?.features.discussionMode),
+)
+
+const internalFilePreviewEnabled = computed(() => Boolean(internalCapabilities.value?.features.filePreviewMode))
+
+const internalDiscussionEnabled = computed(() => Boolean(internalCapabilities.value?.features.discussionMode))
 
 const isResizing = ref(false)
 const resizeStartX = ref(0)
@@ -617,6 +630,14 @@ const panelClasses = computed(() => {
 // own `isEeUI` gate so the tabs and the body unlock together.
 const useEePresenter = computed(() => isEeUI)
 
+onMounted(() => {
+  if (!isEeUI) void refreshInternalCapabilities().catch(() => undefined)
+})
+
+watch(useInternalRecordModes, (enabled) => {
+  if (!enabled && !useEePresenter.value) activeViewMode.value = ExpandedFormMode.FIELD
+})
+
 const searchQuery = ref('')
 
 const hideBlankFields = ref(false)
@@ -751,6 +772,13 @@ watch(activeRowId, () => {
           :view="view"
           class="nc-expanded-form-mode-switch"
         />
+        <InternalExtensionsRecordModesSelector
+          v-else-if="useInternalRecordModes"
+          v-model="activeViewMode"
+          :file-enabled="internalFilePreviewEnabled"
+          :discussion-enabled="internalDiscussionEnabled"
+          class="nc-expanded-form-mode-switch"
+        />
 
         <!-- Show / Hide sidebar — only meaningful in docked mode (fullscreen
              always renders the dual pane). Single-pane state bumps to the
@@ -876,6 +904,16 @@ watch(activeRowId, () => {
             <!-- CE: Fields only. The presenter renders its own sidebar with
                  Comments + History tabs; in single-pane state the sidebar is
                  hidden and reachable via the header's show-sidebar toggle. -->
+            <InternalExtensionsRecordModesFilePreview
+              v-else-if="useInternalRecordModes && activeViewMode === ExpandedFormMode.ATTACHMENT"
+              :row-id="primaryKey"
+              :fields="fields ?? []"
+              :hide-sidebar="!useDualPane"
+            />
+            <InternalExtensionsRecordModesDiscussion
+              v-else-if="useInternalRecordModes && activeViewMode === ExpandedFormMode.DISCUSSION"
+              :row-id="primaryKey"
+            />
             <SmartsheetExpandedFormPresentorsFields
               v-else
               :row-id="primaryKey"

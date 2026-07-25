@@ -147,6 +147,7 @@ export function createInternalTokenFixture(
       ? new Date(now.getTime() - 1).toISOString()
       : new Date(now.getTime() + 60_000).toISOString(),
     last_used_at: null,
+    disabled_at: null,
     revoked_at: options.revoked ? now.toISOString() : null,
     revoked_by: options.revoked ? 'user-super-admin' : null,
     allowed_workspace_ids: options.allowedWorkspaceIds ?? [

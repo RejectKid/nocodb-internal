@@ -48,6 +48,9 @@ export class DefaultInternalTokenAuthorizationPolicy extends InternalTokenAuthor
     if (token.isRevoked()) {
       return denyAuthentication('revoked');
     }
+    if (token.isDisabled()) {
+      return denyAuthentication('disabled');
+    }
     if (token.isExpiredAt(now)) {
       return denyAuthentication('expired');
     }

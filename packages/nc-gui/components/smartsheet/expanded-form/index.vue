@@ -216,6 +216,26 @@ const activeViewMode = ref(
   isSharedBase.value && persistedViewMode === ExpandedFormMode.DISCUSSION ? ExpandedFormMode.FIELD : persistedViewMode,
 )
 
+const { capabilities: internalCapabilities, refresh: refreshInternalCapabilities } = useInternalCapabilities()
+const useInternalRecordModes = computed(
+  () =>
+    !isEeUI &&
+    !isPublic.value &&
+    !isSharedBase.value &&
+    !isNew.value &&
+    Boolean(internalCapabilities.value?.features.filePreviewMode || internalCapabilities.value?.features.discussionMode),
+)
+const internalFilePreviewEnabled = computed(() => Boolean(internalCapabilities.value?.features.filePreviewMode))
+const internalDiscussionEnabled = computed(() => Boolean(internalCapabilities.value?.features.discussionMode))
+
+onMounted(() => {
+  if (!isEeUI && !isPublic.value) void refreshInternalCapabilities().catch(() => undefined)
+})
+
+watch(useInternalRecordModes, (enabled) => {
+  if (!enabled && !isEeUI) activeViewMode.value = ExpandedFormMode.FIELD
+})
+
 watch(activeViewMode, async (v) => {
   const viewId = props.view?.id
   if (!viewId) return
@@ -987,7 +1007,19 @@ export default {
           </div>
         </div>
         <div v-if="!templateMode && !blueprintMode" class="ml-auto">
-          <SmartsheetExpandedFormViewModeSelector v-model="activeViewMode" :view="view" class="nc-expanded-form-mode-switch" />
+          <InternalExtensionsRecordModesSelector
+            v-if="useInternalRecordModes"
+            v-model="activeViewMode"
+            :file-enabled="internalFilePreviewEnabled"
+            :discussion-enabled="internalDiscussionEnabled"
+            class="nc-expanded-form-mode-switch"
+          />
+          <SmartsheetExpandedFormViewModeSelector
+            v-else
+            v-model="activeViewMode"
+            :view="view"
+            class="nc-expanded-form-mode-switch"
+          />
         </div>
         <div v-else class="ml-auto" />
         <div class="flex gap-2">
@@ -1072,7 +1104,9 @@ export default {
           />
         </template>
         <template v-else-if="activeViewMode === ExpandedFormMode.ATTACHMENT">
+          <InternalExtensionsRecordModesFilePreview v-if="useInternalRecordModes" :row-id="primaryKey" :fields="fields ?? []" />
           <SmartsheetExpandedFormPresentorsAttachments
+            v-else
             :row-id="rowId"
             :view="props.view"
             :fields="fields ?? []"
@@ -1089,7 +1123,11 @@ export default {
           />
         </template>
         <template v-else-if="activeViewMode === ExpandedFormMode.DISCUSSION">
-          <SmartsheetExpandedFormPresentorsDiscussion :is-unsaved-duplicated-record-exist="isUnsavedDuplicatedRecordExist" />
+          <InternalExtensionsRecordModesDiscussion v-if="useInternalRecordModes" :row-id="primaryKey" />
+          <SmartsheetExpandedFormPresentorsDiscussion
+            v-else
+            :is-unsaved-duplicated-record-exist="isUnsavedDuplicatedRecordExist"
+          />
         </template>
       </div>
       <div
