@@ -21,6 +21,20 @@ jest.mock('~/guards/meta-api-limiter.guard', () => ({
     }
   },
 }));
+jest.mock('../api-tokens/internal-token-authentication.guard', () => ({
+  InternalTokenAuthenticationGuard: class InternalTokenAuthenticationGuard {
+    canActivate() {
+      return true;
+    }
+  },
+}));
+jest.mock('../api-tokens/internal-token-scope.guard', () => ({
+  InternalTokenScopeGuard: class InternalTokenScopeGuard {
+    canActivate() {
+      return true;
+    }
+  },
+}));
 
 import { Test } from '@nestjs/testing';
 import request from 'supertest';
@@ -28,6 +42,8 @@ import type { INestApplication } from '@nestjs/common';
 import { GlobalGuard } from '~/guards/global/global.guard';
 import { MetaApiLimiterGuard } from '~/guards/meta-api-limiter.guard';
 import { InternalAuthenticatedGuard } from '../authorization/internal-authenticated.guard';
+import { InternalTokenAuthenticationGuard } from '../api-tokens/internal-token-authentication.guard';
+import { InternalTokenScopeGuard } from '../api-tokens/internal-token-scope.guard';
 import { InternalAuditRequestContextAdapter } from '../audit/internal-audit-request-context.adapter';
 import { InternalBasePermissionAdminService } from './internal-base-permission-admin.service';
 import { InternalBasePermissionsController } from './internal-base-permissions.controller';
@@ -47,6 +63,8 @@ describe('InternalBasePermissionsController HTTP integration', () => {
         GlobalGuard,
         MetaApiLimiterGuard,
         InternalAuthenticatedGuard,
+        InternalTokenAuthenticationGuard,
+        InternalTokenScopeGuard,
         InternalAuditRequestContextAdapter,
         {
           provide: InternalBasePermissionAdminService,

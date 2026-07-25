@@ -12,18 +12,29 @@ import type { NcRequest } from '~/interface/config';
 import { GlobalGuard } from '~/guards/global/global.guard';
 import { MetaApiLimiterGuard } from '~/guards/meta-api-limiter.guard';
 import { InternalAuthenticatedGuard } from '../authorization/internal-authenticated.guard';
+import { InternalApiTokenScope } from '../api-tokens/internal-api-token-scope';
+import { InternalTokenAuthenticationGuard } from '../api-tokens/internal-token-authentication.guard';
+import { RequireInternalTokenScope } from '../api-tokens/internal-token-scope.decorator';
+import { InternalTokenScopeGuard } from '../api-tokens/internal-token-scope.guard';
 import { InternalAuditRequestContextAdapter } from '../audit/internal-audit-request-context.adapter';
 import type {
   ReplaceInternalBasePermissionGrantsRequest,
   UpdateInternalBasePermissionConfigurationRequest,
 } from './internal-base-permission-admin.types';
 import { InternalBasePermissionAdminService } from './internal-base-permission-admin.service';
+import { InternalBasePermission } from './internal-base-permission';
 import { InternalPermissionSubjectType } from './internal-base-permission.model';
 
 @Controller(
   '/api/internal/v1/workspaces/:workspaceId/bases/:baseId/permissions',
 )
-@UseGuards(MetaApiLimiterGuard, GlobalGuard, InternalAuthenticatedGuard)
+@UseGuards(
+  MetaApiLimiterGuard,
+  GlobalGuard,
+  InternalTokenAuthenticationGuard,
+  InternalAuthenticatedGuard,
+  InternalTokenScopeGuard,
+)
 export class InternalBasePermissionsController {
   constructor(
     private readonly adminService: InternalBasePermissionAdminService,
@@ -31,6 +42,11 @@ export class InternalBasePermissionsController {
   ) {}
 
   @Get()
+  @RequireInternalTokenScope(
+    InternalApiTokenScope.ADMIN_READ,
+    'base',
+    InternalBasePermission.BASE_MANAGE_MEMBERS,
+  )
   getState(
     @Param('workspaceId') workspaceId: string,
     @Param('baseId') baseId: string,
@@ -45,6 +61,11 @@ export class InternalBasePermissionsController {
   }
 
   @Patch('/configuration')
+  @RequireInternalTokenScope(
+    InternalApiTokenScope.ADMIN_WRITE,
+    'base',
+    InternalBasePermission.BASE_MANAGE_MEMBERS,
+  )
   setConfiguration(
     @Param('workspaceId') workspaceId: string,
     @Param('baseId') baseId: string,
@@ -61,6 +82,11 @@ export class InternalBasePermissionsController {
   }
 
   @Put('/subjects/:subjectType/:subjectId')
+  @RequireInternalTokenScope(
+    InternalApiTokenScope.ADMIN_WRITE,
+    'base',
+    InternalBasePermission.BASE_MANAGE_MEMBERS,
+  )
   replaceSubjectGrants(
     @Param('workspaceId') workspaceId: string,
     @Param('baseId') baseId: string,
