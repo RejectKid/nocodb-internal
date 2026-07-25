@@ -36,10 +36,17 @@ export function buildInternalFeatureDefinitions(
 
   return Object.entries(INTERNAL_FEATURE_ENV).map(([key, environmentName]) => ({
     key: key as InternalFeatureKey,
-    enabled: masterEnabled && parseInternalBoolean(env[environmentName]),
+    enabled:
+      masterEnabled &&
+      parseInternalBoolean(env[environmentName]) &&
+      (key !== 'filePreviewMode' ||
+        parseInternalBoolean(env.NC_SECURE_ATTACHMENTS)),
     backendCapability: true,
     frontendCapability: true,
-    requiredConfiguration: [environmentName],
+    requiredConfiguration:
+      key === 'filePreviewMode'
+        ? [environmentName, 'NC_SECURE_ATTACHMENTS']
+        : [environmentName],
     minimumInternalSchemaVersion: 1,
   }));
 }
