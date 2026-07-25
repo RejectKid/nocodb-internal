@@ -45,12 +45,30 @@ clipboard and endpoint-security policy.
 ## Listing and revocation
 
 The list shows name, public prefix, scopes, lifecycle state, expiration, and
-last-use information. `Never` is displayed until token authentication
-integration records first use.
+last-use information. `Never` is displayed until the token completes its first
+authorized internal API request.
 
 Revocation writes `revoked_at` and `revoked_by` once. The token model rejects
 authentication immediately after revocation or expiration. Repeated revocation
 returns a conflict instead of replacing the original revoker.
+
+## Calling internal APIs
+
+Internal tokens are accepted only on explicitly scoped `/api/internal/v1`
+routes. Send the one-time value through either:
+
+```text
+xc-token: nci_...
+Authorization: Bearer nci_...
+```
+
+The server requires the owning user to remain active and authorized, then
+intersects the route's typed scope and workspace/base boundary. A valid secret
+therefore does not preserve access after the owner's permission is removed.
+
+Repeated failed verification returns HTTP 429. The per-process threshold is
+configured with `NC_INTERNAL_TOKEN_AUTH_FAILURES_PER_MINUTE`; multi-replica
+deployments must also configure a shared edge/gateway limit.
 
 ## Audit and transaction safety
 

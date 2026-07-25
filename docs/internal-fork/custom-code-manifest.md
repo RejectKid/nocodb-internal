@@ -256,3 +256,36 @@ entitlement, or permission implementation is touched.
 | `packages/nc-gui/test/internal-extensions-browser/internal-api-tokens.spec.ts` | Browser denial, copy-once, revoke, and gating tests | Existing isolated browser harness | Low | TOK-003, FND-003 |
 | `packages/nc-gui/test/internal-extensions-browser/harness/main.ts` | Adds real token-editor mounting and client adapters | Existing browser harness | Low | TOK-003 |
 | `packages/nc-gui/test/internal-extensions-browser/vite.config.ts` | Deterministic token administration HTTP scenarios | Existing browser harness | Low | TOK-003, FND-003 |
+
+## Stage 13 internal-token authentication files
+
+Owner for every file below: Internal Platform Team. No Community/commercial
+token strategy, entitlement, feature flag, or license implementation is
+modified.
+
+| Path | Purpose | Upstream files touched | Merge risk | Feature IDs |
+| --- | --- | --- | --- | --- |
+| `docs/internal-fork/stage-13-token-authentication-report.md` | Request flow, validation, and residual-risk record | None | Low | TOK-002 |
+| `packages/nocodb/src/modules/internal-extensions/api-tokens/internal-token-authentication.service.ts` | Strict parsing, lookup, verification, and owner authentication | Independent token repository and hash service | Medium | TOK-002 |
+| `packages/nocodb/src/modules/internal-extensions/api-tokens/internal-token-authentication.guard.ts` | Internal credential projection into request identity | Community request contract and header helper | Medium | TOK-002 |
+| `packages/nocodb/src/modules/internal-extensions/api-tokens/internal-token-owner.provider.ts` | Fresh-owner adapter contract and minimal identity projection | None | Low | TOK-002 |
+| `packages/nocodb/src/modules/internal-extensions/api-tokens/community-internal-token-owner.provider.ts` | Community user-state adapter | Community `User.get` only | Medium | TOK-002 |
+| `packages/nocodb/src/modules/internal-extensions/api-tokens/internal-token-scope.decorator.ts` | Typed scope, target, and owner-permission route metadata | None | Low | TOK-002 |
+| `packages/nocodb/src/modules/internal-extensions/api-tokens/internal-token-scope.guard.ts` | Central scope, tenant, owner-permission, and last-use enforcement | Internal base-permission services | Medium | TOK-002, PERM-001 |
+| `packages/nocodb/src/modules/internal-extensions/api-tokens/internal-token-verification-rate-limiter.ts` | Bounded failed-verification limiter | None | Low | TOK-002, SEC-003 |
+| `packages/nocodb/src/modules/internal-extensions/api-tokens/internal-token-authorization.policy.ts` | Adds authentication preflight to the central policy contract | None | Low | TOK-002 |
+| `packages/nocodb/src/modules/internal-extensions/api-tokens/default-internal-token-authorization.policy.ts` | Reuses one lifecycle/owner authentication decision in route authorization | None | Low | TOK-002 |
+| `packages/nocodb/src/modules/internal-extensions/api-tokens/internal-api-token.repository.ts` | Adds throttled last-use persistence contract | None | Low | TOK-002 |
+| `packages/nocodb/src/modules/internal-extensions/api-tokens/knex-internal-api-token.repository.ts` | Atomic conditional last-use update | Metadata connection | Medium | TOK-002 |
+| `packages/nocodb/src/modules/internal-extensions/api-tokens/scrypt-internal-token-hashing.service.ts` | Strict canonical token/hash bounds before scrypt | None | Low | TOK-002 |
+| `packages/nocodb/src/modules/internal-extensions/feature-registry/internal-capabilities.controller.ts` | Explicit `admin:read` internal-token metadata | Existing internal controller | Low | TOK-002, FND-002 |
+| `packages/nocodb/src/modules/internal-extensions/api-tokens/internal-api-tokens.controller.ts` | Explicit token read/write metadata | Existing internal controller | Low | TOK-002, TOK-003 |
+| `packages/nocodb/src/modules/internal-extensions/permissions/internal-base-permissions.controller.ts` | Explicit admin read/write metadata | Existing internal controller | Low | TOK-002, PERM-001 |
+| `packages/nocodb/src/modules/internal-extensions/internal-extensions.module.ts` | Registers independent authentication providers and guards | Existing internal composition root | Low | TOK-002 |
+| `packages/nocodb/src/modules/internal-extensions/api-tokens/internal-token-authentication.service.spec.ts` | Parsing, lookup, verification, owner, and generic-failure tests | None | Low | TOK-002, FND-003 |
+| `packages/nocodb/src/modules/internal-extensions/api-tokens/internal-token-authentication.guard.spec.ts` | Header, request projection, generic 401, and 429 tests | None | Low | TOK-002, FND-003 |
+| `packages/nocodb/src/modules/internal-extensions/api-tokens/community-internal-token-owner.provider.spec.ts` | Active, blocked, deleted, disabled, and missing-owner adapter tests | None | Low | TOK-002, FND-003 |
+| `packages/nocodb/src/modules/internal-extensions/api-tokens/internal-token-http-authentication.Integration.spec.ts` | Direct HTTP credential, scope, owner, tenant, last-use, and limiter matrix | None | Low | TOK-002, FND-003 |
+| `packages/nocodb/src/modules/internal-extensions/api-tokens/internal-token-scope.guard.spec.ts` | Scope, permission, tenant, lifecycle, and last-use tests | None | Low | TOK-002, FND-003 |
+| `packages/nocodb/src/modules/internal-extensions/api-tokens/internal-token-route-metadata.spec.ts` | Exact production route scope/target/owner-permission metadata tests | None | Low | TOK-002, FND-003 |
+| `packages/nocodb/src/modules/internal-extensions/api-tokens/internal-token-verification-rate-limiter.spec.ts` | Threshold, expiry, and bounded-state tests | None | Low | TOK-002, SEC-003 |

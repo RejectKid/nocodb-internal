@@ -1,7 +1,8 @@
 # Fine-grained internal API token design
 
-Status: TOK-001 persistence/issuance and the TOK-002 centralized policy slice
-complete; not exposed or accepted for route authentication.
+Status: TOK-001 persistence/issuance and TOK-002 authentication/scope
+enforcement implemented for the independent `/api/internal/v1` surface;
+security review pending.
 
 ## Boundary
 
@@ -75,7 +76,7 @@ omit both `token_hash` and the internal hash-version field.
 
 ## Hash lookup and verification
 
-Future authentication will:
+Internal v1 authentication now:
 
 1. Parse and validate the `nci_` format with strict length limits.
 2. Select a bounded candidate by the unique public prefix.
@@ -85,10 +86,18 @@ Future authentication will:
 6. Reject unsupported scope versions.
 7. Evaluate required typed scope and workspace/base allowlists through the
    centralized internal policy.
-8. Update `last_used_at` asynchronously with bounded write frequency.
+8. Update `last_used_at` after successful route authorization, with writes
+   bounded to once per five minutes.
 
 All failures use a generic authentication response. Internal logs may reference
 the token ID/prefix but never the supplied value.
+
+`InternalTokenVerificationRateLimiter` bounds failed verification by client and
+client-plus-prefix. It defaults to 20 failures per minute and a maximum of
+10,000 in-memory buckets. Operators may set
+`NC_INTERNAL_TOKEN_AUTH_FAILURES_PER_MINUTE`. This protects each process from
+repeated scrypt work; multi-replica deployments must also enforce a shared
+limit at the reverse proxy, gateway, or WAF.
 
 ## Scope model
 
@@ -153,16 +162,15 @@ remain active is not supported.
 - isolated base-settings editor: typed scopes, expiration, tenant boundaries,
   copy-once secret handling, lifecycle display, and revocation
 
-TOK-003 delivers the controller and administration UI. A global authentication
-strategy remains intentionally outside TOK-003 and is the remaining TOK-002
-production integration.
+TOK-003 delivers the controller and administration UI. TOK-002 adds an
+independent guard chain only to internal v1 controllers. It does not replace or
+modify NocoDB's Community API-token or OAuth strategies.
 
 ## Required next tests
 
 - PostgreSQL and MySQL migration up/down in CI
-- verification rate limiting
 - malformed token and malformed stored-hash fuzz tests
-- authentication strategy and current-user lookup
-- route metadata, resource extraction, and route-level allow/deny matrix
+- PostgreSQL and MySQL repository/migration rehearsal
 - log, error, audit, telemetry, and browser-storage redaction
-- concurrent `last_used_at` throttling
+- multi-process/shared rate limiting
+- concurrency stress coverage for `last_used_at`

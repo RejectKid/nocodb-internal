@@ -1,6 +1,7 @@
 # Internal API token authorization
 
-Status: TOK-002 centralized policy implemented; HTTP integration pending.
+Status: TOK-002 centralized policy and internal v1 HTTP integration
+implemented; security review pending.
 
 ## Boundary
 
@@ -81,13 +82,25 @@ authorization failures.
   production policy, including lifecycle, scope, cross-tenant, and disabled
   owner cases.
 
-## HTTP integration blockers
+## HTTP integration
 
-Do not attach the policy to routes until these exist:
+The independent guard chain runs after the existing Community global guard and
+before `InternalAuthenticatedGuard` on `/api/internal/v1` controllers:
 
-- token parsing, bounded prefix lookup, hash verification, and rate limiting;
-- fresh user-state and effective-permission adapter;
-- typed route metadata and fail-closed resource extraction;
-- PostgreSQL migration and cross-tenant tests;
-- generic authentication errors and audit-safe request context;
-- direct HTTP allow/deny tests using the shared matrix.
+1. Non-`nci_` credentials retain existing session, Community token, and OAuth
+   behavior.
+2. `nci_` credentials are strictly parsed, prefix-looked-up, scrypt-verified,
+   and checked against a freshly loaded owner.
+3. A typed decorator supplies scope, target kind, and current-owner
+   permission. Internal-token requests to an undecorated route fail closed.
+4. The scope guard extracts explicit tenant parameters and calls the central
+   policy. It returns generic 401 for authentication failures and 403 for
+   authorization failures.
+5. A successful call records bounded `last_used_at`.
+
+The attached internal routes are capabilities (`admin:read`), token
+administration (`tokens:read`/`tokens:write`), and base-permission
+administration (`admin:read`/`admin:write`).
+
+Remaining release work is PostgreSQL/MySQL migration rehearsal, shared
+multi-replica throttling, and reviewer sign-off.

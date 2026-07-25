@@ -240,5 +240,15 @@ requires a reason.
       denial, revocation propagation, and capability gating.
 - [ ] Reviewer sign-off is required before TOK-003 is marked Ready.
 - [ ] Clipboard clearing and endpoint handling remain operator responsibilities.
-- [ ] TOK-002 production authentication must update `last_used_at` and apply
-      rate limiting.
+- [x] TOK-002 production authentication uses strict format/prefix lookup,
+      versioned scrypt verification, generic 401 responses, and fresh owner
+      lifecycle checks.
+- [x] Internal v1 route metadata centrally intersects current owner permission,
+      typed scope, and explicit tenant allowlists; missing metadata fails closed.
+- [x] Successful internal-token calls update `last_used_at` with a five-minute
+      write throttle.
+- [x] Failed verification is bounded by client and client-plus-prefix, with
+      bounded in-memory state and explicit 429 coverage.
+- [ ] Multi-replica deployments require a shared edge/gateway limiter because
+      the application limiter is intentionally process-local.
+- [ ] PostgreSQL/MySQL migration and repository rehearsal remains required.

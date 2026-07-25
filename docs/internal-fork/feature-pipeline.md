@@ -116,8 +116,10 @@ changing entitlements. Any intentional difference must be documented.
 - Dependencies: TOK-001, PERM-001, FND-003.
 - Data-model changes: Normalized scope and boundary tables or a versioned JSON
   representation, selected during architecture review.
-- Backend work: Central policy and scope catalog complete; token strategy,
-  production owner-permission adapter, scope decorators, and audit hooks remain.
+- Backend work: Strict internal-token authentication, the centralized policy,
+  current-owner adapter, typed route metadata/guard, tenant extraction,
+  bounded failed-verification limiting, and throttled last-use updates are
+  implemented for `/api/internal/v1`.
 - Frontend work: Shared labels for administration UI.
 - Security considerations: Default deny; intersection of actor permissions,
   token scopes, and tenant allowlists.
@@ -125,12 +127,20 @@ changing entitlements. Any intentional difference must be documented.
   revoked, disabled user, direct route, and scope-version mismatch.
 - Documentation required: Scope catalog and policy algorithm.
 - Estimated complexity: XL
-- Status: Backend
+- Status: Security Review
+- Progress: `xc-token` and Bearer credentials with the independent `nci_`
+  format authenticate through bounded prefix lookup and scrypt verification.
+  Current owner lifecycle, owner permission, typed token scope, and explicit
+  workspace/base allowlists intersect before a controller runs. The internal
+  capabilities, token-administration, and permission-administration routes have
+  explicit metadata; missing metadata denies internal tokens. Successful calls
+  update `last_used_at` at most once per five minutes. Unit and direct HTTP
+  tests distinguish 401, 403, and 429 behavior.
 - Acceptance criteria: Typed centralized scopes; boundaries enforced; route
   tests cover success and denial.
-- Known risks: Scope explosion, stale owner-permission facts, and inconsistent
-  resource extraction. HTTP authentication/route integration, rate limiting,
-  and PostgreSQL migration coverage remain.
+- Known risks: Scope explosion and inconsistent future resource extraction.
+  The verification limiter is per process, so multi-replica deployments still
+  require an edge/shared limiter. PostgreSQL/MySQL migration rehearsal remains.
 
 ### TOK-003 — Token administration UI
 
