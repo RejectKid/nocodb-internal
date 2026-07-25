@@ -63,6 +63,17 @@ onMounted(() => {
       <p v-if="capabilities" class="mt-3 text-xs text-nc-content-gray-muted">
         Internal schema version {{ capabilities.schemaVersion }}
       </p>
+      <div v-if="capabilities" class="mt-5 flex flex-wrap gap-2">
+        <NuxtLink v-if="capabilities.features.internalAdmin" to="/internal/admin">
+          <NcButton type="secondary">Open administration</NcButton>
+        </NuxtLink>
+        <NuxtLink v-if="capabilities.features.documentPermissions" to="/internal/documents">
+          <NcButton type="secondary">Open documents</NcButton>
+        </NuxtLink>
+        <a href="/api/internal/v1/openapi.json" target="_blank" rel="noopener">
+          <NcButton type="secondary">Open internal API contract</NcButton>
+        </a>
+      </div>
     </main>
   </NuxtLayout>
 </template>
