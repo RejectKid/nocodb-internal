@@ -2,6 +2,7 @@ import type {
   InternalApiToken,
   InternalApiTokenRecord,
 } from './internal-api-token.model';
+import type { Knex } from 'knex';
 
 export class InternalApiTokenPrefixConflictError extends Error {
   constructor(readonly prefix: string) {
@@ -11,13 +12,26 @@ export class InternalApiTokenPrefixConflictError extends Error {
 }
 
 export abstract class InternalApiTokenRepository {
-  abstract insert(record: InternalApiTokenRecord): Promise<InternalApiToken>;
-  abstract findById(id: string): Promise<InternalApiToken | null>;
-  abstract findByPrefix(prefix: string): Promise<InternalApiToken | null>;
-  abstract listByUserId(userId: string): Promise<InternalApiToken[]>;
+  abstract insert(
+    record: InternalApiTokenRecord,
+    transaction?: Knex.Transaction,
+  ): Promise<InternalApiToken>;
+  abstract findById(
+    id: string,
+    transaction?: Knex.Transaction,
+  ): Promise<InternalApiToken | null>;
+  abstract findByPrefix(
+    prefix: string,
+    transaction?: Knex.Transaction,
+  ): Promise<InternalApiToken | null>;
+  abstract listByUserId(
+    userId: string,
+    transaction?: Knex.Transaction,
+  ): Promise<InternalApiToken[]>;
   abstract revoke(
     id: string,
     revokedBy: string,
     revokedAt: Date,
+    transaction?: Knex.Transaction,
   ): Promise<InternalApiToken | null>;
 }
