@@ -412,6 +412,7 @@ export const nocoModuleMetadata = {
     BasesService,
     AttachmentsService,
     BaseUsersService,
+    WorkspaceUsersService,
     HooksService,
     MetaDiffsService,
     SourcesService,

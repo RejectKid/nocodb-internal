@@ -43,6 +43,34 @@ import { InternalTokenVerificationRateLimiter } from './api-tokens/internal-toke
 import { InternalTokenAuthenticationService } from './api-tokens/internal-token-authentication.service';
 import { InternalTokenAuthenticationGuard } from './api-tokens/internal-token-authentication.guard';
 import { InternalTokenScopeGuard } from './api-tokens/internal-token-scope.guard';
+import { InternalFeatureGuard } from './feature-registry/internal-feature.guard';
+import { InternalSuperAdminGuard } from './authorization/internal-super-admin.guard';
+import { InternalAdminService } from './admin/internal-admin.service';
+import { InternalAdminController } from './admin/internal-admin.controller';
+import { InternalValidationEngine } from './validation/internal-validation.engine';
+import { InternalValidationRepository } from './validation/internal-validation.repository';
+import { InternalValidationService } from './validation/internal-validation.service';
+import { InternalValidationController } from './validation/internal-validation.controller';
+import { InternalValidationInterceptor } from './validation/internal-validation.interceptor';
+import { InternalDiscussionService } from './discussions/internal-discussion.service';
+import { InternalDiscussionController } from './discussions/internal-discussion.controller';
+import { InternalDocumentPermissionService } from './documents/internal-document-permission.service';
+import { InternalPdfService } from './documents/internal-pdf.service';
+import { InternalDocumentService } from './documents/internal-document.service';
+import { InternalDocumentsController } from './documents/internal-documents.controller';
+import { InternalNotificationService } from './notifications/internal-notification.service';
+import { InternalNotificationsController } from './notifications/internal-notifications.controller';
+import { InternalWorkspaceManagerGuard } from './authorization/internal-workspace-manager.guard';
+import { InternalCollaborationService } from './collaboration/internal-collaboration.service';
+import {
+  InternalBaseCollaborationController,
+  InternalWorkspaceCollaborationController,
+} from './collaboration/internal-collaboration.controller';
+import { InternalViewManagementService } from './views/internal-view-management.service';
+import { InternalViewManagementController } from './views/internal-view-management.controller';
+import { InternalOpenApiService } from './openapi/internal-openapi.service';
+import { InternalOpenApiController } from './openapi/internal-openapi.controller';
+import { InternalFilePreviewController } from './record-modes/internal-file-preview.controller';
 
 @Module({
   imports: [NocoModule],
@@ -50,12 +78,25 @@ import { InternalTokenScopeGuard } from './api-tokens/internal-token-scope.guard
     InternalCapabilitiesController,
     InternalBasePermissionsController,
     InternalApiTokensController,
+    InternalAdminController,
+    InternalValidationController,
+    InternalDiscussionController,
+    InternalDocumentsController,
+    InternalNotificationsController,
+    InternalWorkspaceCollaborationController,
+    InternalBaseCollaborationController,
+    InternalViewManagementController,
+    InternalOpenApiController,
+    InternalFilePreviewController,
   ],
   providers: [
     GlobalGuard,
     MetaApiLimiterGuard,
     InternalAuthenticatedGuard,
     InternalFeatureRegistryService,
+    InternalFeatureGuard,
+    InternalSuperAdminGuard,
+    InternalWorkspaceManagerGuard,
     InternalExtensionsMigrationService,
     {
       provide: InternalTokenHashingService,
@@ -107,9 +148,25 @@ import { InternalTokenScopeGuard } from './api-tokens/internal-token-scope.guard
       useClass: CommunityBasePermissionIdentityProvider,
     },
     InternalBasePermissionAdminService,
+    InternalAdminService,
+    InternalValidationEngine,
+    InternalValidationRepository,
+    InternalValidationService,
+    InternalDiscussionService,
+    InternalDocumentPermissionService,
+    InternalPdfService,
+    InternalDocumentService,
+    InternalNotificationService,
+    InternalCollaborationService,
+    InternalViewManagementService,
+    InternalOpenApiService,
     {
       provide: APP_INTERCEPTOR,
       useClass: InternalBasePermissionEnforcementInterceptor,
+    },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: InternalValidationInterceptor,
     },
   ],
   exports: [
@@ -134,6 +191,18 @@ import { InternalTokenScopeGuard } from './api-tokens/internal-token-scope.guard
     InternalAuditService,
     InternalBasePermissionIdentityProvider,
     InternalBasePermissionAdminService,
+    InternalAdminService,
+    InternalValidationEngine,
+    InternalValidationRepository,
+    InternalValidationService,
+    InternalDiscussionService,
+    InternalDocumentPermissionService,
+    InternalPdfService,
+    InternalDocumentService,
+    InternalNotificationService,
+    InternalCollaborationService,
+    InternalViewManagementService,
+    InternalOpenApiService,
   ],
 })
 export class InternalExtensionsModule {}
