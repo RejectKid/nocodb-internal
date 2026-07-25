@@ -17,7 +17,7 @@ permissions:
 
 jobs:
   dependency-review:
-    runs-on: ubicloud-standard-2
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
