@@ -98,6 +98,21 @@ requires a reason.
 
 ## Release evidence
 
+### Consolidated product-suite implementation
+
+- Internal Jest: migration, feature guard, validation, PDF, OpenAPI, token,
+  permission, and authorization matrix suites.
+- Frontend Vitest: internal capability, token, permission, validation, record
+  mode path, and document conversion contracts.
+- SFC compilation: all new and modified internal screens plus both expanded
+  record shells parsed and compiled successfully.
+- Commercial diff check: no license or entitlement enforcement file changed.
+- Realtime: no internal document channel is registered; live co-editing remains
+  a documented release limitation.
+- Full repository typecheck/lint/build: blocked by upstream baseline failures
+  recorded in `consolidated-completion-report.md`; this must be resolved or
+  formally baselined before Release.
+
 - Reviewer:
 - Date:
 - Commit:

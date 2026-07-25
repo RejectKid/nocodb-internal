@@ -289,3 +289,71 @@ modified.
 | `packages/nocodb/src/modules/internal-extensions/api-tokens/internal-token-scope.guard.spec.ts` | Scope, permission, tenant, lifecycle, and last-use tests | None | Low | TOK-002, FND-003 |
 | `packages/nocodb/src/modules/internal-extensions/api-tokens/internal-token-route-metadata.spec.ts` | Exact production route scope/target/owner-permission metadata tests | None | Low | TOK-002, FND-003 |
 | `packages/nocodb/src/modules/internal-extensions/api-tokens/internal-token-verification-rate-limiter.spec.ts` | Threshold, expiry, and bounded-state tests | None | Low | TOK-002, SEC-003 |
+
+## Consolidated product-suite files
+
+Owner for every file below: Internal Platform Team.
+
+| Path | Purpose | Upstream files touched | Merge risk | Feature IDs |
+| --- | --- | --- | --- | --- |
+| `packages/nocodb/src/modules/internal-extensions/admin/internal-admin.controller.ts` | Internal v1 administration routes | Community guards | Medium | ADM-001–003 |
+| `packages/nocodb/src/modules/internal-extensions/admin/internal-admin.service.ts` | Redacted overview and audited administration | Community user/cache tables | Medium | ADM-001–003, SEC-001 |
+| `packages/nocodb/src/modules/internal-extensions/authorization/internal-super-admin.guard.ts` | Fresh super-admin authorization | Community user model | Low | ADM-001–003 |
+| `packages/nocodb/src/modules/internal-extensions/authorization/internal-workspace-manager.guard.ts` | Fresh workspace-manager authorization | Community workspace membership | Low | API-002 |
+| `packages/nocodb/src/modules/internal-extensions/collaboration/internal-collaboration.controller.ts` | Separate collaboration API | Community guards | Medium | API-002 |
+| `packages/nocodb/src/modules/internal-extensions/collaboration/internal-collaboration.service.ts` | Community membership adapters and audit | Community membership services | Medium | API-002, SEC-001 |
+| `packages/nocodb/src/modules/internal-extensions/discussions/internal-discussion.controller.ts` | Record-discussion API | Community guards | Low | MODE-003 |
+| `packages/nocodb/src/modules/internal-extensions/discussions/internal-discussion.service.ts` | Tenant-bound threads, mentions, moderation | Community model/membership reads | Medium | MODE-003, SEC-001 |
+| `packages/nocodb/src/modules/internal-extensions/documents/internal-document-permission.service.ts` | Nested document permission policy | Community role reads | Medium | DOC-001 |
+| `packages/nocodb/src/modules/internal-extensions/documents/internal-document.service.ts` | Documents, snapshots, comments, export orchestration | Metadata connection | Medium | DOC-001–004 |
+| `packages/nocodb/src/modules/internal-extensions/documents/internal-document.types.ts` | Independent document contracts | None | Low | DOC-001 |
+| `packages/nocodb/src/modules/internal-extensions/documents/internal-documents.controller.ts` | Internal v1 document API | Community guards | Medium | DOC-001–004 |
+| `packages/nocodb/src/modules/internal-extensions/documents/internal-pdf.service.ts` | No-network trusted PDF renderer | None | Low | DOC-004 |
+| `packages/nocodb/src/modules/internal-extensions/documents/internal-pdf.service.spec.ts` | PDF safety/structure tests | None | Low | DOC-004 |
+| `packages/nocodb/src/modules/internal-extensions/feature-registry/internal-feature.guard.ts` | Global and per-base feature guard | Metadata connection | Low | FND-002, ADM-003 |
+| `packages/nocodb/src/modules/internal-extensions/feature-registry/internal-feature.guard.spec.ts` | Feature guard allow/deny tests | None | Low | FND-003 |
+| `packages/nocodb/src/modules/internal-extensions/internal-extension.constants.ts` | Independent extension version | None | Low | FND-001 |
+| `packages/nocodb/src/modules/internal-extensions/migrations/nc_internal_004_product_suite.ts` | Additive product-suite schema | Internal migration runner | Medium | ADM, VAL, MODE, DOC |
+| `packages/nocodb/src/modules/internal-extensions/migrations/nc_internal_004_product_suite.spec.ts` | Up/down isolation tests | None | Low | FND-003 |
+| `packages/nocodb/src/modules/internal-extensions/notifications/internal-notification.service.ts` | Independent mention notifications | Metadata connection | Low | MODE-003, DOC-003 |
+| `packages/nocodb/src/modules/internal-extensions/notifications/internal-notifications.controller.ts` | Notification list/read API | Community guards | Low | MODE-003, DOC-003 |
+| `packages/nocodb/src/modules/internal-extensions/openapi/internal-openapi.controller.ts` | Authenticated OpenAPI endpoint | Community guards | Low | API-001 |
+| `packages/nocodb/src/modules/internal-extensions/openapi/internal-openapi.service.ts` | Independent OpenAPI 3.1 contract | None | Low | API-001 |
+| `packages/nocodb/src/modules/internal-extensions/openapi/internal-openapi.service.spec.ts` | Contract isolation/auth tests | None | Low | API-001 |
+| `packages/nocodb/src/modules/internal-extensions/record-modes/internal-file-preview.controller.ts` | Record-bound attachment URL authorization | Community attachment service | Medium | MODE-002 |
+| `packages/nocodb/src/modules/internal-extensions/validation/internal-validation.controller.ts` | Validation-rule API | Community guards | Low | VAL-001 |
+| `packages/nocodb/src/modules/internal-extensions/validation/internal-validation.engine.ts` | Authoritative typed validation engine | None | Low | VAL-001 |
+| `packages/nocodb/src/modules/internal-extensions/validation/internal-validation.engine.spec.ts` | Rule and safe-regex tests | None | Low | VAL-001 |
+| `packages/nocodb/src/modules/internal-extensions/validation/internal-validation.interceptor.ts` | Community write-path enforcement | Community route metadata | High | VAL-001 |
+| `packages/nocodb/src/modules/internal-extensions/validation/internal-validation.repository.ts` | Rule persistence | Metadata connection | Low | VAL-001 |
+| `packages/nocodb/src/modules/internal-extensions/validation/internal-validation.service.ts` | Audited rule administration | Internal audit service | Low | VAL-001, SEC-001 |
+| `packages/nocodb/src/modules/internal-extensions/validation/internal-validation.types.ts` | Zod rule contracts | None | Low | VAL-001 |
+| `packages/nocodb/src/modules/internal-extensions/views/internal-view-management.controller.ts` | Separate view-management API | Community guards | Medium | API-003 |
+| `packages/nocodb/src/modules/internal-extensions/views/internal-view-management.service.ts` | Supported Community view adapters | Community view services | Medium | API-003 |
+| `packages/nc-gui/components/internalExtensions/documents/Editor.vue` | Documents, history, permissions, comments UI | Community UI primitives | Medium | DOC-001–004 |
+| `packages/nc-gui/components/internalExtensions/recordModes/Discussion.vue` | Independent record discussion mode | Expanded-form store | Medium | MODE-003 |
+| `packages/nc-gui/components/internalExtensions/recordModes/FilePreview.vue` | Independent authorized file mode | Expanded-form store | Medium | MODE-002 |
+| `packages/nc-gui/components/internalExtensions/recordModes/Selector.vue` | Community internal mode selector | Expanded-form shell | Low | MODE-001–003 |
+| `packages/nc-gui/components/internalExtensions/validation/Editor.vue` | Field-compatible validation editor | Community base settings | Medium | VAL-002 |
+| `packages/nc-gui/composables/internalExtensions/useInternalAdmin.ts` | Administration client | Axios instance | Low | ADM-001–003 |
+| `packages/nc-gui/composables/internalExtensions/useInternalDiscussions.ts` | Record-discussion client | Axios instance | Low | MODE-003 |
+| `packages/nc-gui/composables/internalExtensions/useInternalDocuments.ts` | Document client and snapshot conversion | Axios instance | Low | DOC-001–004 |
+| `packages/nc-gui/composables/internalExtensions/useInternalFilePreview.ts` | Attachment authorization client | Axios instance | Low | MODE-002 |
+| `packages/nc-gui/composables/internalExtensions/useInternalValidation.ts` | Validation client/preview | Axios instance | Low | VAL-001–002 |
+| `packages/nc-gui/pages/internal/admin.vue` | Isolated administration page | Internal client only | Low | ADM-001–003 |
+| `packages/nc-gui/pages/internal/documents.vue` | Isolated documents page | Internal client only | Low | DOC-001–004 |
+| `packages/nc-gui/test/internal-product-suite.test.ts` | Product-suite frontend contract tests | None | Low | VAL, MODE, DOC |
+| `scripts/internal-fork/dev.mjs` | Combined backend/frontend source runner | Root scripts | Low | FND-001 |
+| `scripts/internal-fork/start.ps1` | Windows one-command startup | Root bootstrap | Low | FND-001 |
+| `scripts/internal-fork/start.sh` | POSIX one-command startup | Root bootstrap | Low | FND-001 |
+| `deploy/internal-fork/.env.example` | Safe feature configuration template | None | Low | FND-002 |
+| `docs/internal-fork/self-hosting.md` | Deployment and upgrade runbook | None | Low | FND-001 |
+| `docs/internal-fork/product-suite-implementation.md` | Architecture and compatibility note | None | Low | All |
+| `docs/internal-fork/consolidated-completion-report.md` | Validation and risk report | None | Low | All |
+
+The existing registration hooks modified by this suite are
+`internal-extensions.module.ts`, `internal-feature.config.ts`,
+`internal-migration-source.ts`, `noco.module.ts`, the two Community expanded
+form shells, base settings, capability settings, audit enums, and the
+authorization matrix. No commercial entitlement or license file is in the
+manifest.
