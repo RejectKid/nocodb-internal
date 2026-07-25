@@ -345,6 +345,106 @@
         "status": 401,
         "failureClass": "authentication"
       }
+    },
+    {
+      "id": "document-cross-base-token-denied",
+      "description": "A document token cannot discover metadata outside its base allowlist",
+      "actor": {
+        "state": "active",
+        "role": "owner",
+        "permissions": ["documents:read"]
+      },
+      "token": {
+        "state": "active",
+        "ownerState": "active",
+        "scopes": ["documents:read"],
+        "allowedWorkspaceIds": ["workspace-a"],
+        "allowedBaseIds": ["base-a"]
+      },
+      "target": {
+        "workspaceId": "workspace-a",
+        "baseId": "base-b",
+        "resourceType": "document"
+      },
+      "operation": "documents:read",
+      "requiredPermission": "documents:read",
+      "requiredScope": "documents:read",
+      "frontendVisible": false,
+      "expected": {
+        "status": 403,
+        "failureClass": "authorization"
+      }
+    },
+    {
+      "id": "document-write-scope-denied",
+      "description": "A read-only token cannot mutate documents through a direct API request",
+      "actor": {
+        "state": "active",
+        "role": "owner",
+        "permissions": ["documents:update"]
+      },
+      "token": {
+        "state": "active",
+        "ownerState": "active",
+        "scopes": ["documents:read"],
+        "allowedWorkspaceIds": ["workspace-a"],
+        "allowedBaseIds": ["base-a"]
+      },
+      "target": {
+        "workspaceId": "workspace-a",
+        "baseId": "base-a",
+        "resourceType": "document"
+      },
+      "operation": "documents:update",
+      "requiredPermission": "documents:update",
+      "requiredScope": "documents:write",
+      "frontendVisible": false,
+      "expected": {
+        "status": 403,
+        "failureClass": "authorization"
+      }
+    },
+    {
+      "id": "discussion-authorized-user-succeeds",
+      "description": "An active base member with update permission can post a record discussion comment",
+      "actor": {
+        "state": "active",
+        "role": "editor",
+        "permissions": ["records:update"]
+      },
+      "target": {
+        "workspaceId": "workspace-a",
+        "baseId": "base-a",
+        "resourceType": "record-comment"
+      },
+      "operation": "records:update",
+      "requiredPermission": "records:update",
+      "frontendVisible": true,
+      "expected": {
+        "status": 200,
+        "failureClass": "success"
+      }
+    },
+    {
+      "id": "admin-hidden-direct-api-denied",
+      "description": "A non-administrator cannot invoke a hidden instance-administration mutation",
+      "actor": {
+        "state": "active",
+        "role": "viewer",
+        "permissions": []
+      },
+      "target": {
+        "workspaceId": "workspace-a",
+        "baseId": "base-a",
+        "resourceType": "instance-admin"
+      },
+      "operation": "admin:write",
+      "requiredPermission": "admin:write",
+      "frontendVisible": false,
+      "expected": {
+        "status": 403,
+        "failureClass": "authorization"
+      }
     }
   ]
 }

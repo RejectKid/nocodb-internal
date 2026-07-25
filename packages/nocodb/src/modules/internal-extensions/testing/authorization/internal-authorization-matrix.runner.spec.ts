@@ -15,7 +15,7 @@ describe('internal authorization matrix harness', () => {
       executeReferenceAuthorizationCase,
     );
 
-    expect(results).toHaveLength(14);
+    expect(results).toHaveLength(18);
     expect(results.every(({ passed }) => passed)).toBe(true);
   });
 
