@@ -23,9 +23,7 @@ const spawnPnpm = (args, envOverrides = {}) => {
 
 const children = [
   spawnPnpm(["--filter", "nocodb", "run", "start"]),
-  spawnPnpm(["--filter", "nc-gui", "run", "dev"], {
-    NC_INTERNAL_DISABLE_VITE_OPTIMIZE_DEPS: "true",
-  }),
+  spawnPnpm(["--filter", "nc-gui", "run", "dev"]),
 ];
 
 let stopping = false;

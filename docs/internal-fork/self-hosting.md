@@ -31,10 +31,13 @@ cp deploy/internal-fork/.env.example .env.internal
 The first run installs the exact `pnpm` version and builds workspace
 dependencies. Later runs omit `-Bootstrap` or `--bootstrap`.
 
-On Windows, the launcher disables only Vite's eager development dependency
-prebundle. This avoids endpoint-security filters denying esbuild reads on
-secondary drives such as `E:`. Normal development transformation and production
-build optimization remain enabled.
+The launcher keeps Vite dependency optimization enabled on every platform.
+This is required for CommonJS dependencies such as Babel's runtime to be
+prebundled correctly; disabling it can leave the browser on a blank page.
+
+If a Windows endpoint-security product blocks esbuild from reading dependencies
+on a secondary drive, allow the repository and Node.js processes in that
+product rather than setting `NC_INTERNAL_DISABLE_VITE_OPTIMIZE_DEPS=true`.
 
 - UI: <http://localhost:3000>
 - Backend: <http://localhost:8080>
