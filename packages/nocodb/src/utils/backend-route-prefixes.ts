@@ -10,7 +10,6 @@ export const backendRoutePrefixes = [
   '/dltemp',
   '/p',
   '/data',
-  '/internal',
   '/jobs',
   '/.well-known',
 ];

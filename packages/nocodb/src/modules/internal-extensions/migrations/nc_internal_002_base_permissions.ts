@@ -37,7 +37,12 @@ export async function up(knex: Knex): Promise<void> {
       table.string('updated_by', 20).notNullable();
       table.index(['workspace_id', 'base_id']);
       table.index(['base_id', 'subject_type', 'subject_id']);
-      table.unique(['base_id', 'subject_type', 'subject_id', 'permission']);
+      // Keep this explicit and below PostgreSQL's 63-byte identifier limit.
+      // The generated unique name otherwise collides with the preceding index
+      // after PostgreSQL truncates both identifiers.
+      table.unique(['base_id', 'subject_type', 'subject_id', 'permission'], {
+        indexName: 'nc_int_base_perm_grant_subject_permission_uq',
+      });
     },
   );
 }

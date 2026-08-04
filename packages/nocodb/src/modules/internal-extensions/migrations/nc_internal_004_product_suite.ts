@@ -83,7 +83,11 @@ export async function up(knex: Knex): Promise<void> {
     table.string('permission', 16).notNullable();
     table.string('created_by', 255).notNullable();
     table.timestamp('created_at').notNullable().defaultTo(knex.fn.now());
-    table.unique(['document_id', 'subject_type', 'subject_id', 'permission']);
+    // Avoid a PostgreSQL identifier truncation collision with the subject
+    // lookup index declared below.
+    table.unique(['document_id', 'subject_type', 'subject_id', 'permission'], {
+      indexName: 'nc_int_doc_grant_subject_permission_uq',
+    });
     table.index(['document_id', 'subject_type', 'subject_id']);
   });
 
