@@ -376,3 +376,61 @@ The existing registration hooks modified by this suite are
 form shells, base settings, capability settings, audit enums, and the
 authorization matrix. No commercial entitlement or license file is in the
 manifest.
+
+## Admin/document discoverability and portable import (2026-09-10)
+
+Owner for every entry below: Internal Platform Team. Existing independent
+document and admin files keep their earlier entries; these rows record the
+additional behavior and the two new Community navigation hooks.
+
+| Path | Purpose | Upstream files touched | Merge risk | Feature IDs |
+| --- | --- | --- | --- | --- |
+| `packages/nc-gui/components/internalExtensions/Navigation.vue` | Capability-aware user menu links | UserInfoMenu.vue | Low | ADM-001, DOC-001 |
+| `packages/nc-gui/components/dashboard/Sidebar/UserInfoMenu.vue` | Register independent menu fragment | This file | Medium | ADM-001, DOC-001 |
+| `packages/nc-gui/components/dashboard/TreeView/Project/CreateNewMenu.vue` | Base-scoped create/import entry point | This file | Medium | DOC-001 |
+| `packages/nc-gui/pages/internal/admin.vue` | User inspection, Community setup links, document toggles | None | Low | ADM-001, ADM-002, ADM-003 |
+| `packages/nc-gui/pages/internal/documents.vue` | Accessible-base picker and disabled/error states | None | Low | DOC-001 |
+| `packages/nc-gui/components/internalExtensions/documents/Editor.vue` | Editor context, import, save-safe switching, authenticated export UI | None | Low | DOC-001, DOC-002, DOC-004 |
+| `packages/nc-gui/composables/internalExtensions/useInternalDocuments.ts` | Create from content and authenticated downloads | None | Low | DOC-001, DOC-004 |
+| `packages/nc-gui/helpers/internalDocumentImport.ts` | Size/format validation and portable imports without ownership transfer | None | Low | DOC-001 |
+| `packages/nc-gui/test/internal-document-import.test.ts` | Import format, size, and privilege-field regression tests | None | Low | DOC-001, SEC-002 |
+| `packages/nocodb/src/modules/internal-extensions/documents/internal-document.service.ts` | Permission-checked portable JSON export | None | Low | DOC-001 |
+| `packages/nocodb/src/modules/internal-extensions/documents/internal-documents.controller.ts` | Export route under existing tenant/token/base guards | None | Low | DOC-001, API-001 |
+| `packages/nocodb/src/modules/internal-extensions/documents/internal-document-export.spec.ts` | Read-vs-export and cross-tenant denial tests | None | Low | DOC-001, SEC-002 |
+| `packages/nocodb/src/modules/internal-extensions/openapi/internal-openapi.service.ts` | JSON export contract entry | None | Low | API-001 |
+| `scripts/internal-fork/test-admin-documents.mjs` | Opt-in real-app smoke test with disposable fixtures | None | Low | ADM-001, DOC-001, SEC-002 |
+| `docs/internal-fork/admin-documents-usage.md` | Deployment, import limitations, and coworker test checklist | None | Low | ADM-001, DOC-001, DOC-004 |
+
+## Team permission subjects (2026-09-10)
+
+Owner for every entry: Internal Platform Team. Feature ID: TEAM-001 (also
+PERM-001, PERM-002, DOC-001, SEC-001/002). All changes below are confined to the
+independent extension boundary; no additional Community registration hook or
+commercial entitlement file is changed for Teams.
+
+| Path | Purpose | Upstream files touched | Merge risk |
+| --- | --- | --- | --- |
+| `packages/nocodb/src/modules/internal-extensions/teams/internal-team-directory.ts` | Narrow permission lookup interface | None | Low |
+| `packages/nocodb/src/modules/internal-extensions/teams/internal-team.service.ts` | Tenant-scoped membership, lifecycle, revisions and audit | None | Low |
+| `packages/nocodb/src/modules/internal-extensions/teams/internal-teams.controller.ts` | Independently authenticated/scoped team routes | None | Low |
+| `packages/nocodb/src/modules/internal-extensions/teams/internal-team.service.spec.ts` | Membership, inheritance, invalidation and SQLite rollback tests | None | Low |
+| `packages/nocodb/src/modules/internal-extensions/teams/internal-teams.controller.spec.ts` | Guard and token-scope registration tests | None | Low |
+| `packages/nocodb/src/modules/internal-extensions/migrations/nc_internal_006_teams.ts` | Independent team and membership tables | None | Low |
+| `packages/nc-gui/composables/internalExtensions/useInternalTeams.ts` | Typed team API client | None | Low |
+| `packages/nc-gui/pages/internal/teams.vue` | Team lifecycle and membership UI | None | Low |
+| `packages/nc-gui/test/internal-teams.test.ts` | URL encoding and permission precedence regression | None | Low |
+| `docs/internal-fork/internal-teams-design.md` | Security boundary and rollback design | None | Low |
+| `docs/internal-fork/internal-teams-usage.md` | Coworker deployment and acceptance checklist | None | Low |
+| `docs/internal-fork/self-hosted-business-parity.md` | Official-feature comparison and explicit remaining gaps | None | Low |
+| `docs/internal-fork/teams-validation-report.md` | Local command outcomes and known limitations | None | Low |
+
+Existing custom files extended: backend `internal-extensions.module.ts`,
+`migrations/internal-migration-source.ts`, feature registry types/config/tests,
+`audit/internal-audit-event.ts`, base permission model/policy/services/tests,
+document permission service/types/service, and internal OpenAPI service.
+Frontend extensions: `Navigation.vue`, base/document permission editors,
+base/document/capability composables, capability settings and existing test
+fixtures. Configuration: `deploy/internal-fork/.env.example`. These have low
+upstream merge risk, but **high authorization regression sensitivity**: review
+precedence, tenant isolation, and disablement semantics on upgrades. The pipeline
+now records TEAM-001 and links the broader Business gap ledger.
