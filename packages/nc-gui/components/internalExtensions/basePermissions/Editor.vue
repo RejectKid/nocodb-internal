@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { OrderedProjectRoles, ProjectRoles } from 'nocodb-sdk'
+import { fetchInternalTeams, type InternalTeam } from '~/composables/internalExtensions/useInternalTeams'
 import {
   canManageInternalBasePermissions,
   createInternalBasePermissionDraft,
@@ -34,6 +35,7 @@ const staleWrite = ref(false)
 const selectedSubjectType = ref<InternalBasePermissionSubjectType>('role')
 const selectedSubjectId = ref('')
 const draft = ref<InternalBasePermissionDraft>({})
+const teams = ref<InternalTeam[]>([])
 
 const workspaceId = computed(() => activeWorkspaceId.value || '')
 const canManage = computed(() => canManageInternalBasePermissions(state.value))
@@ -62,6 +64,7 @@ const effectiveDisplay = computed(() =>
         selectedSubjectType.value,
         selectedSubjectId.value,
         normalizeInternalBasePermissionRoles(selectedMember.value?.roles),
+        teams.value.filter((team) => team.memberIds.includes(selectedSubjectId.value)).map((team) => team.id),
       )
     : {},
 )
@@ -75,6 +78,8 @@ const permissionGroups = computed(() => {
 })
 
 function subjectLabel(grantSet: InternalBasePermissionGrantSet) {
+  if (grantSet.subjectType === 'team')
+    return teams.value.find((team) => team.id === grantSet.subjectId)?.name || grantSet.subjectId
   if (grantSet.subjectType === 'role') return grantSet.subjectId
   const member = members.value.find((candidate: { id?: string }) => candidate.id === grantSet.subjectId)
   return member?.display_name || member?.email || grantSet.subjectId
@@ -92,6 +97,11 @@ function selectNewSubject() {
 }
 
 function changeSubjectType() {
+  if (selectedSubjectType.value === 'team') {
+    selectedSubjectId.value = teams.value[0]?.id ?? ''
+    selectNewSubject()
+    return
+  }
   selectedSubjectId.value = selectedSubjectType.value === 'role' ? roles.value[0] ?? '' : members.value[0]?.id ?? ''
   selectNewSubject()
 }
@@ -114,6 +124,11 @@ async function loadState() {
   loadError.value = false
   try {
     state.value = await fetchInternalBasePermissionState(api.instance, workspaceId.value, props.baseId)
+    try {
+      teams.value = await fetchInternalTeams(api.instance, workspaceId.value)
+    } catch {
+      teams.value = []
+    }
     if (!selectedSubjectId.value) chooseInitialSubject()
     else selectNewSubject()
   } catch (error) {
@@ -230,6 +245,15 @@ onMounted(async () => {
             <span class="truncate capitalize">{{ subjectLabel(grantSet) }}</span>
           </button>
 
+          <div class="mb-2 mt-4 text-xs font-semibold uppercase tracking-wide text-nc-content-gray-muted">Teams</div>
+          <button
+            v-for="grantSet in grantSets.filter((s) => s.subjectType === 'team')"
+            :key="`team:${grantSet.subjectId}`"
+            class="subject-row"
+            @click="selectSubject(grantSet)"
+          >
+            {{ subjectLabel(grantSet) }}
+          </button>
           <div class="mb-2 mt-4 text-xs font-semibold uppercase tracking-wide text-nc-content-gray-muted">Direct users</div>
           <button
             v-for="grantSet in userGrantSets"
@@ -250,6 +274,7 @@ onMounted(async () => {
               <NcSelect v-model:value="selectedSubjectType" class="mt-1 w-full" @change="changeSubjectType">
                 <a-select-option value="role">Inherited base role</a-select-option>
                 <a-select-option value="user">Direct user</a-select-option>
+                <a-select-option v-if="teams.length" value="team">Internal team</a-select-option>
               </NcSelect>
             </label>
             <label class="text-xs font-medium text-nc-content-gray">
@@ -263,6 +288,14 @@ onMounted(async () => {
                 <a-select-option v-for="role in roles" :key="role" :value="role">
                   <span class="capitalize">{{ role }}</span>
                 </a-select-option>
+              </NcSelect>
+              <NcSelect
+                v-else-if="selectedSubjectType === 'team'"
+                v-model:value="selectedSubjectId"
+                class="mt-1 w-full"
+                @change="selectNewSubject"
+              >
+                <a-select-option v-for="team in teams" :key="team.id" :value="team.id">{{ team.name }}</a-select-option>
               </NcSelect>
               <NcSelect v-else v-model:value="selectedSubjectId" class="mt-1 w-full" show-search @change="selectNewSubject">
                 <a-select-option v-for="member in members" :key="member.id" :value="member.id">
@@ -292,7 +325,7 @@ onMounted(async () => {
                       {{
                         effectiveDisplay[permission].source === 'direct'
                           ? 'direct assignment'
-                          : `${effectiveDisplay[permission].sourceId} role`
+                          : `${effectiveDisplay[permission].sourceId} ${effectiveDisplay[permission].source}`
                       }}
                     </template>
                     <template v-else>not assigned</template>

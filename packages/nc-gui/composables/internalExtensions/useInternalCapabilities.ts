@@ -6,6 +6,7 @@ export const INTERNAL_CAPABILITY_KEYS = [
   'documentPermissions',
   'filePreviewMode',
   'discussionMode',
+  'teams',
 ] as const
 
 export type InternalCapabilityKey = (typeof INTERNAL_CAPABILITY_KEYS)[number]

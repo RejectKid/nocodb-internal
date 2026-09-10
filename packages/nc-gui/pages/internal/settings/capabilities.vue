@@ -13,6 +13,7 @@ const labels: Record<InternalCapabilityKey, string> = {
   documentPermissions: 'Document permissions',
   filePreviewMode: 'File preview mode',
   discussionMode: 'Discussion mode',
+  teams: 'Internal teams',
 }
 
 const { capabilities, error, isLoading, refresh } = useInternalCapabilities()

@@ -17,6 +17,19 @@ const response = (description: string, schema?: Record<string, unknown>) => ({
 export class InternalOpenApiService {
   generate() {
     const paths: Record<string, unknown> = {
+      '/api/internal/v1/workspaces/{workspaceId}/teams': {
+        get: this.operation('List internal workspace teams', 'members:read'),
+        post: this.operation(
+          'Create internal team (workspace manager)',
+          'members:write',
+        ),
+      },
+      '/api/internal/v1/workspaces/{workspaceId}/teams/{teamId}': {
+        patch: this.operation(
+          'Rename, replace members, or archive team with expectedRevision (workspace manager)',
+          'members:write',
+        ),
+      },
       '/api/internal/v1/capabilities': {
         get: this.operation('Read internal capabilities', 'admin:read'),
       },
@@ -190,6 +203,13 @@ export class InternalOpenApiService {
               ...this.errorResponses(),
             },
           },
+        },
+      '/api/internal/v1/workspaces/{workspaceId}/bases/{baseId}/documents/{documentId}/export.json':
+        {
+          get: this.operation(
+            'Export portable document JSON; requires document export and base export permissions',
+            'documents:read',
+          ),
         },
       '/api/internal/v1/notifications': {
         get: this.operation('List mention notifications', 'admin:read'),

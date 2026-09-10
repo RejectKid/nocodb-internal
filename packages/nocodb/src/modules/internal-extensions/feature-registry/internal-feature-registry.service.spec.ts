@@ -40,6 +40,7 @@ describe('InternalFeatureRegistryService', () => {
         documentPermissions: false,
         filePreviewMode: false,
         discussionMode: true,
+        teams: false,
       },
     });
   });
@@ -51,6 +52,8 @@ describe('InternalFeatureRegistryService', () => {
 
     expect(response.schemaVersion).toBe(1);
     expect(Object.keys(response.features)).toEqual(INTERNAL_FEATURE_KEYS);
-    expect(Object.values(response.features)).toHaveLength(7);
+    expect(Object.values(response.features)).toHaveLength(
+      INTERNAL_FEATURE_KEYS.length,
+    );
   });
 });

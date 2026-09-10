@@ -15,6 +15,7 @@ export interface InternalBasePermissionActor {
   state: InternalPermissionActorState;
   roles: readonly string[];
   isOwner: boolean;
+  teamIds?: readonly string[];
 }
 
 export interface InternalBasePermissionRequest {
@@ -33,6 +34,7 @@ export type InternalBasePermissionDecisionSource =
   | 'owner'
   | 'user'
   | 'role'
+  | 'team'
   | 'default';
 
 export interface InternalBasePermissionDecision {

@@ -29,6 +29,7 @@ describe('InternalCapabilitiesController', () => {
         documentPermissions: false,
         filePreviewMode: false,
         discussionMode: false,
+        teams: false,
       },
     });
   });

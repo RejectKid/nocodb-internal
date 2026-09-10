@@ -1,4 +1,7 @@
 export enum InternalAuditAction {
+  TEAM_CREATED = 'team.created',
+  TEAM_CHANGED = 'team.changed',
+  TEAM_ARCHIVED = 'team.archived',
   TOKEN_CREATED = 'token.created',
   TOKEN_UPDATED = 'token.updated',
   TOKEN_ENABLED = 'token.enabled',
@@ -38,6 +41,7 @@ export enum InternalAuditActorType {
 }
 
 export enum InternalAuditResourceType {
+  TEAM = 'team',
   API_TOKEN = 'api_token',
   BASE_PERMISSION = 'base_permission',
   USER = 'user',

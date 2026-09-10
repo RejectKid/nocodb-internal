@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { parseInternalDocumentImport } from '~/helpers/internalDocumentImport'
+import { fetchInternalTeams, type InternalTeam } from '~/composables/internalExtensions/useInternalTeams'
 import {
   documentContentToText,
   type InternalDocumentGrant,
@@ -9,6 +11,8 @@ import {
 const props = defineProps<{ workspaceId: string; baseId: string }>()
 const workspaceId = toRef(props, 'workspaceId')
 const baseId = toRef(props, 'baseId')
+// Community rich-text editor expects base metadata even outside record cells.
+provide(MetaInj, computed(() => ({ base_id: props.baseId })) as any)
 const {
   documents,
   activeDocument,
@@ -25,7 +29,7 @@ const {
   resolveComment,
   restore,
   replaceGrants,
-  exportUrl,
+  download,
 } = useInternalDocuments(workspaceId, baseId)
 
 const search = ref('')
@@ -33,13 +37,24 @@ const title = ref('')
 const body = ref('')
 const changeSummary = ref('')
 const commentDraft = ref('')
-const grantSubjectType = ref<'user' | 'role'>('user')
+const grantSubjectType = ref<'user' | 'role' | 'team'>('user')
+const teams = ref<InternalTeam[]>([])
+onMounted(async () => {
+  const { api } = useApi({ useGlobalInstance: true })
+  try {
+    teams.value = await fetchInternalTeams(api.instance, props.workspaceId)
+  } catch {
+    teams.value = []
+  }
+})
 const grantSubjectId = ref('')
 const grantPermission = ref<InternalDocumentPermission>('read')
 const isSaving = ref(false)
 const saveStatus = ref<'saved' | 'unsaved' | 'saving' | 'error'>('saved')
 const isHydrating = ref(false)
 const error = ref('')
+const importInput = ref<HTMLInputElement>()
+const isImporting = ref(false)
 let autosaveTimer: ReturnType<typeof setTimeout> | undefined
 
 const canEdit = computed(() => activeDocument.value?.permissions.includes('edit'))
@@ -68,8 +83,31 @@ async function run(action: () => Promise<unknown>) {
   }
 }
 
+async function switchDocument(action: () => Promise<unknown>) {
+  if (autosaveTimer) clearTimeout(autosaveTimer)
+  if (isSaving.value) return
+  if (saveStatus.value === 'unsaved') await saveDocument()
+  if (saveStatus.value === 'error') return
+  await run(action)
+}
+
+async function importDocument(event: Event) {
+  const input = event.target as HTMLInputElement
+  const file = input.files?.[0]
+  if (!file) return
+  isImporting.value = true
+  await run(async () => {
+    if (file.size > 4 * 1024 * 1024) throw new Error('Import files must be 4 MB or smaller.')
+    const parsed = parseInternalDocumentImport(file.name, await file.text())
+    await switchDocument(() => create(parsed.title, null, parsed.content))
+  })
+  input.value = ''
+  isImporting.value = false
+}
+
 async function saveDocument(summary = changeSummary.value || undefined) {
-  if (!activeDocument.value) return
+  if (!activeDocument.value || isSaving.value) return
+  if (autosaveTimer) clearTimeout(autosaveTimer)
   const savingTitle = title.value
   const savingBody = body.value
   isSaving.value = true
@@ -137,16 +175,37 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
+  <NcAlert v-if="error" type="error" class="mb-3" data-testid="document-error">{{ error }}</NcAlert>
   <section class="flex min-h-[620px] overflow-hidden rounded-xl border-1 border-nc-border-gray-medium bg-nc-bg-default">
     <aside class="flex w-72 shrink-0 flex-col border-r-1 border-nc-border-gray-medium">
       <div class="border-b-1 border-nc-border-gray-medium p-3">
         <a-input-search v-model:value="search" placeholder="Search documents" @search="run(() => refresh(search))" />
         <div class="mt-2 flex gap-2">
-          <NcButton size="small" type="primary" @click="run(() => create('Untitled document'))">New</NcButton>
-          <NcButton size="small" :disabled="!activeDocument" @click="run(() => create('Untitled child', activeDocument?.id))">
+          <NcButton size="small" type="primary" :disabled="isSaving" @click="switchDocument(() => create('Untitled document'))"
+            >New document</NcButton
+          >
+          <NcButton
+            size="small"
+            :disabled="!activeDocument || isSaving"
+            @click="switchDocument(() => create('Untitled child', activeDocument?.id))"
+          >
             New child
           </NcButton>
         </div>
+        <input
+          ref="importInput"
+          type="file"
+          accept=".txt,.md,.markdown,.json"
+          class="hidden"
+          data-testid="document-import-input"
+          @change="importDocument"
+        />
+        <NcButton class="mt-2" size="small" :loading="isImporting" :disabled="isSaving" @click="importInput?.click()"
+          >Import document</NcButton
+        >
+        <p class="mt-2 text-xs">
+          Text, Markdown, or Internal documents JSON (up to 4 MB). PDF/Office originals belong in an Attachment field.
+        </p>
       </div>
       <div class="min-h-0 flex-1 overflow-auto p-2">
         <GeneralLoader v-if="isLoading" />
@@ -156,7 +215,8 @@ onBeforeUnmount(() => {
           class="mb-1 block w-full rounded-lg px-3 py-2 text-left hover:bg-nc-bg-gray-light"
           :class="activeDocument?.id === document.id ? 'bg-nc-bg-brand text-nc-content-brand' : ''"
           :style="{ paddingLeft: document.parentId ? '28px' : '12px' }"
-          @click="run(() => open(document.id))"
+          :disabled="isSaving"
+          @click="switchDocument(() => open(document.id))"
         >
           <div class="truncate text-sm font-medium">{{ document.title }}</div>
           <div class="text-[11px] opacity-70">
@@ -170,7 +230,6 @@ onBeforeUnmount(() => {
     </aside>
 
     <div v-if="activeDocument" class="flex min-w-0 flex-1 flex-col">
-      <NcAlert v-if="error" type="error" class="m-3">{{ error }}</NcAlert>
       <div class="flex items-center gap-2 border-b-1 border-nc-border-gray-medium p-3">
         <a-input v-model:value="title" :disabled="!canEdit" class="max-w-lg font-semibold" />
         <span class="text-xs text-nc-content-gray-muted" aria-live="polite">
@@ -185,25 +244,45 @@ onBeforeUnmount(() => {
           }}
         </span>
         <div class="ml-auto flex gap-2">
-          <a v-if="canExport" :href="exportUrl()" target="_blank" rel="noopener">
-            <NcButton size="small">Export PDF</NcButton>
-          </a>
-          <NcButton v-if="canManage" size="small" type="danger" @click="run(() => remove(activeDocument!.id))"> Delete </NcButton>
+          <NcButton v-if="canExport" size="small" :disabled="isSaving" @click="switchDocument(() => download('pdf'))"
+            >Export PDF</NcButton
+          >
+          <NcButton v-if="canExport" size="small" :disabled="isSaving" @click="switchDocument(() => download('json'))"
+            >Export JSON</NcButton
+          >
+          <NcButton
+            v-if="canManage"
+            size="small"
+            type="danger"
+            :disabled="isSaving"
+            @click="switchDocument(() => remove(activeDocument!.id))"
+          >
+            Delete
+          </NcButton>
           <NcButton v-if="canEdit" size="small" type="primary" :loading="isSaving" @click="saveDocument()"> Save </NcButton>
         </div>
       </div>
       <div class="grid min-h-0 flex-1 grid-cols-[minmax(0,1fr)_320px]">
         <div class="flex min-h-0 flex-col p-4">
           <CellRichText
+            :key="activeDocument.id"
             v-model:value="body"
             :read-only="!canEdit"
             :show-menu="canEdit"
+            sync-value-change
             full-mode
             hide-mention
             class="min-h-0 flex-1 overflow-auto rounded-lg border-1 border-nc-border-gray-medium p-4"
             placeholder="Start writing…"
           />
           <a-input v-if="canEdit" v-model:value="changeSummary" class="mt-2" placeholder="Optional revision summary" />
+          <details class="mt-3 text-xs">
+            <summary>Your access sources</summary>
+            <p v-for="(source, index) in activeDocument.permissionSources" :key="index">
+              {{ source.permission }} via {{ source.subjectType }} {{ source.subjectId
+              }}{{ source.inherited ? ' (inherited from a parent document)' : '' }}
+            </p>
+          </details>
         </div>
         <a-tabs class="min-h-0 border-l-1 border-nc-border-gray-medium px-3">
           <a-tab-pane key="comments" tab="Comments">
@@ -230,7 +309,14 @@ onBeforeUnmount(() => {
             <div v-for="revision in revisions" :key="revision.id" class="mb-2 rounded-lg bg-nc-bg-gray-extralight p-2">
               <div class="text-sm font-medium">Revision {{ revision.revision }}</div>
               <div class="text-xs text-nc-content-gray-muted">{{ revision.summary || 'No summary' }}</div>
-              <NcButton v-if="canEdit" size="xs" type="text" @click="run(() => restore(revision.id))">Restore</NcButton>
+              <NcButton
+                v-if="canEdit"
+                size="xs"
+                type="text"
+                :disabled="isSaving"
+                @click="switchDocument(() => restore(revision.id))"
+                >Restore</NcButton
+              >
             </div>
           </a-tab-pane>
           <a-tab-pane v-if="canManage" key="permissions" tab="Permissions">
@@ -245,8 +331,17 @@ onBeforeUnmount(() => {
             <a-select v-model:value="grantSubjectType" class="mb-2 w-full">
               <a-select-option value="user">User ID</a-select-option>
               <a-select-option value="role">Base role</a-select-option>
+              <a-select-option v-if="teams.length" value="team">Internal team</a-select-option>
             </a-select>
-            <a-input v-model:value="grantSubjectId" class="mb-2" placeholder="Subject ID or role name" />
+            <a-select
+              v-if="grantSubjectType === 'team'"
+              v-model:value="grantSubjectId"
+              class="mb-2 w-full"
+              placeholder="Select a team"
+            >
+              <a-select-option v-for="team in teams" :key="team.id" :value="team.id">{{ team.name }}</a-select-option>
+            </a-select>
+            <a-input v-else v-model:value="grantSubjectId" class="mb-2" placeholder="Subject ID or role name" />
             <a-select v-model:value="grantPermission" class="mb-2 w-full">
               <a-select-option
                 v-for="permission in ['discover', 'read', 'comment', 'edit', 'manage', 'export']"

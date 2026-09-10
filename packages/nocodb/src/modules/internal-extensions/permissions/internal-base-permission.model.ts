@@ -3,6 +3,7 @@ import type { InternalBasePermission } from './internal-base-permission';
 export enum InternalPermissionSubjectType {
   USER = 'user',
   ROLE = 'role',
+  TEAM = 'team',
 }
 
 export enum InternalPermissionEffect {

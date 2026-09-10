@@ -15,6 +15,7 @@ export interface InternalDocument extends InternalDocumentSummary {
   content: Record<string, unknown>
   metadata: Record<string, unknown> | null
   permissions: InternalDocumentPermission[]
+  permissionSources?: Array<{ subjectType: string; subjectId: string; permission: string; inherited: boolean }>
   createdBy: string
   updatedBy: string
   createdAt: string
@@ -43,7 +44,7 @@ export interface InternalDocumentRevision {
 
 export interface InternalDocumentGrant {
   id?: string
-  subjectType: 'user' | 'role'
+  subjectType: 'user' | 'role' | 'team'
   subjectId: string
   permission: InternalDocumentPermission
   createdBy?: string
@@ -110,12 +111,12 @@ export function useInternalDocuments(workspaceId: Ref<string>, baseId: Ref<strin
     return activeDocument.value
   }
 
-  async function create(title: string, parentId?: string | null) {
+  async function create(title: string, parentId?: string | null, content = textToDocumentContent('')) {
     const created = (
       await api.instance.post<InternalDocument>(basePath.value, {
         title,
         parentId,
-        content: textToDocumentContent(''),
+        content,
       })
     ).data
     await refresh()
@@ -210,8 +211,17 @@ export function useInternalDocuments(workspaceId: Ref<string>, baseId: Ref<strin
     ).data
   }
 
-  function exportUrl() {
-    return activeDocument.value ? `${basePath.value}/${encodeURIComponent(activeDocument.value.id)}/export.pdf` : ''
+  async function download(format: 'pdf' | 'json') {
+    if (!activeDocument.value) return
+    const result = await api.instance.get(`${basePath.value}/${encodeURIComponent(activeDocument.value.id)}/export.${format}`, {
+      responseType: 'blob',
+    })
+    const url = URL.createObjectURL(result.data)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = `${activeDocument.value.title.replace(/[^a-z0-9_-]+/gi, '_') || 'document'}.${format}`
+    link.click()
+    setTimeout(() => URL.revokeObjectURL(url), 1000)
   }
 
   return {
@@ -230,6 +240,6 @@ export function useInternalDocuments(workspaceId: Ref<string>, baseId: Ref<strin
     resolveComment,
     restore,
     replaceGrants,
-    exportUrl,
+    download,
   }
 }

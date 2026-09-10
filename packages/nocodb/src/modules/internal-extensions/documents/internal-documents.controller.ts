@@ -370,4 +370,35 @@ export class InternalDocumentsController {
     response.setHeader('X-Content-Type-Options', 'nosniff');
     return new StreamableFile(exported.buffer);
   }
+
+  @Get('/:documentId/export.json')
+  @RequireInternalTokenScope(
+    InternalApiTokenScope.DOCUMENTS_READ,
+    'base',
+    InternalBasePermission.BASE_EXPORT,
+  )
+  @RequireInternalBasePermission(
+    InternalBasePermission.BASE_EXPORT,
+    InternalBasePermission.DOCUMENTS_READ,
+  )
+  async exportJson(
+    @Param('workspaceId') workspaceId: string,
+    @Param('baseId') baseId: string,
+    @Param('documentId') documentId: string,
+    @Req() request: NcRequest,
+    @Res({ passthrough: true }) response: Response,
+  ) {
+    const exported = await this.service.exportJson(
+      workspaceId,
+      baseId,
+      documentId,
+      request,
+    );
+    response.setHeader(
+      'Content-Disposition',
+      'attachment; filename="document.json"',
+    );
+    response.setHeader('X-Content-Type-Options', 'nosniff');
+    return exported;
+  }
 }

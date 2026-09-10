@@ -3,6 +3,9 @@
  * This module does not consume or modify commercial entitlement state.
  */
 import { Module } from '@nestjs/common';
+import { InternalTeamService } from './teams/internal-team.service';
+import { InternalTeamDirectory } from './teams/internal-team-directory';
+import { InternalTeamsController } from './teams/internal-teams.controller';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { NocoModule } from '~/modules/noco.module';
 import { GlobalGuard } from '~/guards/global/global.guard';
@@ -75,6 +78,7 @@ import { InternalFilePreviewController } from './record-modes/internal-file-prev
 @Module({
   imports: [NocoModule],
   controllers: [
+    InternalTeamsController,
     InternalCapabilitiesController,
     InternalBasePermissionsController,
     InternalApiTokensController,
@@ -90,6 +94,8 @@ import { InternalFilePreviewController } from './record-modes/internal-file-prev
     InternalFilePreviewController,
   ],
   providers: [
+    InternalTeamService,
+    { provide: InternalTeamDirectory, useExisting: InternalTeamService },
     GlobalGuard,
     MetaApiLimiterGuard,
     InternalAuthenticatedGuard,

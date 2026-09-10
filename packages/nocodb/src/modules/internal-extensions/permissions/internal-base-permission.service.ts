@@ -1,4 +1,5 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Optional } from '@nestjs/common';
+import { InternalTeamDirectory } from '../teams/internal-team-directory';
 import {
   INTERNAL_BASE_PERMISSIONS,
   type InternalBasePermission,
@@ -30,6 +31,7 @@ export class InternalBasePermissionService {
   constructor(
     private readonly repository: InternalBasePermissionRepository,
     private readonly policy: InternalBasePermissionPolicy,
+    @Optional() private readonly teams?: InternalTeamDirectory,
   ) {}
 
   async resolve(
@@ -43,6 +45,16 @@ export class InternalBasePermissionService {
     input: ResolveInternalBasePermissionInput,
     permissions: readonly InternalBasePermission[],
   ): Promise<InternalBasePermissionDecision[]> {
+    const actor = input.actor
+      ? {
+          ...input.actor,
+          teamIds:
+            (await this.teams?.teamIdsForUser(
+              input.workspaceId,
+              input.actor.id,
+            )) ?? [],
+        }
+      : null;
     const [configuration, grants] = await Promise.all([
       this.repository.getConfiguration(input.workspaceId, input.baseId),
       this.repository.listGrants(input.workspaceId, input.baseId),
@@ -53,7 +65,7 @@ export class InternalBasePermissionService {
         workspaceId: input.workspaceId,
         baseId: input.baseId,
         permission,
-        actor: input.actor,
+        actor,
         configuration,
         grants,
         communityAllowed: input.communityAllowed(permission),
@@ -64,6 +76,16 @@ export class InternalBasePermissionService {
   async resolveAll(
     input: ResolveInternalBasePermissionInput,
   ): Promise<InternalEffectiveBasePermission[]> {
+    const actor = input.actor
+      ? {
+          ...input.actor,
+          teamIds:
+            (await this.teams?.teamIdsForUser(
+              input.workspaceId,
+              input.actor.id,
+            )) ?? [],
+        }
+      : null;
     const [configuration, grants] = await Promise.all([
       this.repository.getConfiguration(input.workspaceId, input.baseId),
       this.repository.listGrants(input.workspaceId, input.baseId),
@@ -75,7 +97,7 @@ export class InternalBasePermissionService {
         workspaceId: input.workspaceId,
         baseId: input.baseId,
         permission,
-        actor: input.actor,
+        actor,
         configuration,
         grants,
         communityAllowed: input.communityAllowed(permission),

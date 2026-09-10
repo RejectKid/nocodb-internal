@@ -8,6 +8,7 @@ export const INTERNAL_FEATURE_KEYS = [
   'documentPermissions',
   'filePreviewMode',
   'discussionMode',
+  'teams',
 ] as const;
 
 export type InternalFeatureKey = (typeof INTERNAL_FEATURE_KEYS)[number];

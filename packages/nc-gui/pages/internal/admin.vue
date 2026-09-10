@@ -3,10 +3,11 @@ import {
   fetchInternalAdminCollection,
   fetchInternalAdminOverview,
   setInternalUserEnabled,
+  setInternalBaseFeature,
   type InternalAdminOverview,
 } from '~/composables/internalExtensions/useInternalAdmin'
 
-definePageMeta({ hideHeader: true })
+definePageMeta({ hideHeader: true, requiresAuth: true })
 
 const { api } = useApi({ useGlobalInstance: true })
 const overview = ref<InternalAdminOverview>()
@@ -17,6 +18,32 @@ const activeTab = ref('overview')
 const query = ref('')
 const isLoading = ref(false)
 const error = ref('')
+const userDetails = ref<any>()
+
+async function showUser(id: string) {
+  try {
+    userDetails.value = (await api.instance.get(`/api/internal/v1/admin/users/${encodeURIComponent(id)}`)).data
+  } catch (e: any) {
+    error.value = e?.response?.data?.message || 'Unable to load user details.'
+  }
+}
+
+async function toggleDocuments(base: any) {
+  const setting = base.featureSettings.find((item: any) => item.featureKey === 'documentPermissions')
+  try {
+    await setInternalBaseFeature(
+      api.instance,
+      base.workspaceId,
+      base.id,
+      'documentPermissions',
+      !(setting?.enabled ?? true),
+      setting?.revision,
+    )
+    await load()
+  } catch (e: any) {
+    error.value = e?.response?.data?.message || 'Unable to update document availability.'
+  }
+}
 
 async function load() {
   isLoading.value = true
@@ -40,8 +67,12 @@ async function load() {
 }
 
 async function toggleUser(user: any) {
-  await setInternalUserEnabled(api.instance, user.id, Boolean(user.blocked))
-  await load()
+  try {
+    await setInternalUserEnabled(api.instance, user.id, Boolean(user.blocked))
+    await load()
+  } catch (e: any) {
+    error.value = e?.response?.data?.message || 'Unable to update user status.'
+  }
 }
 
 onMounted(load)
@@ -50,6 +81,12 @@ onMounted(load)
 <template>
   <NuxtLayout name="empty">
     <main class="mx-auto max-w-6xl p-8" data-testid="internal-admin-page">
+      <nav class="mb-4 flex flex-wrap gap-4">
+        <NuxtLink to="/">Back to workspace</NuxtLink>
+        <NuxtLink to="/account/users">Instance users and invitations</NuxtLink>
+        <NuxtLink to="/account/setup">Email and integrations setup</NuxtLink>
+        <NuxtLink to="/internal/documents">Documents</NuxtLink>
+      </nav>
       <div class="mb-6 flex items-start justify-between gap-4">
         <div>
           <h1 class="text-2xl font-bold text-nc-content-gray-emphasis">Internal administration</h1>
@@ -61,6 +98,20 @@ onMounted(load)
       </div>
 
       <NcAlert v-if="error" type="error" class="mb-4">{{ error }}</NcAlert>
+      <section v-if="userDetails" class="mb-4 rounded border p-4">
+        <h2>{{ userDetails.email }}</h2>
+        <NcButton size="small" @click="userDetails = undefined">Close details</NcButton>
+        <h3 class="mt-3 font-semibold">Workspace memberships</h3>
+        <p v-for="membership in userDetails.workspaceMemberships" :key="membership.workspaceId">
+          {{ membership.workspaceId }} — {{ membership.roles }}
+        </p>
+        <h3 class="mt-3 font-semibold">Base memberships</h3>
+        <p v-for="membership in userDetails.baseMemberships" :key="membership.baseId">
+          {{ membership.baseId }} — {{ membership.roles }}
+        </p>
+        <h3 class="mt-3 font-semibold">Recent security events</h3>
+        <p v-for="event in userDetails.recentSecurityEvents" :key="event.id">{{ event.occurred_at }} — {{ event.action }}</p>
+      </section>
 
       <div class="mb-5 flex gap-2 border-b-1 border-nc-border-gray-medium">
         <button
@@ -131,6 +182,7 @@ onMounted(load)
           >
             <div>
               <div class="font-medium">{{ user.display_name || user.email }}</div>
+              <NcButton size="small" @click="showUser(user.id)">Inspect user</NcButton>
               <div class="text-xs text-nc-content-gray-muted">{{ user.email }} · {{ user.roles }}</div>
             </div>
             <NcButton
@@ -147,6 +199,7 @@ onMounted(load)
         <div v-else-if="activeTab === 'workspaces'" class="overflow-hidden rounded-lg border-1 border-nc-border-gray-medium">
           <div v-for="workspace in workspaces" :key="workspace.id" class="border-b-1 p-4 last:border-b-0">
             <div class="font-medium">{{ workspace.title }}</div>
+            <NuxtLink :to="`/${workspace.id}`">Open workspace</NuxtLink>
             <div class="text-xs text-nc-content-gray-muted">
               {{ workspace.memberCount }} members · {{ workspace.baseCount }} bases · owner
               {{ workspace.ownerId || 'unassigned' }}
@@ -164,6 +217,16 @@ onMounted(load)
             </div>
             <div class="text-xs text-nc-content-gray-muted">
               {{ base.memberCount }} members · workspace {{ base.workspaceId }}
+            </div>
+            <div class="mt-2 flex gap-3">
+              <NuxtLink :to="{ path: '/internal/documents', query: { baseId: base.id } }">Open documents</NuxtLink>
+              <NcButton size="small" @click="toggleDocuments(base)">
+                {{
+                  base.featureSettings.find((item: any) => item.featureKey === 'documentPermissions')?.enabled === false
+                    ? 'Enable documents'
+                    : 'Disable documents'
+                }}
+              </NcButton>
             </div>
           </div>
         </div>

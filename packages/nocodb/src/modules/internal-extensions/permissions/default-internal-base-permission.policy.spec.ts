@@ -62,6 +62,57 @@ function request(
 describe('DefaultInternalBasePermissionPolicy', () => {
   const policy = new DefaultInternalBasePermissionPolicy();
 
+  it('resolves teams after direct users and before roles, with deny winning between teams', () => {
+    const input = request({
+      grants: [
+        grant(
+          InternalPermissionSubjectType.TEAM,
+          'team1',
+          InternalPermissionEffect.ALLOW,
+        ),
+        grant(
+          InternalPermissionSubjectType.ROLE,
+          'editor',
+          InternalPermissionEffect.DENY,
+        ),
+      ],
+    });
+    input.actor!.teamIds = ['team1', 'team2'];
+    expect(policy.evaluate(input)).toMatchObject({
+      allowed: true,
+      source: 'team',
+    });
+    input.grants = [
+      ...input.grants,
+      grant(
+        InternalPermissionSubjectType.TEAM,
+        'team2',
+        InternalPermissionEffect.DENY,
+      ),
+    ];
+    expect(policy.evaluate(input)).toMatchObject({
+      allowed: false,
+      source: 'team',
+    });
+    input.grants = [
+      ...input.grants,
+      grant(
+        InternalPermissionSubjectType.USER,
+        'user-1',
+        InternalPermissionEffect.ALLOW,
+      ),
+    ];
+    expect(policy.evaluate(input)).toMatchObject({
+      allowed: true,
+      source: 'user',
+    });
+    input.actor!.isOwner = true;
+    expect(policy.evaluate(input)).toMatchObject({
+      allowed: true,
+      source: 'owner',
+    });
+  });
+
   it('preserves the Community decision when internal permissions are disabled', () => {
     expect(
       policy.evaluate(

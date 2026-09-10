@@ -1,30 +1,58 @@
 <script setup lang="ts">
 definePageMeta({ requiresAuth: true })
 
-const { activeWorkspaceId } = storeToRefs(useWorkspace())
-const { activeProjectId } = storeToRefs(useBases())
+const { api } = useApi({ useGlobalInstance: true })
 const router = useRouter()
-const workspaceId = computed(() => String(router.currentRoute.value.query.workspaceId || activeWorkspaceId.value || ''))
-const baseId = computed(() => String(router.currentRoute.value.query.baseId || activeProjectId.value || ''))
-const { capabilities, refresh } = useInternalCapabilities()
+const choices = ref<Array<{ id: string; title: string; fk_workspace_id?: string }>>([])
+const baseId = ref(String(router.currentRoute.value.query.baseId || ''))
+const error = ref('')
+const base = computed(() => choices.value.find((item) => item.id === baseId.value))
+const workspaceId = computed(() => base.value?.fk_workspace_id || '')
+const { capabilities, isLoading, refresh } = useInternalCapabilities()
 
-onMounted(() => void refresh().catch(() => undefined))
+onMounted(async () => {
+  try {
+    await refresh()
+    if (!capabilities.value?.features.documentPermissions) return
+    const result = await api.base.list()
+    choices.value = (result.list ?? []) as typeof choices.value
+    if (!baseId.value && choices.value.length === 1) baseId.value = choices.value[0]!.id
+  } catch (e: any) {
+    error.value = e?.response?.data?.message || 'Unable to load documents. Check your login and enabled internal features.'
+  }
+})
+watch(baseId, (value) => void router.replace({ query: { baseId: value } }))
 </script>
 
 <template>
   <div class="mx-auto max-w-[1500px] p-6" data-testid="internal-documents-page">
+    <NuxtLink to="/">Back to workspace</NuxtLink>
     <div class="mb-5">
       <h1 class="text-2xl font-semibold">Internal documents</h1>
       <p class="mt-1 text-sm text-nc-content-gray-muted">
         Permission-aware documents, comments, snapshots, restore, and PDF export implemented in the independent extension.
       </p>
     </div>
-    <NcAlert v-if="!workspaceId || !baseId" type="warning">
-      Open a base first, or supply <code>workspaceId</code> and <code>baseId</code> query parameters.
-    </NcAlert>
+    <NcAlert v-if="error" type="error">{{ error }}</NcAlert>
+    <div v-if="isLoading">Loading capabilities…</div>
     <NcAlert v-else-if="capabilities && !capabilities.features.documentPermissions" type="warning">
-      The document extension is disabled. Set <code>NC_INTERNAL_DOCUMENT_PERMISSIONS=true</code>.
+      The document extension is disabled. Set <code>NC_INTERNAL_DOCUMENT_PERMISSIONS_ENABLED=true</code>.
     </NcAlert>
-    <InternalExtensionsDocumentsEditor v-else-if="workspaceId && baseId" :workspace-id="workspaceId" :base-id="baseId" />
+    <template v-else-if="capabilities?.features.documentPermissions">
+      <label class="my-4 block">
+        Base
+        <select v-model="baseId" aria-label="Document base" class="ml-3 rounded border p-2">
+          <option value="">Select a base</option>
+          <option v-for="item in choices" :key="item.id" :value="item.id">{{ item.title }}</option>
+        </select>
+      </label>
+      <p v-if="!choices.length && !error">No accessible bases. Create a base in your workspace first.</p>
+      <InternalExtensionsDocumentsEditor
+        v-if="base && workspaceId"
+        :key="base.id"
+        :workspace-id="workspaceId"
+        :base-id="base.id"
+      />
+    </template>
   </div>
 </template>
