@@ -59,6 +59,7 @@ function internalApi(): Plugin {
               documentPermissions: false,
               filePreviewMode: false,
               discussionMode: false,
+              teams: false,
             },
           })
         }

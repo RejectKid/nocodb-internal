@@ -28,6 +28,7 @@ describe('internal capability service', () => {
       'documentPermissions',
       'filePreviewMode',
       'discussionMode',
+      'teams',
     ])
   })
 })

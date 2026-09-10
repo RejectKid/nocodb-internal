@@ -12,6 +12,9 @@ const emits = defineEmits(['update:visible', 'newTable'])
 const vVisible = useVModel(props, 'visible', emits)
 
 const base = inject(ProjectInj)!
+// Internal modification: documents use an independent route and capability.
+const { capabilities, refresh: refreshInternalCapabilities } = useInternalCapabilities()
+onMounted(() => void refreshInternalCapabilities().catch(() => undefined))
 
 const source = computed(() => {
   return base.value.sources?.[0]
@@ -29,6 +32,13 @@ const showBaseOption = (source: SourceType) => {
 
 <template>
   <NcMenu variant="large" data-testid="nc-home-create-new-menu" @click="vVisible = false">
+    <NuxtLink
+      v-if="capabilities?.features.documentPermissions"
+      :to="{ path: '/internal/documents', query: { baseId: base.id, workspaceId: base.fk_workspace_id } }"
+      data-testid="base-documents-link"
+    >
+      <NcMenuItem>Documents — create or import</NcMenuItem>
+    </NuxtLink>
     <NcMenuItem inner-class="w-full" class="nc-menu-item-combo" data-testid="create-new-table" @click="emits('newTable')">
       <div class="w-full flex items-center">
         <div class="flex-1 flex items-center gap-2 cursor-pointer">

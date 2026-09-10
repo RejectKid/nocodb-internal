@@ -100,6 +100,8 @@ const openKeyboardShortcutDialog = () => {
 
 <template>
   <NcMenu variant="medium">
+    <!-- Internal modification: independent extension navigation. -->
+    <InternalExtensionsNavigation @navigate="emits('closeMenu')" />
     <!-- Desktop menu -->
     <template v-if="!isMobileMode">
       <!-- Log Out -->

@@ -72,6 +72,22 @@ export class DefaultInternalBasePermissionPolicy extends InternalBasePermissionP
       return this.fromEffect(userGrant.effect, 'user');
     }
 
+    const teamGrants = relevant.filter(
+      (grant) =>
+        grant.subject_type === InternalPermissionSubjectType.TEAM &&
+        request.actor?.teamIds?.includes(grant.subject_id),
+    );
+    if (
+      teamGrants.some((grant) => grant.effect === InternalPermissionEffect.DENY)
+    )
+      return this.fromEffect(InternalPermissionEffect.DENY, 'team');
+    if (
+      teamGrants.some(
+        (grant) => grant.effect === InternalPermissionEffect.ALLOW,
+      )
+    )
+      return this.fromEffect(InternalPermissionEffect.ALLOW, 'team');
+
     const roleGrants = relevant.filter(
       (grant) =>
         grant.subject_type === InternalPermissionSubjectType.ROLE &&
@@ -95,7 +111,7 @@ export class DefaultInternalBasePermissionPolicy extends InternalBasePermissionP
 
   private fromEffect(
     effect: InternalPermissionEffect,
-    source: 'user' | 'role',
+    source: 'user' | 'role' | 'team',
   ): InternalBasePermissionDecision {
     return {
       allowed: effect === InternalPermissionEffect.ALLOW,

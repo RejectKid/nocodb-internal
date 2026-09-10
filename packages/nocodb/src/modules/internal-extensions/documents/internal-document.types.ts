@@ -11,7 +11,7 @@ export const INTERNAL_DOCUMENT_PERMISSIONS = Object.freeze(
   Object.values(InternalDocumentPermission),
 );
 
-export type InternalDocumentSubjectType = 'user' | 'role';
+export type InternalDocumentSubjectType = 'user' | 'role' | 'team';
 
 export interface InternalDocumentGrantInput {
   subjectType: InternalDocumentSubjectType;

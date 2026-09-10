@@ -14,6 +14,7 @@ const INTERNAL_FEATURE_ENV: Record<InternalFeatureKey, string> = {
   documentPermissions: 'NC_INTERNAL_DOCUMENT_PERMISSIONS_ENABLED',
   filePreviewMode: 'NC_INTERNAL_FILE_PREVIEW_MODE_ENABLED',
   discussionMode: 'NC_INTERNAL_DISCUSSION_MODE_ENABLED',
+  teams: 'NC_INTERNAL_TEAMS_ENABLED',
 };
 
 const TRUE_VALUES = new Set(['1', 'true', 'yes', 'on']);

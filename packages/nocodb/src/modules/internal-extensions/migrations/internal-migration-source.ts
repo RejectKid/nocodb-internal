@@ -4,6 +4,7 @@ import * as nc_internal_002_base_permissions from './nc_internal_002_base_permis
 import * as nc_internal_003_audit_events from './nc_internal_003_audit_events';
 import * as nc_internal_004_product_suite from './nc_internal_004_product_suite';
 import * as nc_internal_005_parity_hardening from './nc_internal_005_parity_hardening';
+import * as nc_internal_006_teams from './nc_internal_006_teams';
 
 const migrations = {
   nc_internal_001_api_tokens,
@@ -11,6 +12,7 @@ const migrations = {
   nc_internal_003_audit_events,
   nc_internal_004_product_suite,
   nc_internal_005_parity_hardening,
+  nc_internal_006_teams,
 };
 
 export class InternalMigrationSource implements Knex.MigrationSource<string> {

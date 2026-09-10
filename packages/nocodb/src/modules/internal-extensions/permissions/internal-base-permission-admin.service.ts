@@ -4,6 +4,7 @@ import {
   ForbiddenException,
   Injectable,
   NotFoundException,
+  Optional,
 } from '@nestjs/common';
 import { createHash } from 'crypto';
 import { nanoid } from 'nanoid';
@@ -34,6 +35,7 @@ import {
 } from './internal-base-permission.model';
 import { InternalBasePermissionRepository } from './internal-base-permission.repository';
 import { InternalBasePermissionService } from './internal-base-permission.service';
+import { InternalTeamDirectory } from '../teams/internal-team-directory';
 
 const SUPPORTED_PERMISSIONS = new Set<string>(INTERNAL_BASE_PERMISSIONS);
 const SUPPORTED_EFFECTS = new Set<string>(
@@ -63,6 +65,7 @@ export class InternalBasePermissionAdminService {
     private readonly permissionService: InternalBasePermissionService,
     private readonly identityProvider: InternalBasePermissionIdentityProvider,
     private readonly auditService: InternalAuditService,
+    @Optional() private readonly teams?: InternalTeamDirectory,
   ) {}
 
   async getState(
@@ -166,6 +169,10 @@ export class InternalBasePermissionAdminService {
   ) {
     await this.authorize(context, workspaceId, baseId, actor.userId);
     this.validateGrantRequest(request);
+    if (request.subjectType === InternalPermissionSubjectType.TEAM) {
+      if (!this.teams) throw new BadRequestException('Teams unavailable');
+      await this.teams.assertAssignable(workspaceId, request.subjectId);
+    }
     const now = new Date().toISOString();
     const grants: InternalBasePermissionGrant[] = request.assignments.map(
       (assignment) => ({

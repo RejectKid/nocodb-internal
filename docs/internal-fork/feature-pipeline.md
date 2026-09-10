@@ -14,6 +14,39 @@ changing entitlements. Any intentional difference must be documented.
 
 ## Pipeline 1: Foundation
 
+### 2026-09-10 scope correction
+
+See [self-hosted Business parity audit](self-hosted-business-parity.md). Earlier
+pipeline completion describes only our original slices, NOT full current
+Business-edition coverage. Missing and Partial rows in that audit remain open.
+
+### TEAM-001 — Internal team permission subjects
+
+- Business purpose: Assign base/document permissions to workspace groups.
+- Scope: Flat teams, rename/archive, membership management, live authorization,
+  base/document assignment UI, effective-access sources, transactional audits.
+- Non-goals: Community role provisioning, hierarchy, org teams, SCIM/SSO sync.
+- Dependencies: FND-002, FND-003, PERM-001, DOC-001, SEC-001.
+- Data model: Migration nc_internal_006_teams; two independent tables. Rollback
+  drops teams/members and deletes team-only grants; back up before rollback.
+- Backend: Manager-guarded CRUD, workspace-scoped live membership directory,
+  typed team subject and deterministic precedence, inherited document grants.
+- Frontend: /internal/teams, menu link, team selectors in both permission editors.
+- Security: Active workspace membership only; no cross-workspace assignments;
+  revision-bound changes; removal/archive must revoke subsequent access.
+- Tests required: Enable/disable, invalid/foreign members, stale writes,
+  member removal, archive, disabled/deleted users, inherited permissions,
+  scope/guard registration, actual UI/API allow and deny flows, migration down.
+- Documentation: internal-teams-design.md, internal-teams-usage.md, parity audit.
+- Complexity: L.
+- Status: Security Review (implemented and targeted tests run; not released).
+- Acceptance: Manage teams and assign permissions without changing entitlements;
+  team access revokes without a session refresh; report access sources; preserve
+  pre-existing user/role precedence. Community guards remain authoritative.
+- Known risks: No role provisioning or nested teams; large-workspace performance
+  and PostgreSQL concurrency require deployment testing; full frontend type/lint
+  checks have baseline blockers documented in this task's handoff.
+
 ### FND-001 — Custom module boundary
 
 - Business purpose: Keep independent organizational features maintainable and

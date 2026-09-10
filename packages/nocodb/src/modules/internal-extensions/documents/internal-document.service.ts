@@ -4,6 +4,7 @@ import {
   ForbiddenException,
   Injectable,
   NotFoundException,
+  Optional,
 } from '@nestjs/common';
 import { nanoid } from 'nanoid';
 import type { Knex } from 'knex';
@@ -32,6 +33,7 @@ import {
   type InternalDocumentRecord,
 } from './internal-document.types';
 import { InternalPdfService } from './internal-pdf.service';
+import { InternalTeamDirectory } from '../teams/internal-team-directory';
 
 @Injectable()
 export class InternalDocumentService {
@@ -41,6 +43,7 @@ export class InternalDocumentService {
     private readonly audit: InternalAuditService,
     private readonly auditContext: InternalAuditRequestContextAdapter,
     private readonly pdf: InternalPdfService,
+    @Optional() private readonly teams?: InternalTeamDirectory,
   ) {}
 
   async list(
@@ -106,6 +109,7 @@ export class InternalDocumentService {
     );
     return {
       ...document,
+      permissionSources: await this.permissions.sources(document, request),
       permissions: [...(await this.permissions.effective(document, request))],
     };
   }
@@ -392,6 +396,12 @@ export class InternalDocumentService {
       InternalDocumentPermission.MANAGE,
     );
     const normalized = this.validGrants(grants);
+    for (const grant of normalized) {
+      if (grant.subjectType === 'team') {
+        if (!this.teams) throw new BadRequestException('Teams unavailable');
+        await this.teams.assertAssignable(workspaceId, grant.subjectId);
+      }
+    }
     const before = await this.metaService
       .knexConnection(INTERNAL_DOCUMENT_GRANTS_TABLE)
       .select('subject_type', 'subject_id', 'permission')
@@ -774,6 +784,28 @@ export class InternalDocumentService {
     return { id: commentId, deleted: true };
   }
 
+  async exportJson(
+    workspaceId: string,
+    baseId: string,
+    documentId: string,
+    request: NcRequest,
+  ) {
+    const document = await this.authorizedDocument(
+      workspaceId,
+      baseId,
+      documentId,
+      request,
+      InternalDocumentPermission.EXPORT,
+    );
+    // Portable content only: never transfer grants, tenant IDs, or ownership.
+    return {
+      format: 'nc-internal-document',
+      version: 1,
+      title: document.title,
+      content: document.content,
+    };
+  }
+
   async exportPdf(
     workspaceId: string,
     baseId: string,
@@ -976,7 +1008,7 @@ export class InternalDocumentService {
     const unique = new Map<string, InternalDocumentGrantInput>();
     for (const grant of grants) {
       if (
-        !['user', 'role'].includes(grant.subjectType) ||
+        !['user', 'role', 'team'].includes(grant.subjectType) ||
         !grant.subjectId?.trim() ||
         grant.subjectId.length > 255 ||
         !INTERNAL_DOCUMENT_PERMISSIONS.includes(grant.permission)

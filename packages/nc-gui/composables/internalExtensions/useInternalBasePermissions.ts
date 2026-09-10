@@ -1,5 +1,5 @@
 export const INTERNAL_BASE_PERMISSION_EFFECTS = ['allow', 'deny'] as const
-export const INTERNAL_BASE_PERMISSION_SUBJECT_TYPES = ['user', 'role'] as const
+export const INTERNAL_BASE_PERMISSION_SUBJECT_TYPES = ['user', 'role', 'team'] as const
 
 export type InternalBasePermissionEffect = (typeof INTERNAL_BASE_PERMISSION_EFFECTS)[number]
 export type InternalBasePermissionSubjectType = (typeof INTERNAL_BASE_PERMISSION_SUBJECT_TYPES)[number]
@@ -45,7 +45,7 @@ export type InternalBasePermissionDraft = Record<string, InternalBasePermissionE
 
 export interface InternalBasePermissionDisplay {
   effect?: InternalBasePermissionEffect
-  source: 'direct' | 'role' | 'unset'
+  source: 'direct' | 'role' | 'team' | 'unset'
   sourceId?: string
 }
 
@@ -94,7 +94,9 @@ export async function replaceInternalBasePermissionAssignments(
     return effect ? [{ permission, effect }] : []
   })
   const response = await client.put<InternalBasePermissionAssignment[]>(
-    `${internalBasePermissionPath(workspaceId, baseId)}/subjects/${encodeURIComponent(subjectType)}/${encodeURIComponent(subjectId)}`,
+    `${internalBasePermissionPath(workspaceId, baseId)}/subjects/${encodeURIComponent(subjectType)}/${encodeURIComponent(
+      subjectId,
+    )}`,
     {
       assignments,
       expectedRevision: current?.revision ?? state.emptyGrantRevision,
@@ -120,6 +122,7 @@ export function resolveInternalBasePermissionDisplay(
   subjectType: InternalBasePermissionSubjectType,
   subjectId: string,
   roleIds: readonly string[] = [],
+  teamIds: readonly string[] = [],
 ) {
   const display: Record<string, InternalBasePermissionDisplay> = {}
   const relevantRoles = subjectType === 'role' ? [subjectId] : roleIds
@@ -141,6 +144,19 @@ export function resolveInternalBasePermissionDisplay(
         : undefined
     if (direct) {
       display[permission] = { effect: direct.effect, source: 'direct' }
+      continue
+    }
+
+    const teamAssignments = state.grantSets
+      .filter(
+        (s) =>
+          s.subjectType === 'team' &&
+          (subjectType === 'team' ? s.subjectId === subjectId : subjectType === 'user' && teamIds.includes(s.subjectId)),
+      )
+      .flatMap((s) => s.assignments.filter((a) => a.permission === permission).map((a) => ({ ...a, teamId: s.subjectId })))
+    const team = teamAssignments.find((a) => a.effect === 'deny') ?? teamAssignments.find((a) => a.effect === 'allow')
+    if (team) {
+      display[permission] = { effect: team.effect, source: 'team', sourceId: team.teamId }
       continue
     }
 
