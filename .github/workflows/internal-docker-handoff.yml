@@ -1,0 +1,67 @@
+name: Build Docker handoff ZIP
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: [develop]
+    paths:
+      - '.github/workflows/internal-docker-handoff.yml'
+      - 'scripts/internal-fork/*handoff*'
+      - 'deploy/internal-fork/Dockerfile.handoff'
+      - 'deploy/internal-fork/handoff/**'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: docker-handoff-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  bundle:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 75
+    env:
+      CI: 'true'
+      NODE_OPTIONS: --max-old-space-size=6144
+      NC_HANDOFF_RUN: ${{ github.run_id }}.${{ github.run_attempt }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v5
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.12.0
+          cache: pnpm
+      - name: Prepare npm configuration
+        run: sed -i '/^use-node-version/d' .npmrc
+      - name: Install and build workspace dependencies
+        run: pnpm bootstrap
+      - name: Run backend extension tests
+        working-directory: packages/nocodb
+        run: pnpm exec jest --config jest.internal-extensions.config.js --runInBand --forceExit
+      - name: Run frontend extension tests
+        working-directory: packages/nc-gui
+        run: pnpm exec vitest run --config test/vite.config.ts test/internal-teams.test.ts test/internal-base-permissions.test.ts test/internal-capabilities.test.ts test/internal-product-suite.test.ts test/internal-document-import.test.ts
+      - name: Build production backend
+        working-directory: packages/nocodb
+        run: pnpm exec rspack --config ../../scripts/internal-fork/rspack.handoff.cjs
+      - name: Build production frontend
+        working-directory: packages/nc-gui
+        env:
+          NODE_ENV: production
+        run: pnpm exec nuxi generate
+      - name: Build, smoke-test and package images
+        run: node scripts/internal-fork/build-handoff.mjs
+      - name: Upload ZIP and checksum
+        uses: actions/upload-artifact@v4
+        with:
+          name: docker-handoff-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            .handoff-output/*.zip
+            .handoff-output/*.zip.sha256
+          compression-level: 0
+          retention-days: 14
+          if-no-files-found: error
+      - name: Summarize download instructions
+        run: |
+          printf '%s\n' '### Docker handoff ready' 'Download the docker-handoff artifact at the bottom of this run, extract the GitHub artifact, then extract the handoff ZIP inside it.' 'Windows: load-images.ps1 → setup.ps1 → start.ps1. Linux/macOS: sh load-images.sh → sh setup.sh → sh start.sh.' 'Open http://localhost:8080. README.md and FEATURE-TESTS.md are included. Artifact retention: 14 days.' >> "$GITHUB_STEP_SUMMARY"

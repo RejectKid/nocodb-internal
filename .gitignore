@@ -127,3 +127,7 @@ antd.variable.css
 .nc-dev-proxy.log
 .nc-dev-logs/
 .env.internal
+
+# Generated image contexts, disposable smoke configuration, and handoff ZIPs
+.handoff-build/
+.handoff-output/
