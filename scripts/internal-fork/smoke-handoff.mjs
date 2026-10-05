@@ -15,7 +15,7 @@ export async function smokeHandoff(origin) {
       `${method} ${path}: expected ${expected}, got ${response.status}`);
     return response.json();
   }
-  const page = await fetch(origin, { signal: AbortSignal.timeout(30000) });
+  const page = await fetch(origin, { headers: { accept: 'text/html' }, signal: AbortSignal.timeout(30000) });
   assert.equal(page.status, 200);
   const html = await page.text();
   const scriptPath = html.match(/<script[^>]+src="([^"]+)"/)?.[1];
