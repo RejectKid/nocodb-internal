@@ -1,5 +1,28 @@
 # Custom code manifest
 
+## Automated Docker handoff (2026-10-05)
+
+Owner: Internal Platform Team. Feature IDs: FND-001, FND-003. No upstream
+application/license files touched. Merge risk: low; runtime dependency/version
+compatibility must be checked when upgrading the pinned Community base image.
+
+- `.github/workflows/internal-docker-handoff.yml`: manual/packaging-PR build and
+  private artifact upload; reads repo only.
+- `scripts/internal-fork/rspack.handoff.cjs`: upstream Docker build adapter.
+- `scripts/internal-fork/build-handoff.mjs`: image build/export, isolated smoke
+  project, safe template copying, hashes and ZIP packaging.
+- `scripts/internal-fork/smoke-handoff.mjs`: fresh-stack admin/teams/documents
+  API denial and persistence fixtures.
+- `deploy/internal-fork/Dockerfile.handoff`: pinned Community runtime overlay.
+- `deploy/internal-fork/handoff/compose.yaml`: isolated trial Compose template.
+- `deploy/internal-fork/handoff/{setup,start,stop,load-images}.{ps1,sh}`: local
+  unique-secret creation, checksum loading, startup and volume-preserving stop.
+- `deploy/internal-fork/handoff/.env.example`: placeholder configuration only.
+- `deploy/internal-fork/handoff/README.md`, `FEATURE-TESTS.md`,
+  `example-document.md`: coworker instructions and acceptance examples.
+- `docs/internal-fork/docker-handoff-workflow.md`: workflow operation guide.
+- `.gitignore`: excludes generated contexts, QA secrets and bundles.
+
 Owner used below: Internal Platform Team. “Upstream files touched” names the
 non-custom registration or adapter surface required by the file. Merge risk is
 Low unless an upstream conflict or security-sensitive integration is expected.

@@ -1,0 +1,31 @@
+FROM nocodb/nocodb:0.301.3@sha256:c3d38b5563234d287710519ff7507d43dfa553241bc70b955f91d90698065340
+
+ARG SOURCE_COMMIT
+ARG INTERNAL_IMAGE_VERSION
+
+LABEL org.opencontainers.image.title="NocoDB Internal Trial"
+LABEL org.opencontainers.image.version="${INTERNAL_IMAGE_VERSION}"
+LABEL org.opencontainers.image.revision="${SOURCE_COMMIT}"
+LABEL org.opencontainers.image.base.name="docker.io/nocodb/nocodb:0.301.3"
+
+# The source tree contains a small set of runtime dependencies added after the
+# matching public image was published. Keep them isolated from the upstream
+# dependency tree and make them available through Node's standard lookup path.
+RUN mkdir -p /usr/src/app/internal-runtime \
+    && cd /usr/src/app/internal-runtime \
+    && npm init -y \
+    && npm install --omit=dev --no-package-lock \
+      @ai-sdk/devtools@0.0.19 \
+      @aws-sdk/client-sesv2@3.1004.0 \
+      ajv-errors@3.0.0 \
+      exceljs@4.4.0 \
+      oracledb@6.10.0 \
+    && npm cache clean --force
+
+COPY backend/main.js /usr/src/app/docker/main.js
+COPY backend/public/ /usr/src/app/docker/public/
+RUN rm -rf /usr/src/app/node_modules/nc-lib-gui/lib/dist/*
+COPY frontend/ /usr/src/app/node_modules/nc-lib-gui/lib/dist/
+
+ENV NODE_PATH=/usr/src/app/internal-runtime/node_modules
+ENV NC_GUI_DIST_PATH=/usr/src/app/node_modules/nc-lib-gui/lib/dist
