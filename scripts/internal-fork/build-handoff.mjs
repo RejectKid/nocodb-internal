@@ -91,7 +91,7 @@ try {
   composeRun(['exec', '-T', 'db', 'psql', '-U', 'nocodb', '-d', 'nocodb', '-v', 'ON_ERROR_STOP=1', '-c',
     `DO $$ BEGIN IF NOT EXISTS (SELECT 1 FROM nc_internal_documents WHERE id = '${saved.documentId}') THEN RAISE EXCEPTION 'Document lost after restart'; END IF; END $$;`]);
   await writeFile(path.join(bundle, 'BUNDLE-TEST-RESULTS.txt'),
-    `Source ${commit}\nPASS: fresh Compose health (app/worker/PostgreSQL/Redis), frontend HTML/asset HTTP responses, initial signup, authenticated registry/admin, team grant/removal, unauthorized and anonymous denials, JSON export restrictions, restart persistence.\nThis automated smoke checks APIs and asset delivery, not rendered browser interactions or every Business feature. Source lint/full-GUI type-check limitations are documented separately. No QA data or credentials are bundled.\n`);
+    `Source ${commit}\nPASS: fresh Compose health (app/PostgreSQL/Redis), frontend HTML/asset HTTP responses, initial signup, authenticated registry/admin, team grant/removal, unauthorized and anonymous denials, JSON export restrictions, restart persistence.\nThis automated smoke checks APIs and asset delivery, not rendered browser interactions or every Business feature. Source lint/full-GUI type-check limitations are documented separately. No QA data or credentials are bundled.\n`);
 } catch (error) {
   // Do not upload application logs containing test session values.
   console.error('Handoff smoke failed; ZIP will not be published.');

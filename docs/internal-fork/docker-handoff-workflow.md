@@ -69,8 +69,11 @@ steps; FEATURE-TESTS.md and example-document.md cover team membership/access
 revocation, document imports/exports, and the internal admin area.
 
 The default project is a fresh trial. Existing installations must preserve
-their project/volumes/secrets and change BOTH app and worker image tags using
-BUILD-INFO.txt. Do not use `down -v` on an existing deployment.
+their project/volumes/secrets and change the app image tag using BUILD-INFO.txt.
+Remove any previous `worker` service and recreate with
+`docker compose up -d --remove-orphans`; the Community queue runs in the main
+app process, not a separate worker. Redis remains for application coordination
+and cache. Do not use `down -v` on an existing deployment.
 
 ## Rebuild locally
 

@@ -62,6 +62,7 @@ jobs:
           compression-level: 0
           retention-days: 14
           if-no-files-found: error
+          include-hidden-files: true
       - name: Summarize download instructions
         run: |
           printf '%s\n' '### Docker handoff ready' 'Download the docker-handoff artifact at the bottom of this run, extract the GitHub artifact, then extract the handoff ZIP inside it.' 'Windows: load-images.ps1 → setup.ps1 → start.ps1. Linux/macOS: sh load-images.sh → sh setup.sh → sh start.sh.' 'Open http://localhost:8080. README.md and FEATURE-TESTS.md are included. Artifact retention: 14 days.' >> "$GITHUB_STEP_SUMMARY"

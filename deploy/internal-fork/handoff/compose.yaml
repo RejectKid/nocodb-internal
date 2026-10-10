@@ -41,19 +41,6 @@ services:
       timeout: 5s
       retries: 18
       start_period: 60s
-  worker:
-    image: __HANDOFF_IMAGE__
-    platform: linux/amd64
-    pull_policy: never
-    environment:
-      <<: *environment
-      NC_WORKER_CONTAINER: "true"
-    depends_on:
-      nocodb:
-        condition: service_healthy
-    restart: unless-stopped
-    volumes:
-      - nocodb_data:/usr/app/data
   db:
     image: postgres:17.10
     platform: linux/amd64

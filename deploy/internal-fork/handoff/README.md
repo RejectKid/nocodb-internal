@@ -67,6 +67,11 @@ For Internet/untrusted networks, use an HTTPS reverse proxy and appropriate
 firewall/access controls. Do not send passwords over untrusted plain HTTP.
 PostgreSQL and Redis have no published host ports.
 
+This Community-based build runs background jobs inside the main NocoDB
+container. Redis is retained for application coordination/cache; it does not
+turn the Community in-process job queue into a distributed queue. No separate
+worker container is needed.
+
 ## Test the changes
 
 Start with **FEATURE-TESTS.md** and **example-document.md**. Detailed guides:
@@ -98,11 +103,13 @@ project automatically. Do not mistake that for data loss.
 
 For an in-place upgrade, stop the old stack without `-v`, make verified backups
 of its database and attachment volume plus .env, load the new images, and update
-the OLD Compose file's app AND worker image tags to
+the OLD Compose file's app image tag to
 the application image tag in BUILD-INFO.txt. Add `NC_INTERNAL_TEAMS_ENABLED: "true"`
 alongside the other internal environment flags. Preserve old project name,
 volume names, database/JWT secrets and all other deployment-specific settings.
-Then recreate the old stack. Migration 006 adds team tables automatically.
+Remove the old `worker` service if present, then recreate the old stack with
+`docker compose up -d --remove-orphans` to remove its obsolete container without
+deleting volumes. Migration 006 adds team tables automatically.
 Do not run fresh setup over an existing deployment's secrets.
 
 Reverting only the image is not a tested database rollback. For recovery,
@@ -113,7 +120,7 @@ This bundle does not copy any previous trial users, documents or attachments.
 
 ```sh
 docker compose ps
-docker compose logs --tail 100 nocodb worker
+docker compose logs --tail 100 nocodb
 docker compose logs --tail 100 db redis
 ```
 
