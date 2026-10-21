@@ -469,3 +469,4 @@ now records TEAM-001 and links the broader Business gap ledger.
 | `packages/nocodb/src/modules/internal-extensions/feature-registry/`, `packages/nc-gui/composables/internalExtensions/useInternalCapabilities.ts` | Independent coloring capability | Internal registry only | Low | Internal maintainers | FND-002 |
 | `packages/nc-gui/test/internal-cell-colors.test.ts`, `test/internal-extensions-browser/sidebar-colors.spec.ts` | Rule and UI regression coverage | Existing test harness | Low | Internal maintainers | MODE-001, DOC-001 |
 | `docs/internal-fork/sidebar-and-cell-colors.md` | Deployment and test guide | None | Low | Internal maintainers | MODE-001, DOC-001 |
+| `scripts/internal-fork/smoke-handoff-browser.mjs` | Compiled GUI/canvas and document navigation smoke; optional private screenshots | Handoff builder and workflow | Low | Internal maintainers | MODE-001, DOC-001, SEC-002 |

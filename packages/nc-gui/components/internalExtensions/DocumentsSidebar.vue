@@ -5,6 +5,11 @@ const { api } = useApi({ useGlobalInstance: true })
 const { activeWorkspaceId } = storeToRefs(useWorkspace())
 const { capabilities, refresh: refreshCapabilities } = useInternalCapabilities()
 const route = useRoute()
+const { isMobileMode } = useGlobal()
+const { isLeftSidebarOpen } = storeToRefs(useSidebarStore())
+function closeMobileSidebar() {
+  if (isMobileMode.value) isLeftSidebarOpen.value = false
+}
 const groups = ref<Array<{ id: string; title: string; documents: InternalDocumentSummary[] }>>([])
 const error = ref('')
 const loading = ref(false)
@@ -58,14 +63,18 @@ onBeforeUnmount(() => {
     data-testid="workspace-documents-sidebar"
   >
     <div class="mb-1 flex items-center justify-between">
-      <NuxtLink to="/internal/documents" class="font-semibold">Documents</NuxtLink>
+      <NuxtLink to="/internal/documents" class="font-semibold" @click="closeMobileSidebar">Documents</NuxtLink>
       <button type="button" aria-label="Refresh documents" :disabled="loading" @click="refresh">↻</button>
     </div>
     <p v-if="error" role="alert" class="text-xs">{{ error }}</p>
     <p v-else-if="loading" class="text-xs">Loading documents…</p>
     <div v-else class="max-h-56 overflow-y-auto">
       <div v-for="group in groups" :key="group.id" class="mb-2">
-        <NuxtLink :to="{ path: '/internal/documents', query: { baseId: group.id } }" class="block truncate text-xs opacity-70">
+        <NuxtLink
+          :to="{ path: '/internal/documents', query: { baseId: group.id } }"
+          class="block truncate text-xs opacity-70"
+          @click="closeMobileSidebar"
+        >
           {{ group.title }} · New / import
         </NuxtLink>
         <NuxtLink
@@ -74,6 +83,7 @@ onBeforeUnmount(() => {
           :to="{ path: '/internal/documents', query: { baseId: group.id, documentId: document.id } }"
           class="block truncate rounded px-2 py-1 text-sm hover:bg-nc-bg-gray-medium"
           :title="document.title"
+          @click="closeMobileSidebar"
         >
           {{ document.parentId ? '↳ ' : '' }}{{ document.title }}
         </NuxtLink>

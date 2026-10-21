@@ -95,6 +95,8 @@ Object.assign(globalThis, {
   }),
   usePersonalViewPermissions: () => ({ canModifyView: computed(() => scenario !== 'colors-readonly') }),
   useRoute: () => ({ fullPath: '/' }),
+  useGlobal: () => ({ isMobileMode: ref(false) }),
+  useSidebarStore: () => ({ isLeftSidebarOpen: ref(true) }),
   useEventListener: () => undefined,
   storeToRefs: (store: object) => store,
   useWorkspace: () => ({ activeWorkspaceId }),
