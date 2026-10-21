@@ -124,6 +124,8 @@ function triggerToolbarControl(selector: string) {
 
           <SmartsheetToolbarGroupByMenu v-if="isGrid" />
 
+          <InternalExtensionsCellColors v-if="isGrid && !isPublic && !isSharedBase" />
+
           <SmartsheetToolbarSortListMenu v-if="isGrid || isGallery || isKanban || isList" />
 
           <SmartsheetToolbarRowColorFilterDropdown

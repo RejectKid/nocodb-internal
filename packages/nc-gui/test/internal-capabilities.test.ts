@@ -29,6 +29,7 @@ describe('internal capability service', () => {
       'filePreviewMode',
       'discussionMode',
       'teams',
+      'cellColoring',
     ])
   })
 })

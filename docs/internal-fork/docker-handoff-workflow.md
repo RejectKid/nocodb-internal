@@ -37,6 +37,7 @@ or custom credential secret needed; the workflow token has contents:read.
 
 - Installs/builds workspace dependencies using the existing bootstrap script.
 - Runs backend internal extension tests and targeted GUI unit tests.
+- Runs browser control regressions for the document sidebar and coloring editor.
 - Builds the production backend with the upstream Docker entry/config and
   generates the production GUI.
 - Builds a new image using the pinned Community runtime digest plus those
@@ -44,11 +45,15 @@ or custom credential secret needed; the workflow token has contents:read.
 - Pulls pinned PostgreSQL/Redis digests, starts a fresh isolated Compose project,
   checks admin/registry/document/team APIs and permission denials, then restarts
   to verify document persistence.
+- Opens the compiled GUI in Chromium and verifies coloring save/reload/canvas
+  pixels, document deep links with retained navigation, cloud promotion removal,
+  and absence of uncaught application errors.
 - Removes only this newly generated disposable QA project's volumes in cleanup.
 - Saves/loads all three images, generates file hashes and build/test records,
   creates and verifies the ZIP, then uploads it only on success.
 
-The smoke uses HTTP/API checks, not a full rendered-browser run. Full GUI type
+The smoke combines HTTP/API checks with targeted compiled-GUI browser checks;
+it is not exhaustive UI coverage. Full GUI type
 checking/linting remains a separate documented backlog. SMTP, ARM emulation,
 production backup/restore and every advertised Business feature are not
 certified by a green packaging job. Read BUNDLE-TEST-RESULTS.txt for the actual
@@ -94,3 +99,8 @@ and refuse to overwrite an existing output directory. Fresh smoke testing uses
 host port 18086; it must be available. Keep template instructions up to date
 when adding features. Only edit the source templates in deploy/internal-fork/handoff;
 generated bundles are disposable artifacts.
+
+To enable compiled-GUI browser checks locally, install the browser using the
+GUI package's `pnpm exec playwright install chromium` command and set
+`NC_HANDOFF_BROWSER_SMOKE=true` before running the builder. Windows local
+checks use installed Chrome; CI uses Playwright Chromium.

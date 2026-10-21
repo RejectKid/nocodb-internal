@@ -30,6 +30,7 @@ describe('InternalCapabilitiesController', () => {
         filePreviewMode: false,
         discussionMode: false,
         teams: false,
+        cellColoring: false,
       },
     });
   });

@@ -80,6 +80,7 @@ Start with **FEATURE-TESTS.md** and **example-document.md**. Detailed guides:
 - internal-teams-usage.md
 - self-hosted-business-parity.md (what is still missing/partial)
 - teams-validation-report.md (source-level testing and known CI limitations)
+- sidebar-and-cell-colors.md (workspace document navigation and grid coloring)
 - BUILD-INFO.txt (exact image/source identity and bundle smoke result)
 
 All independent feature flags, including NC_INTERNAL_TEAMS_ENABLED, are set

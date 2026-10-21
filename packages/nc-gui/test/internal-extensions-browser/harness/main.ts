@@ -1,7 +1,10 @@
-import { computed, createApp, defineComponent, h, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { computed, createApp, defineComponent, h, inject, onBeforeUnmount, onMounted, provide, ref, watch } from 'vue'
 import BaseSettings from '../../../components/dashboard/settings/base/index.vue'
 import PermissionEditor from '../../../components/internalExtensions/basePermissions/Editor.vue'
 import TokenEditor from '../../../components/internalExtensions/apiTokens/Editor.vue'
+import CellColors from '../../../components/internalExtensions/CellColors.vue'
+import DocumentsSidebar from '../../../components/internalExtensions/DocumentsSidebar.vue'
+import { evaluateInternalCellColor, readInternalColorRules } from '../../../helpers/internalCellColors'
 
 declare global {
   interface Window {
@@ -70,6 +73,9 @@ const router = {
     router.currentRoute.value = { query: route.query ?? {} }
   },
 }
+const colorView = ref({ id: 'view-1', meta: { icon: 'star' } as Record<string, unknown> })
+const colorColumns = [{ id: 'status', title: 'Status' }, { id: 'total', title: 'Total' }]
+const colorMetaKey = Symbol('internal-color-meta')
 
 Object.assign(globalThis, {
   computed,
@@ -77,6 +83,19 @@ Object.assign(globalThis, {
   onMounted,
   ref,
   watch,
+  inject,
+  MetaInj: colorMetaKey,
+  parseProp: (value: any) => typeof value === 'string' ? JSON.parse(value) : value,
+  useViewsStore: () => ({
+    activeView: colorView,
+    updateView: async (_id: string, changes: any) => {
+      await client.patch('/api/internal/v1/views/view-1', changes)
+      colorView.value.meta = changes.meta
+    },
+  }),
+  usePersonalViewPermissions: () => ({ canModifyView: computed(() => scenario !== 'colors-readonly') }),
+  useRoute: () => ({ fullPath: '/' }),
+  useEventListener: () => undefined,
   storeToRefs: (store: object) => store,
   useWorkspace: () => ({ activeWorkspaceId }),
   useBases: () => ({
@@ -84,7 +103,7 @@ Object.assign(globalThis, {
     basesList,
     getBaseUsers: async () => ({ users: basesUser.value.get('base-1') }),
   }),
-  useApi: () => ({ api: { instance: client } }),
+  useApi: () => ({ api: { instance: client, base: { list: async () => ({ list: basesList.value }) } } }),
   useRoles: () => ({ isUIAllowed: () => false }),
   useBetaFeatureToggle: () => ({ isFeatureEnabled: () => false }),
   useEeConfig: () => ({ showEEFeatures: ref(false) }),
@@ -207,6 +226,14 @@ const Empty = defineComponent({
 })
 
 const components: Record<string, unknown> = {
+  AModal: defineComponent({
+    props: { visible: Boolean },
+    setup: (props, { slots }) => () => props.visible ? h('section', { role: 'dialog' }, slots.default?.()) : null,
+  }),
+  NuxtLink: defineComponent({
+    props: { to: [String, Object] },
+    setup: (props, { slots }) => () => h('a', { href: typeof props.to === 'string' ? props.to : `${(props.to as any).path}?${new URLSearchParams((props.to as any).query)}` }, slots.default?.()),
+  }),
   NcButton,
   NcSwitch,
   NcAlert,
@@ -236,7 +263,16 @@ const components: Record<string, unknown> = {
       : TokenEditor,
 }
 
-const app = createApp(screen === 'settings' ? BaseSettings : screen === 'tokens' ? TokenEditor : PermissionEditor, {
+const ColorsScreen = defineComponent({
+  setup() {
+    provide(colorMetaKey, ref({ columns: colorColumns }))
+    return () => h('main', [h(CellColors), h('div', {
+      'data-testid': 'colored-example',
+      'style': { backgroundColor: evaluateInternalCellColor(readInternalColorRules(colorView.value.meta), colorColumns, { Status: 'Done' }, 'status') || '' },
+    }, 'Done')])
+  },
+})
+const app = createApp(screen === 'colors' ? ColorsScreen : screen === 'documents-sidebar' ? DocumentsSidebar : screen === 'settings' ? BaseSettings : screen === 'tokens' ? TokenEditor : PermissionEditor, {
   baseId: 'base-1',
 })
 for (const [name, component] of Object.entries(components)) app.component(name, component)

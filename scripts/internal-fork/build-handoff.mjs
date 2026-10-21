@@ -62,7 +62,7 @@ for (const relative of await files(bundle)) {
   }
 }
 await mkdir(path.join(bundle, 'images'));
-for (const doc of ['admin-documents-usage.md', 'internal-teams-usage.md', 'self-hosted-business-parity.md', 'teams-validation-report.md']) {
+for (const doc of ['admin-documents-usage.md', 'internal-teams-usage.md', 'self-hosted-business-parity.md', 'teams-validation-report.md', 'sidebar-and-cell-colors.md']) {
   await cp(path.join(root, 'docs/internal-fork', doc), path.join(bundle, doc));
 }
 await cp(path.join(root, 'LICENSE.md'), path.join(bundle, 'LICENSE.md'));
@@ -84,6 +84,10 @@ function composeRun(args) { run('docker', ['compose', '-p', project, ...args], q
 try {
   composeRun(['up', '-d', '--wait', '--wait-timeout', '240']);
   const saved = await smokeHandoff(qaEnv.NC_SITE_URL);
+  if (process.env.NC_HANDOFF_BROWSER_SMOKE === 'true') {
+    const { smokeHandoffBrowser } = await import('./smoke-handoff-browser.mjs');
+    await smokeHandoffBrowser(qaEnv.NC_SITE_URL, saved);
+  }
   if (!/^[a-zA-Z0-9_-]+$/.test(saved.documentId)) throw new Error('Invalid document ID');
   composeRun(['down']); // Preserve QA volumes for the persistence check.
   composeRun(['up', '-d', '--wait', '--wait-timeout', '240']);
@@ -91,7 +95,7 @@ try {
   composeRun(['exec', '-T', 'db', 'psql', '-U', 'nocodb', '-d', 'nocodb', '-v', 'ON_ERROR_STOP=1', '-c',
     `DO $$ BEGIN IF NOT EXISTS (SELECT 1 FROM nc_internal_documents WHERE id = '${saved.documentId}') THEN RAISE EXCEPTION 'Document lost after restart'; END IF; END $$;`]);
   await writeFile(path.join(bundle, 'BUNDLE-TEST-RESULTS.txt'),
-    `Source ${commit}\nPASS: fresh Compose health (app/PostgreSQL/Redis), frontend HTML/asset HTTP responses, initial signup, authenticated registry/admin, team grant/removal, unauthorized and anonymous denials, JSON export restrictions, restart persistence.\nThis automated smoke checks APIs and asset delivery, not rendered browser interactions or every Business feature. Source lint/full-GUI type-check limitations are documented separately. No QA data or credentials are bundled.\n`);
+    `Source ${commit}\nPASS: fresh Compose health (app/PostgreSQL/Redis), frontend HTML/asset HTTP responses, initial signup, authenticated registry/admin, team grant/removal, document listing denial, cell-color metadata persistence and anonymous/viewer write denials, JSON export restrictions, restart persistence.\n${process.env.NC_HANDOFF_BROWSER_SMOKE === 'true' ? 'PASS: compiled GUI browser checks for coloring save/reload/canvas pixels, document sidebar/deep link/reload, cloud promotion removal, and no uncaught application errors.' : 'Rendered browser smoke was not enabled for this local build.'}\nNot a certification of every Business feature. Source lint/full-GUI type-check limitations are documented separately. No QA data or credentials are bundled.\n`);
 } catch (error) {
   // Do not upload application logs containing test session values.
   console.error('Handoff smoke failed; ZIP will not be published.');

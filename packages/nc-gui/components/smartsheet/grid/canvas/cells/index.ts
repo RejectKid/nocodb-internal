@@ -8,6 +8,7 @@ import {
   isBtLikeV2Junction,
 } from 'nocodb-sdk'
 import { renderSingleLineText, renderSpinner, renderTag, roundedRect } from '../utils/canvas'
+import { evaluateInternalCellColor, readInternalColorRules } from '~/helpers/internalCellColors'
 import type { ActionManager } from '../loaders/ActionManager'
 import type { ImageWindowLoader } from '../loaders/ImageLoader'
 import type { MarkdownLoader } from '../loaders/markdownLoader'
@@ -84,6 +85,13 @@ export function useGridCellHandler(params: {
   const { isColumnSortedOrFiltered, appearanceConfig: filteredOrSortedAppearanceConfig } = useColumnFilteredOrSorted()
 
   const { isRowColouringEnabled, isCellColouringEnabled } = useViewRowColorRender()
+  const { activeView: internalColorView } = storeToRefs(useViewsStore())
+  const { capabilities: internalCapabilities, refresh: refreshInternalCapabilities } = useInternalCapabilities()
+  onMounted(() => void refreshInternalCapabilities().catch(() => undefined))
+  const internalColorRules = computed(() => internalCapabilities.value?.features.cellColoring
+    ? readInternalColorRules(internalColorView.value?.meta) : [])
+  const { eventBus: internalColorEvents } = useSmartsheetStoreOrThrow()
+  watch(internalColorRules, () => internalColorEvents.emit(SmartsheetStoreEvents.TRIGGER_RE_RENDER))
 
   const { getColor, isDark } = useTheme()
 
@@ -217,7 +225,7 @@ export function useGridCellHandler(params: {
     if (skipRender) return
     if (!isGroupHeader) {
       const columnState = isColumnSortedOrFiltered(column.id!)
-      if (!isRowColouringEnabled.value && columnState !== undefined && !rowMeta?.isValidationFailed) {
+      if (!internalColorRules.value.length && !isRowColouringEnabled.value && columnState !== undefined && !rowMeta?.isValidationFailed) {
         let bgColorProps: 'cellBgColor' | 'cellBgColor.hovered' | 'cellBgColor.selected' = 'cellBgColor'
         let borderColorProps: 'cellBorderColor' | 'cellBorderColor.hovered' | 'cellBorderColor.selected' = 'cellBorderColor'
         if (selected || isRowChecked || isCellInSelectionRange) {
@@ -241,7 +249,10 @@ export function useGridCellHandler(params: {
         })
       } else if (!rowMeta?.isValidationFailed && isRootCell) {
         // Read pre-computed cell colors from rowMeta (populated by getEvaluatedRowMetaRowColorInfo on data load/change)
-        const cellColorInfo = isCellColouringEnabled.value ? rowMeta?.cellColors?.[column.id] : null
+        const internalColor = evaluateInternalCellColor(internalColorRules.value, meta?.columns ?? [], row, column.id!)
+        const cellColorInfo = internalColor
+          ? { cellBgColor: internalColor, cellHoverColor: internalColor, cellLeftBorderColor: null, is_set_as_background: true }
+          : isCellColouringEnabled.value ? rowMeta?.cellColors?.[column.id] : null
 
         let backgroundColorToRender: string | null = null
         let hoverColorToRender: string | null = null

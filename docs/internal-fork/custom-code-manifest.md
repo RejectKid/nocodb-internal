@@ -457,3 +457,15 @@ fixtures. Configuration: `deploy/internal-fork/.env.example`. These have low
 upstream merge risk, but **high authorization regression sensitivity**: review
 precedence, tenant isolation, and disablement semantics on upgrades. The pipeline
 now records TEAM-001 and links the broader Business gap ledger.
+# Sidebar/documents and cell coloring additions
+
+| Path | Purpose | Upstream touch points | Merge risk | Owner | Features |
+| --- | --- | --- | --- | --- | --- |
+| `packages/nc-gui/helpers/internalCellColors.ts` | Independent validated color rules/evaluation | Canvas cells adapter | Low | Internal maintainers | MODE-001 |
+| `packages/nc-gui/components/internalExtensions/CellColors.vue` | Rule editor and Community metadata persistence | Smartsheet toolbar | Low | Internal maintainers | MODE-001 |
+| `packages/nc-gui/components/internalExtensions/DocumentsSidebar.vue` | Permission-filtered workspace document navigation | Dashboard/Home sidebars | Low | Internal maintainers | DOC-001 |
+| `packages/nc-gui/pages/internal/documents.vue`, `components/internalExtensions/documents/Editor.vue` | Deep links and retained sidebar | Independent documents route/editor | Low | Internal maintainers | DOC-001 |
+| `packages/nc-gui/components/smartsheet/grid/canvas/{cells/index.ts,composables/useCanvasTable.ts}` | Render and repaint independent rules | Existing canvas renderer | Medium | Internal maintainers | MODE-001 |
+| `packages/nocodb/src/modules/internal-extensions/feature-registry/`, `packages/nc-gui/composables/internalExtensions/useInternalCapabilities.ts` | Independent coloring capability | Internal registry only | Low | Internal maintainers | FND-002 |
+| `packages/nc-gui/test/internal-cell-colors.test.ts`, `test/internal-extensions-browser/sidebar-colors.spec.ts` | Rule and UI regression coverage | Existing test harness | Low | Internal maintainers | MODE-001, DOC-001 |
+| `docs/internal-fork/sidebar-and-cell-colors.md` | Deployment and test guide | None | Low | Internal maintainers | MODE-001, DOC-001 |

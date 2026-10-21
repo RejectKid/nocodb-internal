@@ -15,6 +15,7 @@ const INTERNAL_FEATURE_ENV: Record<InternalFeatureKey, string> = {
   filePreviewMode: 'NC_INTERNAL_FILE_PREVIEW_MODE_ENABLED',
   discussionMode: 'NC_INTERNAL_DISCUSSION_MODE_ENABLED',
   teams: 'NC_INTERNAL_TEAMS_ENABLED',
+  cellColoring: 'NC_INTERNAL_CELL_COLORING_ENABLED',
 };
 
 const TRUE_VALUES = new Set(['1', 'true', 'yes', 'on']);
@@ -42,7 +43,7 @@ export function buildInternalFeatureDefinitions(
       parseInternalBoolean(env[environmentName]) &&
       (key !== 'filePreviewMode' ||
         parseInternalBoolean(env.NC_SECURE_ATTACHMENTS)),
-    backendCapability: true,
+    backendCapability: key !== 'cellColoring',
     frontendCapability: true,
     requiredConfiguration:
       key === 'filePreviewMode'

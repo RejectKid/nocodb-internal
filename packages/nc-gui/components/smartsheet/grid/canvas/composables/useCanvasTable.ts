@@ -1809,6 +1809,10 @@ export function useCanvasTable({
     triggerRefreshCanvas()
   })
 
+  // Independent view metadata can change without any records changing.
+  const internalColorViews = useViewsStore()
+  watch(() => internalColorViews.activeView?.meta, () => triggerRefreshCanvas(), { deep: true })
+
   watch(isAiFillMode, () => {
     triggerRefreshCanvas()
   })
