@@ -57,11 +57,11 @@ export async function smokeHandoffBrowser(origin, fixture, evidenceDirectory) {
     await expect(page.getByRole('navigation', { name: 'Workspace documents' })).toBeVisible();
     if (evidenceDirectory) {
       await page.screenshot({ path: path.join(evidenceDirectory, 'documents-sidebar-desktop.png'), timeout: 10000 });
-      await page.setViewportSize({ width: 390, height: 844 });
-      await page.getByRole('navigation', { name: 'Workspace documents' }).getByRole('link', { name: 'Team-only document', exact: true }).click();
-      await expect(page.getByRole('navigation', { name: 'Workspace documents' })).not.toBeVisible();
-      await page.screenshot({ path: path.join(evidenceDirectory, 'documents-mobile.png'), timeout: 10000 });
     }
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.getByRole('navigation', { name: 'Workspace documents' }).getByRole('link', { name: 'Team-only document', exact: true }).click();
+    await expect(page.getByRole('navigation', { name: 'Workspace documents' })).not.toBeVisible();
+    if (evidenceDirectory) await page.screenshot({ path: path.join(evidenceDirectory, 'documents-mobile.png'), timeout: 10000 });
     await page.reload();
     await page.getByTestId('internal-documents-page').waitFor();
     await expect(page.locator('input.max-w-lg')).toHaveValue('Team-only document');
