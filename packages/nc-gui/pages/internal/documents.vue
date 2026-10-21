@@ -3,6 +3,8 @@ definePageMeta({ requiresAuth: true, hasSidebar: true, hideHeader: true })
 
 const { api } = useApi({ useGlobalInstance: true })
 const router = useRouter()
+const { isMobileMode } = useGlobal()
+const { isLeftSidebarOpen } = storeToRefs(useSidebarStore())
 const choices = ref<Array<{ id: string; title: string; fk_workspace_id?: string }>>([])
 const baseId = ref(String(router.currentRoute.value.query.baseId || ''))
 const error = ref('')
@@ -38,6 +40,15 @@ watch(baseId, (value) => {
     <template #content>
       <div class="h-full overflow-auto">
         <div class="mx-auto max-w-[1500px] p-6" data-testid="internal-documents-page">
+          <NcButton
+            v-if="isMobileMode"
+            size="small"
+            aria-label="Open workspace navigation"
+            class="mb-3"
+            @click="isLeftSidebarOpen = true"
+          >
+            Documents navigation
+          </NcButton>
           <NuxtLink to="/">Back to workspace</NuxtLink>
           <div class="mb-5">
             <h1 class="text-2xl font-semibold">Internal documents</h1>
