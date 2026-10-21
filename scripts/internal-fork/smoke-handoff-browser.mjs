@@ -63,9 +63,18 @@ export async function smokeHandoffBrowser(origin, fixture, evidenceDirectory) {
       await page.screenshot({ path: path.join(evidenceDirectory, 'documents-sidebar-desktop.png'), timeout: 10000 });
     }
     await page.setViewportSize({ width: 390, height: 844 });
-    await page.getByRole('button', { name: 'Open workspace navigation', exact: true }).click();
+    await page.reload();
+    await page.getByTestId('internal-documents-page').waitFor();
+    const mobileSidebar = page.locator('.nc-sidebar-wrapper');
+    if ((await mobileSidebar.getAttribute('class'))?.includes('minimized-height')) {
+      await page.getByRole('button', { name: 'Open workspace navigation', exact: true }).click();
+    }
     await page.getByRole('navigation', { name: 'Workspace documents' }).getByRole('link', { name: 'Team-only document', exact: true }).click();
-    await expect(page.getByRole('navigation', { name: 'Workspace documents' })).not.toBeVisible();
+    await expect(mobileSidebar).toHaveClass(/minimized-height/);
+    await page.getByRole('button', { name: 'Open workspace navigation', exact: true }).click();
+    await expect(mobileSidebar).not.toHaveClass(/minimized-height/);
+    await page.getByRole('navigation', { name: 'Workspace documents' }).getByRole('link', { name: 'Team-only document', exact: true }).click();
+    await expect(mobileSidebar).toHaveClass(/minimized-height/);
     if (evidenceDirectory) await page.screenshot({ path: path.join(evidenceDirectory, 'documents-mobile.png'), timeout: 10000 });
     await expect(page.locator('[class*="vite-error-overlay"]')).toHaveCount(0);
     assert.deepEqual(errors, [], 'Production browser must not have uncaught application errors');
