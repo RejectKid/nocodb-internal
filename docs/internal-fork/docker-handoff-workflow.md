@@ -1,5 +1,9 @@
 # Repeatable Docker handoff ZIP
 
+For permanent, easy-to-download **Release assets** on GitHub or GitLab, see
+[handoff-releases.md](handoff-releases.md). Manual default-branch GitHub builds
+now publish a release by default; PR builds still upload only workflow artifacts.
+
 The `Build Docker handoff ZIP` workflow builds the checked-out fork, packages
 Linux/AMD64 images and the versioned Compose/setup templates, and uploads a ZIP
 plus SHA256 checksum. No local E: drive paths or prebuilt personal artifacts
@@ -30,8 +34,9 @@ gh run download RUN_ID --repo RejectKid/nocodb-internal
 
 This is deliberately manual, rather than a large image export on every code
 push. Pull requests changing the packaging workflow/templates also build it
-for validation. There is no registry push, deployment, release publication,
-or custom credential secret needed; the workflow token has contents:read.
+for validation. There is no container registry push or deployment.
+Release publication uses the workflow token with contents:write
+in a separate post-build job only; build/test jobs retain contents:read.
 
 ## What happens
 

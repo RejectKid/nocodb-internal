@@ -1,0 +1,2 @@
+# Keep the portable handoff entry point usable after Windows clones.
+scripts/internal-fork/ci-handoff.sh text eol=lf

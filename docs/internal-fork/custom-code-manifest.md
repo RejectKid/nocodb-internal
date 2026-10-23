@@ -471,3 +471,14 @@ now records TEAM-001 and links the broader Business gap ledger.
 | `docs/internal-fork/sidebar-and-cell-colors.md` | Deployment and test guide | None | Low | Internal maintainers | MODE-001, DOC-001 |
 | `scripts/internal-fork/smoke-handoff-browser.mjs` | Compiled GUI/canvas and document navigation smoke; optional private screenshots | Handoff builder and workflow | Low | Internal maintainers | MODE-001, DOC-001, SEC-002 |
 | `packages/nc-gui/store/sidebar.ts` | Register independent document route as hideable on mobile | Sidebar route allowlist only | Low | Internal maintainers | DOC-001 |
+
+## Downloadable handoff releases
+
+| Path | Purpose | Upstream touch points | Merge risk | Owner | Features |
+| --- | --- | --- | --- | --- | --- |
+| `.github/workflows/internal-docker-handoff.yml` | Build artifacts and isolated manual release publication | Existing custom workflow only | Low | Internal maintainers | FND-001, SEC-002 |
+| `.gitlab-ci.yml` | Manual default-branch GitLab handoff release job | New CI entry point; reconcile if upstream adds one | Low | Internal maintainers | FND-001 |
+| `scripts/internal-fork/ci-handoff.sh` | Shared pinned Linux build/test/package pipeline | Existing custom commands only | Low | Internal maintainers | SEC-002 |
+| `scripts/internal-fork/release-handoff.mjs` | Checksum/run verification and GitHub/GitLab publishing | None | Low | Internal maintainers | SEC-002 |
+| `scripts/internal-fork/release-handoff.test.mjs` | Publisher success/denial/failure ordering tests | None | Low | Internal maintainers | SEC-002 |
+| `docs/internal-fork/handoff-releases.md` | Runner setup and release/download guide | None | Low | Internal maintainers | FND-001 |
