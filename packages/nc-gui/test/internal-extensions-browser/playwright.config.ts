@@ -19,7 +19,7 @@ export default defineConfig({
     trace: 'retain-on-failure',
   },
   webServer: {
-    command: `node "${viteEntry}" --config "${viteConfig}" --host 127.0.0.1`,
+    command: `"${process.execPath}" "${viteEntry}" --config "${viteConfig}" --host 127.0.0.1`,
     url: 'http://127.0.0.1:4187',
     reuseExistingServer: false,
     timeout: 30_000,

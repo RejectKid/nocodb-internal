@@ -8,7 +8,7 @@ import {
   useInternalDocuments,
 } from '~/composables/internalExtensions/useInternalDocuments'
 
-const props = defineProps<{ workspaceId: string; baseId: string }>()
+const props = defineProps<{ workspaceId: string; baseId: string; documentId?: string }>()
 const workspaceId = toRef(props, 'workspaceId')
 const baseId = toRef(props, 'baseId')
 // Community rich-text editor expects base metadata even outside record cells.
@@ -165,8 +165,11 @@ async function deleteGrant(index: number) {
 }
 
 watch(
-  () => [props.workspaceId, props.baseId],
-  () => void run(() => refresh(search.value)),
+  () => [props.workspaceId, props.baseId, props.documentId],
+  () => void switchDocument(async () => {
+    await refresh(search.value)
+    if (props.documentId) await open(props.documentId)
+  }),
   { immediate: true },
 )
 onBeforeUnmount(() => {

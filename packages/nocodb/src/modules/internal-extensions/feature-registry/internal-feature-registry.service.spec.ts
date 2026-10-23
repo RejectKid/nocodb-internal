@@ -41,6 +41,7 @@ describe('InternalFeatureRegistryService', () => {
         filePreviewMode: false,
         discussionMode: true,
         teams: false,
+        cellColoring: false,
       },
     });
   });
@@ -55,5 +56,11 @@ describe('InternalFeatureRegistryService', () => {
     expect(Object.values(response.features)).toHaveLength(
       INTERNAL_FEATURE_KEYS.length,
     );
+  });
+
+  it('enables independent cell coloring only when both switches are on', () => {
+    const registry = new InternalFeatureRegistryService();
+    expect(registry.getCapabilities({ NC_INTERNAL_CELL_COLORING_ENABLED: 'true' }).features.cellColoring).toBe(false);
+    expect(registry.getCapabilities({ NC_INTERNAL_EXTENSIONS_ENABLED: 'true', NC_INTERNAL_CELL_COLORING_ENABLED: 'true' }).features.cellColoring).toBe(true);
   });
 });

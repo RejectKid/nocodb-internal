@@ -78,6 +78,8 @@ const navigateToWorkspace = () => {
       </div>
     </div>
 
+    <InternalExtensionsDocumentsSidebar />
+
     <!-- Bottom section: User info + notification bell -->
     <div class="flex-none border-t-1 border-nc-border-gray-light p-1.5">
       <div class="flex items-center gap-0.5">

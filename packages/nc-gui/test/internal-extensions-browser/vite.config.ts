@@ -56,12 +56,22 @@ function internalApi(): Plugin {
               fineGrainedApiTokens: !scenario.startsWith('token-capability-off'),
               basePermissions: !scenario.startsWith('capability-off'),
               inputValidation: false,
-              documentPermissions: false,
+              documentPermissions: scenario.startsWith('documents-'),
               filePreviewMode: false,
               discussionMode: false,
               teams: false,
+              cellColoring: scenario.startsWith('colors-') && scenario !== 'colors-off',
             },
           })
+        }
+
+        if (path === '/views/view-1') {
+          if (scenario === 'colors-readonly') return json(response, 403, { message: 'View update denied' })
+          return json(response, 200, { id: 'view-1' })
+        }
+        if (path.endsWith('/documents')) {
+          if (path.includes('base-2')) return json(response, 403, { message: 'Base denied' })
+          return json(response, 200, [{ id: 'doc-visible', title: 'Team handbook', parentId: null, version: 1, order: 1 }])
         }
 
         if (path.includes('/tokens')) {

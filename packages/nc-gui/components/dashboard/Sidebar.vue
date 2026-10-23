@@ -43,6 +43,7 @@ onUnmounted(() => {
     <DashboardTreeViewProjectList>
       <template #footer>
         <div v-if="!isSharedBase" class="nc-sidebar-bottom-section">
+          <InternalExtensionsDocumentsSidebar />
           <PaymentUpgradeSidebarBanner v-if="appInfo.ee" />
 
           <LazyGeneralMaintenanceAlert />
@@ -50,9 +51,6 @@ onUnmounted(() => {
           <GeneralGift v-if="!isEeUI" />
 
           <DashboardSidebarBeforeUserInfo />
-          <div v-if="!isMobileMode && !appInfo.ee" class="flex flex-row w-full justify-between pt-0.5 truncate">
-            <GeneralJoinCloud />
-          </div>
           <DashboardSidebarVersion v-if="appInfo.isOnPrem" />
         </div>
       </template>

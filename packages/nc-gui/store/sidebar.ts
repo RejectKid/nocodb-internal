@@ -28,6 +28,7 @@ export const useSidebarStore = defineStore('sidebarStore', () => {
   const allowHideLeftSidebarForCurrentRoute = computed(() => {
     return (
       [
+        'internal-documents',
         'index-typeOrId-baseId-index-index',
         'index-typeOrId-settings-page',
         'index-typeOrId-baseId-index-settings-page',
