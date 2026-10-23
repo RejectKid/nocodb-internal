@@ -2,11 +2,18 @@ name: Build Docker handoff ZIP
 
 on:
   workflow_dispatch:
+    inputs:
+      publish_release:
+        description: 'Publish the tested ZIP under Releases (default branch only)'
+        type: boolean
+        default: true
   pull_request:
     branches: [develop]
     paths:
       - '.github/workflows/internal-docker-handoff.yml'
+      - '.gitlab-ci.yml'
       - 'scripts/internal-fork/*handoff*'
+      - 'docs/internal-fork/handoff-releases.md'
       - 'deploy/internal-fork/Dockerfile.handoff'
       - 'deploy/internal-fork/handoff/**'
 
@@ -33,32 +40,8 @@ jobs:
         with:
           node-version: 22.12.0
           cache: pnpm
-      - name: Prepare npm configuration
-        run: sed -i '/^use-node-version/d' .npmrc
-      - name: Install and build workspace dependencies
-        run: pnpm bootstrap
-      - name: Run backend extension tests
-        working-directory: packages/nocodb
-        run: pnpm exec jest --config jest.internal-extensions.config.js --runInBand --forceExit
-      - name: Run frontend extension tests
-        working-directory: packages/nc-gui
-        run: pnpm exec vitest run --config test/vite.config.ts test/internal-teams.test.ts test/internal-base-permissions.test.ts test/internal-capabilities.test.ts test/internal-product-suite.test.ts test/internal-document-import.test.ts test/internal-cell-colors.test.ts
-      - name: Install browser for UI regression tests
-        working-directory: packages/nc-gui
-        run: pnpm exec playwright install --with-deps chromium
-      - name: Test sidebar and cell coloring controls
-        working-directory: packages/nc-gui
-        run: pnpm exec playwright test --config test/internal-extensions-browser/playwright.config.ts sidebar-colors.spec.ts
-      - name: Build production backend
-        working-directory: packages/nocodb
-        run: pnpm exec rspack --config ../../scripts/internal-fork/rspack.handoff.cjs
-      - name: Build production frontend
-        working-directory: packages/nc-gui
-        env:
-          NODE_ENV: production
-        run: pnpm exec nuxi generate
-      - name: Build, smoke-test and package images
-        run: node scripts/internal-fork/build-handoff.mjs
+      - name: Build, test and package handoff
+        run: sh scripts/internal-fork/ci-handoff.sh
       - name: Upload ZIP and checksum
         uses: actions/upload-artifact@v4
         with:
@@ -73,3 +56,27 @@ jobs:
       - name: Summarize download instructions
         run: |
           printf '%s\n' '### Docker handoff ready' 'Download the docker-handoff artifact at the bottom of this run, extract the GitHub artifact, then extract the handoff ZIP inside it.' 'Windows: load-images.ps1 → setup.ps1 → start.ps1. Linux/macOS: sh load-images.sh → sh setup.sh → sh start.sh.' 'Open http://localhost:8080. README.md and FEATURE-TESTS.md are included. Artifact retention: 14 days.' >> "$GITHUB_STEP_SUMMARY"
+
+  release:
+    needs: bundle
+    if: github.event_name == 'workflow_dispatch' && inputs.publish_release && github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.12.0
+      - uses: actions/download-artifact@v4
+        with:
+          name: docker-handoff-${{ github.run_id }}-${{ github.run_attempt }}
+          path: .handoff-output
+      - name: Publish verified ZIP and checksum as release assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: node scripts/internal-fork/release-handoff.mjs github
+      - name: Link release downloads
+        env:
+          RELEASE_URL: ${{ github.server_url }}/${{ github.repository }}/releases/tag/handoff-${{ github.run_id }}.${{ github.run_attempt }}
+        run: printf '### Release ready\n[Download handoff ZIP and checksum](%s)\n' "$RELEASE_URL" >> "$GITHUB_STEP_SUMMARY"

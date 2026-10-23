@@ -1,0 +1,18 @@
+# Dedicated Linux shell runner; see docs/internal-fork/handoff-releases.md.
+stages: [handoff]
+
+handoff-release:
+  stage: handoff
+  tags: [handoff-linux]
+  timeout: 90m
+  resource_group: handoff-release
+  variables:
+    GIT_DEPTH: '0'
+  rules:
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH && $CI_PIPELINE_SOURCE == "web"'
+      when: manual
+    - when: never
+  script:
+    - export NC_HANDOFF_RUN="${CI_PIPELINE_ID}.${CI_JOB_ID}"
+    - sh scripts/internal-fork/ci-handoff.sh
+    - node scripts/internal-fork/release-handoff.mjs gitlab
